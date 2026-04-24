@@ -31,11 +31,11 @@ export async function sheetsRequest(path: string, options: any = {}) {
 export async function findOrCreateWorkspace() {
   const token = getAccessToken();
   
-  // Ensure "ProductSnap Images" folder exists
-  const parentFolderId = await findOrCreateFolder('ProductSnap Images');
+  // Ensure "ImageSnap Data" folder exists
+  const parentFolderId = await findOrCreateFolder('ImageSnap Data');
 
   // Search for the spreadsheet by name in the specific folder
-  const query = `name='ProductSnap Workspace' and mimeType='application/vnd.google-apps.spreadsheet' and '${parentFolderId}' in parents and trashed=false`;
+  const query = `name='imagesnap.xlsx' and mimeType='application/vnd.google-apps.spreadsheet' and '${parentFolderId}' in parents and trashed=false`;
   const driveSearchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}`;
   
   const searchResponse = await fetch(driveSearchUrl, {
@@ -51,7 +51,7 @@ export async function findOrCreateWorkspace() {
   const createData = await sheetsRequest('', {
     method: 'POST',
     body: JSON.stringify({
-      properties: { title: 'ProductSnap Workspace' },
+      properties: { title: 'imagesnap.xlsx' },
       sheets: [
         { properties: { title: 'Categories' } },
         { properties: { title: 'Users' } },
@@ -77,7 +77,7 @@ export async function findOrCreateWorkspace() {
 
 async function initWorkspaceHeaders(spreadsheetId: string) {
   const updates = [
-    { range: 'Categories!A1:G1', values: [['ID', 'Name EN', 'Name VI', 'Icon', 'Fields JSON', 'Updated At', '_deleted']] },
+    { range: 'Categories!A1:F1', values: [['ID', 'Name', 'Icon', 'Fields JSON', 'Updated At', '_deleted']] },
     { range: 'Users!A1:E1', values: [['ID', 'Username', 'Password', 'Role', 'Created At']] },
     { range: 'ProductNames!A1:B1', values: [['Category', 'Name']] }
   ];

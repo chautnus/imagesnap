@@ -56,16 +56,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     <div className="pb-24 p-6 flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <h1 className="text-4xl tracking-tighter">{t('settings')}</h1>
-        {!window.location.hostname.includes('ais-pre') && (
-          <div className="p-4 bg-red-900/20 border border-red-500/50 rounded-2xl text-xs text-red-200 flex flex-col gap-2 animate-pulse">
-            <p className="font-black uppercase tracking-widest text-[9px] text-red-400">🚨 SECURITY BLOCK WARNING / CẢNH BÁO CHẶN BẢO MẬT</p>
-            <p>
-              {lang === 'en' 
-                ? 'You are on the DEVELOPER URL. Google will block bookmarklet redirects here (403 Error). Please switch to the SHARED URL in the Share menu to use the bookmarklet.'
-                : 'Bạn đang dùng link DEVELOPER. Google sẽ chặn bookmarklet (Lỗi 403). Hãy nhấn "Share" ở góc trên bên phải và dùng "Shared App URL" để sử dụng.'}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Subscription Status */}
@@ -170,7 +160,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               <ExternalLink size={20} className="text-muted group-hover:text-accent" />
             </div>
             <div>
-              <div className="font-display font-black text-xl">WORKSPACE.XLSX</div>
+              <div className="font-display font-black text-xl">IMAGESNAP.XLSX</div>
               <div className="label-meta truncate mt-1">ID: {spreadsheetId}</div>
             </div>
           </a>
@@ -189,8 +179,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           <div className="flex flex-col gap-4">
              <p className="text-xs text-muted leading-relaxed">
                {lang === 'en' 
-                 ? 'ProductSnap is now exclusively developed as a Browser Extension. Please download and install the extension package for the best experience on Chrome or Edge.' 
-                 : 'ProductSnap hiện được phát triển độc quyền dưới dạng Extension trình duyệt. Vui lòng tải và cài đặt gói extension để có trải nghiệm tốt nhất trên Chrome hoặc Edge.'}
+                 ? 'ImageSnap is now exclusively developed as a Browser Extension. Please download and install the extension package for the best experience on Chrome or Edge.' 
+                 : 'ImageSnap hiện được phát triển độc quyền dưới dạng Extension trình duyệt. Vui lòng tải và cài đặt gói extension để có trải nghiệm tốt nhất trên Chrome hoặc Edge.'}
              </p>
              
              <button 

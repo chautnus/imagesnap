@@ -25,7 +25,7 @@ export const Wizard: React.FC<WizardProps> = ({ t }) => {
       </button>
       
       <div className="mt-16 label-meta opacity-50">
-        ProductSnap / V5.1 Stable
+        ImageSnap / V5.1 Stable
       </div>
     </div>
   );

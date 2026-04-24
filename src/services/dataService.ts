@@ -9,14 +9,22 @@ export async function fetchAllAppData(spreadsheetId: string): Promise<AppData> {
       getSpreadsheetMetadata(spreadsheetId)
     ]);
 
-    const categories: Category[] = catRows.map((r: any) => ({
-      id: r[0],
-      name: r[1],
-      icon: r[2],
-      fields: JSON.parse(r[3] || '[]'),
-      updatedAt: r[4],
-      _deleted: r[5] === 'TRUE'
-    }));
+    const categories: Category[] = catRows.map((r: any) => {
+      let fields = [];
+      try {
+        fields = JSON.parse(r[3] || '[]');
+      } catch (e) {
+        console.error("Failed to parse fields for category", r[0], e);
+      }
+      return {
+        id: r[0],
+        name: r[1],
+        icon: r[2],
+        fields: fields,
+        updatedAt: r[4],
+        _deleted: r[5] === 'TRUE'
+      };
+    });
 
     const activeCategories = categories.filter(c => !c._deleted);
     const allProducts: Product[] = [];

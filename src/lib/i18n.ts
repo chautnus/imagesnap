@@ -80,8 +80,8 @@ const translations: Record<string, Record<Lang, string>> = {
     vi: 'Đăng nhập'
   },
   setupWizardTitle: {
-    en: 'Welcome to ProductSnap',
-    vi: 'Chào mừng bạn đến với ProductSnap'
+    en: 'Welcome to ImageSnap',
+    vi: 'Chào mừng bạn đến với ImageSnap'
   },
   setupWizardDesc: {
     en: 'Let\'s connect your Google account to host your data.',
