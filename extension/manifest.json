@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "ImageSnap Collector",
+  "version": "1.0.0",
+  "description": "Snap product images and details to Google Sheets.",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "identity",
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_script.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "https://*.google.com/",
+    "https://*.googleusercontent.com/",
+    "*://ais-pre-litx3qlsepsiwqgx5n3vmu-658490117315.us-east1.run.app/*",
+    "*://imagesnap.cloud/*"
+  ],
+  "oauth2": {
+    "client_id": "271749541534-0ohcjg65bmejf4gjhd4ve17quggp72q1.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/drive.file",
+      "openid",
+      "email",
+      "profile"
+    ]
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

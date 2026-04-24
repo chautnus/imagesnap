@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(session-init)",
+      "Skill(session-init:*)",
+      "Skill(design-feature)",
+      "Skill(design-feature:*)"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "ImageSnap: Ecommerce Image & Data Collector",
+  "description": "The ultimate tool for dropshippers. Snap product images and metadata directly from any website to your private Google Sheets and Drive. Mobile-ready and PWA enabled.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["PWA", "Google Sheets Sync", "Google Drive Storage", "OCR/Barcode (planned)"]
+}

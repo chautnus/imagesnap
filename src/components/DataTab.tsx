@@ -1,0 +1,304 @@
+import React, { useState } from 'react';
+import { ChevronRight, Folder, Package, Trash2, Filter, Search, Calendar, User, Tag, X } from 'lucide-react';
+import { Category, Product } from '../lib/types';
+import { motion, AnimatePresence } from 'motion/react';
+import { translate } from '../lib/translations';
+
+interface DataTabProps {
+  categories: Category[];
+  products: Product[];
+  onDelete: (id: string) => Promise<void>;
+  t: (key: string) => string;
+  lang: string;
+}
+
+export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete, t, lang }) => {
+  const [view, setView] = useState<'categories' | 'names' | 'items' | 'search'>('categories');
+  const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
+  const [selectedProdName, setSelectedProdName] = useState<string | null>(null);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    dateFrom: '',
+    dateTo: '',
+    categoryId: '',
+    author: '',
+    tag: ''
+  });
+
+  const allFilteredProducts = products.filter(p => !p._deleted).filter(p => {
+    // Basic search query (Name, Tags, Author)
+    const matchesQuery = !searchQuery || 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.authorName || '').toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Advanced filters
+    const matchesDateFrom = !filters.dateFrom || new Date(p.createdAt) >= new Date(filters.dateFrom);
+    const matchesDateTo = !filters.dateTo || new Date(p.createdAt) <= new Date(filters.dateTo + 'T23:59:59');
+    const matchesCategory = !filters.categoryId || p.categoryId === filters.categoryId;
+    const matchesAuthor = !filters.author || (p.authorName || '').toLowerCase().includes(filters.author.toLowerCase());
+    const matchesTag = !filters.tag || p.tags.some(t => t.toLowerCase().includes(filters.tag.toLowerCase()));
+
+    return matchesQuery && matchesDateFrom && matchesDateTo && matchesCategory && matchesAuthor && matchesTag;
+  });
+
+  const isSearching = searchQuery || filters.dateFrom || filters.dateTo || filters.categoryId || filters.author || filters.tag;
+
+  const renderSearchHeader = () => (
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-2">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors" size={16} />
+          <input 
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t('searchPlaceholder')}
+            className="input pl-10 text-xs font-medium"
+          />
+        </div>
+        <button 
+          onClick={() => setShowFilters(!showFilters)}
+          className={`p-2.5 rounded-lg border transition-all ${showFilters ? 'bg-accent border-accent text-bg' : 'border-line text-muted'}`}
+        >
+          <Filter size={18} />
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="card p-4 grid grid-cols-2 gap-4 border-accent/20 bg-accent/5">
+              <div className="flex flex-col gap-1.5">
+                <label className="label-meta text-[9px]">{t('dateFrom')}</label>
+                <input 
+                  type="date" 
+                  value={filters.dateFrom}
+                  onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
+                  className="input !py-1.5 !text-[10px]"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="label-meta text-[9px]">{t('dateTo')}</label>
+                <input 
+                  type="date" 
+                  value={filters.dateTo}
+                  onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
+                  className="input !py-1.5 !text-[10px]"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="label-meta text-[9px]">{t('category')}</label>
+                <select 
+                  value={filters.categoryId}
+                  onChange={(e) => setFilters({...filters, categoryId: e.target.value})}
+                  className="input !py-1.5 !text-[10px]"
+                >
+                  <option value="">All</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{translate(c.name, lang)}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="label-meta text-[9px]">{t('tags')}</label>
+                <input 
+                  type="text" 
+                  value={filters.tag}
+                  onChange={(e) => setFilters({...filters, tag: e.target.value})}
+                  placeholder="Tag..."
+                  className="input !py-1.5 !text-[10px]"
+                />
+              </div>
+              <button 
+                onClick={() => setFilters({ dateFrom: '', dateTo: '', categoryId: '', author: '', tag: '' })}
+                className="col-span-2 text-[9px] text-accent font-bold uppercase tracking-widest hover:underline text-center mt-1"
+              >
+                Reset Filters
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
+  const renderProductItem = (item: Product, idx: number) => {
+    const cat = categories.find(c => c.id === item.categoryId);
+    return (
+      <div key={item.id} className="card group hover:border-accent/40 transition-all">
+        <div className="flex h-28 relative">
+          <div className="w-28 flex-none bg-black overflow-hidden relative">
+            {item.images[0] ? (
+              <img 
+                src={item.images[0]} 
+                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted"><Package size={20} /></div>
+            )}
+            <div className="absolute top-1 left-1 px-1 py-0.5 bg-accent/90 text-bg text-[7px] font-bold rounded uppercase">
+              {cat?.icon} {cat && translate(cat.name, lang)}
+            </div>
+          </div>
+          <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+            <div>
+              <div className="flex justify-between items-start mb-0.5">
+                <h3 className="font-bold text-sm truncate pr-2">{item.name}</h3>
+              </div>
+              <div className="flex flex-wrap gap-1 mb-1">
+                {item.tags.map(tag => (
+                  <span key={tag} className="text-[7px] px-1 bg-white/5 text-muted-foreground uppercase">#{tag}</span>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-between items-end border-t border-line/10 pt-2">
+              <div className="flex items-center gap-1.5 overflow-hidden">
+                <div className="w-4 h-4 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[8px] font-bold flex-none">
+                  {item.authorName?.charAt(0) || 'U'}
+                </div>
+                <span className="text-[8px] text-muted truncate max-w-[60px]">{item.authorName || 'Unknown'}</span>
+              </div>
+              <span className="text-[7px] text-muted opacity-50 font-mono whitespace-nowrap">{new Date(item.createdAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+          <button 
+            onClick={() => onDelete(item.id)}
+            className="absolute top-2 right-2 p-1 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-card/80 rounded"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  if (isSearching) {
+    return (
+      <div className="pb-24 p-6 flex flex-col gap-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">{t('data')}</h2>
+          <span className="text-[10px] font-mono text-muted">{allFilteredProducts.length} ITEMS FOUND</span>
+        </div>
+        {renderSearchHeader()}
+        <div className="grid grid-cols-1 gap-3">
+          {allFilteredProducts.map((item, idx) => renderProductItem(item, idx))}
+          {allFilteredProducts.length === 0 && (
+            <div className="py-12 flex flex-col items-center justify-center text-muted card border-dashed">
+              <Search size={32} className="opacity-20 mb-2" />
+              <p className="text-[10px] uppercase tracking-widest">No matching records</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'categories') {
+    const categoryCounts = allFilteredProducts.reduce((acc, p) => {
+      acc[p.categoryId] = (acc[p.categoryId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return (
+      <div className="pb-24 p-6 flex flex-col gap-6">
+        <h2 className="text-2xl font-bold">{t('data')}</h2>
+        {renderSearchHeader()}
+        <div className="grid grid-cols-2 gap-3">
+          {categories.filter(c => !c._deleted).map((cat, idx) => (
+            <button
+              key={cat.id}
+              onClick={() => { setSelectedCatId(cat.id); setView('names'); }}
+              className="card p-4 flex flex-col items-center gap-3 text-center group hover:border-accent transition-all"
+            >
+              <div className="w-12 h-12 rounded-full bg-accent/5 flex items-center justify-center text-3xl transition-transform group-hover:scale-110">
+                {cat.icon}
+              </div>
+              <div>
+                <div className="font-bold text-sm tracking-tight">{translate(cat.name, lang)}</div>
+                <div className="text-[9px] text-muted font-mono mt-1">{categoryCounts[cat.id] || 0} ITEMS</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'names') {
+    const catProds = allFilteredProducts.filter(p => p.categoryId === selectedCatId);
+    const prodNames = Array.from(new Set(catProds.map(p => p.name)));
+    const currentCat = categories.find(c => c.id === selectedCatId);
+
+    return (
+      <div className="pb-24 p-6 flex flex-col gap-6">
+        <div className="flex items-center gap-2 text-muted text-[10px] font-bold uppercase tracking-widest">
+          <button onClick={() => setView('categories')}>DATA</button>
+          <ChevronRight size={12} />
+          <span className="text-accent">{currentCat && translate(currentCat.name, lang)}</span>
+        </div>
+        
+        <h2 className="text-2xl font-bold">{currentCat && translate(currentCat.name, lang)}</h2>
+        {renderSearchHeader()}
+        
+        <div className="flex flex-col gap-2">
+          {prodNames.map(name => {
+            const count = catProds.filter(p => p.name === name).length;
+            const firstImg = catProds.find(p => p.name === name)?.images[0];
+            return (
+              <button
+                key={name}
+                onClick={() => { setSelectedProdName(name); setView('items'); }}
+                className="card p-3 flex items-center justify-between hover:border-accent group bg-white/5 border-transparent hover:border-line"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-black rounded-lg overflow-hidden border border-line">
+                    <img src={firstImg} className="w-full h-full object-cover grayscale opacity-50 group-hover:opacity-100 transition-all" />
+                  </div>
+                  <div className="font-bold text-sm text-left">{name}</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-muted font-mono">[{count}]</span>
+                  <ChevronRight size={16} className="text-muted group-hover:text-accent" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'items') {
+    const items = allFilteredProducts.filter(p => p.categoryId === selectedCatId && p.name === selectedProdName);
+    const currentCat = categories.find(c => c.id === selectedCatId);
+
+    return (
+      <div className="pb-24 p-6 flex flex-col gap-6">
+        <div className="flex items-center gap-2 text-muted text-[10px] font-bold uppercase tracking-widest overflow-x-auto whitespace-nowrap">
+          <button onClick={() => setView('categories')}>DATA</button>
+          <ChevronRight size={12} className="flex-none" />
+          <button onClick={() => setView('names')}>{currentCat && translate(currentCat.name, lang)}</button>
+          <ChevronRight size={12} className="flex-none" />
+          <span className="text-accent truncate">{selectedProdName}</span>
+        </div>
+
+        <h2 className="text-2xl font-bold">{selectedProdName}</h2>
+        {renderSearchHeader()}
+
+        <div className="grid grid-cols-1 gap-3">
+          {items.map((item, idx) => renderProductItem(item, idx))}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};

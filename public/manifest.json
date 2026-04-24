@@ -1,0 +1,26 @@
+{
+  "short_name": "ImageSnap",
+  "name": "ImageSnap: Ecommerce Image & Data Collector",
+  "description": "Snap product images and details directly to Google Sheets from any website.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "https://picsum.photos/seed/productsnap/192/192",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://picsum.photos/seed/productsnap/512/512",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#D4FF00",
+  "background_color": "#0a0a0a"
+}
