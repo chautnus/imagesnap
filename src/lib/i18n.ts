@@ -142,7 +142,7 @@ const translations: Record<string, Record<Lang, string>> = {
 };
 
 export const useI18n = () => {
-  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('ps_lang') as Lang) || 'vi');
+  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('ps_lang') as Lang) || 'en');
 
   const t = (key: string) => {
     return translations[key]?.[lang] || key;
