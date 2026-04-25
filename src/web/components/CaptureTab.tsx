@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, RefreshCw, X, ChevronRight, Check, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon } from 'lucide-react';
-import { Category, Product } from '../lib/types';
+import { Category, Product } from '@shared/lib/types';
 import { motion, AnimatePresence } from 'motion/react';
-import { translate } from '../lib/translations';
+import { translate } from '@shared/lib/translations';
 
 export interface ProductMetadata {
   t?: string; // Title

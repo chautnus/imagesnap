@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronRight, Folder, Package, Trash2, Filter, Search, Calendar, User, Tag, X } from 'lucide-react';
-import { Category, Product } from '../lib/types';
+import { Category, Product } from '@shared/lib/types';
 import { motion, AnimatePresence } from 'motion/react';
-import { translate } from '../lib/translations';
+import { translate } from '@shared/lib/translations';
 
 interface DataTabProps {
   categories: Category[];

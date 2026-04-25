@@ -6,15 +6,15 @@ import { SettingsTab } from './components/SettingsTab';
 import { Wizard } from './components/Wizard';
 import { LandingPage } from './components/LandingPage';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
-import { initGis, getAccessToken, setAccessToken, getUserInfo, requestToken } from './lib/google-auth';
+import { initGis, getAccessToken, setAccessToken, getUserInfo, requestToken } from '@shared/lib/google-auth';
 import { 
   findOrCreateWorkspace, 
   appendRow, 
-} from './lib/sheets';
-import { useAppData } from './hooks/useAppData';
-import { useI18n } from './lib/i18n';
+} from '@shared/lib/sheets';
+import { useAppData } from '@shared/hooks/useAppData';
+import { useI18n } from '@shared/lib/i18n';
 import { ExternalLink, Crown } from 'lucide-react';
-import { SubscriptionStatus } from './lib/types';
+import { SubscriptionStatus } from '@shared/lib/types';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings'>('capture');

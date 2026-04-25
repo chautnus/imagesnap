@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { LogOut, Globe, Plus, Trash2, Edit3, Save, X, ExternalLink, RefreshCw, Crown, CreditCard } from 'lucide-react';
-import { Category, FieldDefinition, SubscriptionStatus } from '../lib/types';
-import { revokeToken } from '../lib/google-auth';
-import { translate } from '../lib/translations';
+import { Category, FieldDefinition, SubscriptionStatus } from '@shared/lib/types';
+import { revokeToken } from '@shared/lib/google-auth';
+import { translate } from '@shared/lib/translations';
 
 interface SettingsTabProps {
   categories: Category[];

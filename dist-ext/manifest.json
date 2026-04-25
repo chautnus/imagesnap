@@ -1,10 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "ImageSnap Collector",
-  "version": "1.0.0",
-  "description": "Snap product images and details to Google Sheets.",
+  "name": "ImageSnap: Asset & Metadata Scraper",
+  "version": "1.1.0",
+  "description": "Capture product images and metadata from any website directly to your Google Drive and Sheets.",
+  "author": "ImageSnap Cloud",
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
   },
   "permissions": [
     "identity",
@@ -25,8 +38,8 @@
   "host_permissions": [
     "https://*.google.com/",
     "https://*.googleusercontent.com/",
-    "*://ais-pre-litx3qlsepsiwqgx5n3vmu-658490117315.us-east1.run.app/*",
-    "*://imagesnap.cloud/*"
+    "https://imagesnap.cloud/*",
+    "https://api.imagesnap.cloud/*"
   ],
   "oauth2": {
     "client_id": "271749541534-0ohcjg65bmejf4gjhd4ve17quggp72q1.apps.googleusercontent.com",

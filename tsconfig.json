@@ -17,9 +17,9 @@
     "types": ["vite/client", "chrome"],
     "jsx": "react-jsx",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@shared/*": ["./src/shared/*"],
+      "@web/*": ["./src/web/*"],
+      "@ext/*": ["./src/extension/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
