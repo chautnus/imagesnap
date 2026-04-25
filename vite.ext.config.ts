@@ -1,30 +1,13 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import { copyFileSync, mkdirSync, existsSync } from 'fs';
 
 export default defineConfig({
-  build: {
-    outDir: 'dist-ext',
-    emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        popup: path.resolve(__dirname, 'src/extension/index.html'),
-        background: path.resolve(__dirname, 'src/extension/background.js'),
-        content: path.resolve(__dirname, 'src/extension/content_script.js'),
-      },
-      output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
-        assetFileNames: '[name].[ext]',
-      },
-    },
-  },
-  resolve: {
-    alias: {
-      '@shared': path.resolve(__dirname, './src/shared'),
-    },
-  },
   plugins: [
+    react(), 
+    tailwindcss(),
     {
       name: 'post-build-cleanup',
       closeBundle() {
@@ -49,4 +32,25 @@ export default defineConfig({
       },
     },
   ],
+  build: {
+    outDir: 'dist-ext',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        popup: path.resolve(__dirname, 'src/extension/index.html'),
+        background: path.resolve(__dirname, 'src/extension/background.js'),
+        content: path.resolve(__dirname, 'src/extension/content_script.js'),
+      },
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name].js',
+        assetFileNames: '[name].[ext]',
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      '@shared': path.resolve(__dirname, './src/shared'),
+    },
+  },
 });
