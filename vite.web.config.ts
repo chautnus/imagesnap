@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   root: 'src/web',
   build: {
-    outDir: '../../dist-web',
+    outDir: '../../dist',
     emptyOutDir: true,
   },
   resolve: {
