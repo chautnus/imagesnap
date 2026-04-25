@@ -57,7 +57,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('searchPlaceholder')}
-            className="input pl-10 text-xs font-medium"
+            className="input pl-10 text-sm font-medium"
           />
         </div>
         <button 
@@ -78,7 +78,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
           >
             <div className="card p-4 grid grid-cols-2 gap-4 border-accent/20 bg-accent/5">
               <div className="flex flex-col gap-1.5">
-                <label className="label-meta text-[9px]">{t('dateFrom')}</label>
+                <label className="label-meta text-[11px]">{t('dateFrom')}</label>
                 <input 
                   type="date" 
                   value={filters.dateFrom}
@@ -87,7 +87,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="label-meta text-[9px]">{t('dateTo')}</label>
+                <label className="label-meta text-[11px]">{t('dateTo')}</label>
                 <input 
                   type="date" 
                   value={filters.dateTo}
@@ -96,7 +96,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="label-meta text-[9px]">{t('category')}</label>
+                <label className="label-meta text-[11px]">{t('category')}</label>
                 <select 
                   value={filters.categoryId}
                   onChange={(e) => setFilters({...filters, categoryId: e.target.value})}
@@ -107,7 +107,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="label-meta text-[9px]">{t('tags')}</label>
+                <label className="label-meta text-[11px]">{t('tags')}</label>
                 <input 
                   type="text" 
                   value={filters.tag}
@@ -118,7 +118,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
               </div>
               <button 
                 onClick={() => setFilters({ dateFrom: '', dateTo: '', categoryId: '', author: '', tag: '' })}
-                className="col-span-2 text-[9px] text-accent font-bold uppercase tracking-widest hover:underline text-center mt-1"
+                className="col-span-2 text-[11px] text-accent font-bold uppercase tracking-widest hover:underline text-center mt-1"
               >
                 Reset Filters
               </button>
@@ -144,7 +144,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted"><Package size={20} /></div>
             )}
-            <div className="absolute top-1 left-1 px-1 py-0.5 bg-accent/90 text-bg text-[7px] font-bold rounded uppercase">
+            <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-accent/90 text-bg text-[10px] font-black rounded uppercase">
               {cat?.icon} {cat && translate(cat.name, lang)}
             </div>
           </div>
@@ -155,18 +155,18 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
               </div>
               <div className="flex flex-wrap gap-1 mb-1">
                 {item.tags.map(tag => (
-                  <span key={tag} className="text-[7px] px-1 bg-white/5 text-muted-foreground uppercase">#{tag}</span>
+                  <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-white/5 text-muted-foreground uppercase rounded-sm border border-white/5">#{tag}</span>
                 ))}
               </div>
             </div>
             <div className="flex justify-between items-end border-t border-line/10 pt-2">
               <div className="flex items-center gap-1.5 overflow-hidden">
-                <div className="w-4 h-4 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[8px] font-bold flex-none">
+                <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[11px] font-black flex-none">
                   {item.authorName?.charAt(0) || 'U'}
                 </div>
-                <span className="text-[8px] text-muted truncate max-w-[60px]">{item.authorName || 'Unknown'}</span>
+                <span className="text-[11px] text-muted truncate max-w-[80px] font-medium">{item.authorName || 'Unknown'}</span>
               </div>
-              <span className="text-[7px] text-muted opacity-50 font-mono whitespace-nowrap">{new Date(item.createdAt).toLocaleDateString()}</span>
+              <span className="text-[10px] text-muted opacity-50 font-mono whitespace-nowrap">{new Date(item.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
           <button 

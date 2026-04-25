@@ -17,6 +17,8 @@ interface CaptureTabProps {
   productNames: { categoryId: string, name: string }[];
   t: (key: string) => string;
   lang: string;
+  subStatus: { isPro: boolean, limit: number, usage: number };
+  onUpgrade: () => Promise<void>;
   initialImages?: string[];
   importedUrl?: string;
   importedMetadata?: ProductMetadata;
@@ -31,6 +33,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   productNames, 
   t,
   lang,
+  subStatus,
+  onUpgrade,
   initialImages = [],
   importedUrl = '',
   importedMetadata = {} as ProductMetadata,
@@ -213,6 +217,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     }
   };
 
+  const isAtLimit = !subStatus.isPro && subStatus.usage >= subStatus.limit;
+
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
   const keyFieldId = activeCategory?.fields.find(f => f.type === 'key')?.id || '';
   const currentKeyValue = formData[keyFieldId] || '';
@@ -300,12 +306,26 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold tracking-tight">{t('capture')}</h2>
         <button 
-          onClick={() => setShowBulkModal(true)} 
-          className="text-[10px] text-accent underline font-bold uppercase"
+          onClick={() => setShowBulkModal(false)} 
+          className="text-[11px] text-accent underline font-bold uppercase"
         >
           {t('bulkImport')}
         </button>
       </div>
+
+      {isAtLimit && (
+        <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-2xl flex flex-col gap-2">
+          <p className="text-xs text-yellow-500 font-bold leading-tight">
+            ⚠️ {t('limitReachedMsg') || 'You have reached the free limit. Upgrade to PRO for unlimited snaps!'}
+          </p>
+          <button 
+            onClick={onUpgrade}
+            className="text-[11px] bg-yellow-500 text-bg px-3 py-1.5 rounded-lg font-black uppercase w-fit"
+          >
+            Upgrade Now
+          </button>
+        </div>
+      )}
 
       {/* Action Row */}
       <div className="grid grid-cols-4 gap-2">
@@ -313,11 +333,11 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         {typeof chrome !== 'undefined' && chrome.tabs && (
           <button 
             onClick={handleExtensionSnap}
-            disabled={isExtracting}
-            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)] active:scale-95`}
+            disabled={isExtracting || isAtLimit}
+            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)]'} active:scale-95`}
           >
             {isExtracting ? <RefreshCw size={20} className="animate-spin" /> : <GlobeIcon size={20} />}
-            <span className="text-[8px] font-black tracking-tighter uppercase whitespace-pre-wrap text-center">{t('snapFromBrowser')}</span>
+            <span className="text-[11px] font-black tracking-tighter uppercase whitespace-pre-wrap text-center">{t('snapFromBrowser')}</span>
           </button>
         )}
 
@@ -336,7 +356,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent hover:text-accent transition-all cursor-pointer"
         >
           <ImagesIcon size={20} />
-          <span className="text-[8px] font-black tracking-tighter uppercase">GALLERY</span>
+          <span className="text-[11px] font-black tracking-tighter uppercase">GALLERY</span>
           <input 
             type="file" 
             accept="image/*" 
@@ -365,7 +385,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent hover:text-accent transition-all cursor-pointer"
         >
           <Camera size={20} className="stroke-[3]" />
-          <span className="text-[8px] font-black tracking-tighter uppercase whitespace-nowrap">FAST_CAM</span>
+          <span className="text-[11px] font-black tracking-tighter uppercase whitespace-nowrap">FAST_CAM</span>
           <input 
             type="file" 
             accept="image/*" 
@@ -468,13 +488,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       {/* Category Selection */}
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
-          <label className="label-meta tracking-widest text-[9px]">Select Category</label>
+          <label className="label-meta tracking-widest text-[11px]">Select Category</label>
           <input 
             type="text"
             placeholder={lang === 'en' ? 'Search...' : 'Tìm kiếm...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-card border border-line rounded-lg px-3 py-1 text-[10px] w-32 focus:border-accent outline-none"
+            className="bg-card border border-line rounded-lg px-3 py-1.5 text-xs w-32 focus:border-accent outline-none"
           />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1">
@@ -498,7 +518,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                 className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${selectedCategoryId === cat.id ? 'border-accent bg-accent/10 text-accent font-bold shadow-[0_0_10px_rgba(212,255,0,0.1)]' : 'border-line bg-card text-muted opacity-80'}`}
               >
                 <span className="text-sm">{cat.icon}</span>
-                <span className="text-[10px] uppercase tracking-tight truncate">
+                <span className="text-[11px] uppercase tracking-tight truncate">
                   {translate(cat.name, lang)}
                 </span>
                 </button>
@@ -599,10 +619,10 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
           <button 
             onClick={handleSave}
-            disabled={isSaving || images.length === 0 || !formData[activeCategory.fields.find(f => f.type === 'key')?.id || '']}
-            className="btn btn-primary mt-4 py-4 flex items-center justify-center gap-2 text-lg"
+            disabled={isSaving || isAtLimit || images.length === 0 || !formData[activeCategory.fields.find(f => f.type === 'key')?.id || '']}
+            className={`btn btn-primary mt-4 py-4 flex items-center justify-center gap-2 text-lg ${isAtLimit ? 'opacity-30 grayscale' : ''}`}
           >
-            {isSaving ? <RefreshCw className="animate-spin" /> : <span>Save Item</span>}
+            {isSaving ? <RefreshCw className="animate-spin" /> : <span>{isAtLimit ? 'LIMIT REACHED' : 'Save Item'}</span>}
           </button>
         </motion.div>
       )}

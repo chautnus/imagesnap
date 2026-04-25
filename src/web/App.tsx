@@ -170,8 +170,8 @@ export default function App() {
           <div className="flex items-center gap-2">
             <div className="label-meta text-accent mb-0.5">V5.1_STABLE</div>
             {subStatus.isPro && (
-              <div className="px-2 py-0.5 bg-yellow-500/20 text-yellow-500 text-[8px] font-black rounded-full flex items-center gap-1 border border-yellow-500/30">
-                <Crown size={8} /> PRO
+              <div className="px-2 py-0.5 bg-yellow-500/20 text-yellow-500 text-[10px] font-black rounded-full flex items-center gap-1 border border-yellow-500/30">
+                <Crown size={10} /> PRO
               </div>
             )}
           </div>
@@ -187,7 +187,7 @@ export default function App() {
           >
             <ExternalLink size={16} />
           </button>
-          <div className={`px-2 py-0.5 rounded text-[9px] font-bold tracking-widest ${isSyncing ? 'bg-muted/20 text-muted' : 'bg-accent/10 text-accent'}`}>
+          <div className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-widest ${isSyncing ? 'bg-muted/20 text-muted' : 'bg-accent/10 text-accent'}`}>
             {isSyncing ? 'SYNCING' : 'ONLINE'}
           </div>
         </div>
@@ -198,9 +198,20 @@ export default function App() {
           <CaptureTab 
             categories={appData.categories} 
             productNames={appData.productNames}
-            onSave={handleSaveProduct} 
+            onSave={async (product, imgs) => {
+              if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
+                alert(t('limitReached'));
+                handleUpgrade();
+                return;
+              }
+              await handleSaveProduct(product, imgs);
+              // Refresh status after save to update usage count
+              if (user?.email) fetchSubStatus(user.email);
+            }} 
             t={t} 
             lang={lang}
+            subStatus={subStatus}
+            onUpgrade={handleUpgrade}
             initialImages={importedImages}
             importedUrl={importedUrl}
             importedMetadata={importedMetadata}

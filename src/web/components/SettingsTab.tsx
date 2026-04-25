@@ -71,18 +71,18 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 <span className="font-display font-black text-xl leading-none">
                   {subStatus.isPro ? 'PRO_LIFETIME' : 'FREE_TIER'}
                 </span>
-                <span className="label-meta mt-1">{user?.email || 'OFFLINE_USER'}</span>
+                <span className="label-meta mt-1 text-[11px]">{user?.email || 'OFFLINE_USER'}</span>
               </div>
             </div>
             {!subStatus.isPro && (
-              <button onClick={onUpgrade} className="btn btn-primary text-[10px] py-1.5 px-3 font-black shadow-[4px_4px_0_#000]">
+              <button onClick={onUpgrade} className="btn btn-primary text-[11px] py-1.5 px-3 font-black shadow-[4px_4px_0_#000]">
                 UPGRADE
               </button>
             )}
           </div>
           
           <div className="flex flex-col gap-2 mt-2">
-            <div className="flex justify-between text-[9px] font-bold tracking-widest text-muted">
+            <div className="flex justify-between text-[11px] font-bold tracking-widest text-muted">
               <span>USAGE_QUOTA</span>
               <span>{subStatus.isPro ? '∞' : `${subStatus.usage}/${subStatus.limit} SNAPS`}</span>
             </div>
@@ -93,7 +93,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               />
             </div>
             {!subStatus.isPro && (
-              <p className="text-[8px] text-muted-foreground opacity-60">
+              <p className="text-[11px] text-muted-foreground opacity-80 leading-relaxed">
                 The Free Tier allows up to 30 snaps per month. Upgrade to Pro for unlimited snaps and marketplace features.
               </p>
             )}
@@ -110,7 +110,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             <span className="label-meta">Current: {lang === 'en' ? 'EN_US' : 'VI_VN'}</span>
           </div>
         </div>
-        <button onClick={toggleLang} className="btn btn-primary text-xs">
+        <button onClick={toggleLang} className="btn btn-primary text-[11px] font-black">
           SWITCH_LANG
         </button>
       </div>
@@ -173,11 +173,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         <div className="card p-6 flex flex-col gap-6 bg-accent/5 border-dashed border-accent/20">
           <div className="flex justify-between items-center">
              <div className="font-bold text-lg">ImageSnap Collector</div>
-             <span className="px-2 py-0.5 bg-accent text-bg text-[8px] font-bold rounded uppercase">EXTENSION_ONLY</span>
+             <span className="px-2 py-0.5 bg-accent text-bg text-[10px] font-black rounded uppercase">EXTENSION_ONLY</span>
           </div>
 
           <div className="flex flex-col gap-4">
-             <p className="text-xs text-muted leading-relaxed">
+             <p className="text-sm text-muted leading-relaxed">
                {lang === 'en' 
                  ? 'ImageSnap is now exclusively developed as a Browser Extension. Please download and install the extension package for the best experience on Chrome or Edge.' 
                  : 'ImageSnap hiện được phát triển độc quyền dưới dạng Extension trình duyệt. Vui lòng tải và cài đặt gói extension để có trải nghiệm tốt nhất trên Chrome hoặc Edge.'}
@@ -185,7 +185,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
              
              <button 
                onClick={() => window.open('https://github.com/google/productsnap', '_blank')}
-               className="btn btn-primary py-4 flex items-center justify-center gap-3 font-black text-xs"
+               className="btn btn-primary py-4 flex items-center justify-center gap-3 font-black text-[11px]"
              >
                <ExternalLink size={20} />
                {lang === 'en' ? 'DOWNLOAD EXTENSION (ZIP)' : 'TẢI EXTENSION (ZIP)'}
@@ -261,7 +261,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                               newFields[fIdx] = { ...field, type: newType };
                               setEditForm({ ...editForm, fields: newFields });
                             }}
-                            className="input !py-1 text-[10px] w-24"
+                            className="input !py-1 text-[11px] w-24 font-bold"
                           >
                             <option value="text">Text</option>
                             <option value="number">Number</option>
@@ -281,7 +281,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         </>
                       )}
                       {field.type === 'key' && (
-                        <div className="text-[8px] bg-accent text-bg px-2 flex items-center rounded-full font-bold uppercase">Folder Key</div>
+                        <div className="text-[10px] bg-accent text-bg px-2 flex items-center rounded-full font-black uppercase">Folder Key</div>
                       )}
                     </div>
                     {field.type === 'select' && (
@@ -294,7 +294,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                           setEditForm({ ...editForm, fields: newFields });
                         }}
                         placeholder="Options: S, M, L"
-                        className="input !py-1 text-[10px]"
+                        className="input !py-1 text-[11px]"
                       />
                     )}
                   </div>
@@ -310,7 +310,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   };
                   setEditForm({ ...editForm, fields: [...(editForm.fields || []), newField] });
                 }}
-                className="btn btn-secondary py-2 text-[10px] flex items-center justify-center gap-2 border-dashed"
+                className="btn btn-secondary py-2 text-[11px] flex items-center justify-center gap-2 border-dashed font-bold"
               >
                 <Plus size={14} /> ADD_FIELD
               </button>

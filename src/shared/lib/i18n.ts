@@ -138,6 +138,14 @@ const translations: Record<string, Record<Lang, string>> = {
   noImagesFound: {
     en: 'No images found on page.',
     vi: 'Không tìm thấy ảnh trên trang.'
+  },
+  limitReached: {
+    en: 'Daily Limit Reached',
+    vi: 'Đã hết lượt miễn phí'
+  },
+  limitReachedMsg: {
+    en: 'You have reached the free limit. Upgrade to PRO for unlimited snaps!',
+    vi: 'Bạn đã hết lượt dùng thử miễn phí. Nâng cấp PRO để lưu không giới hạn!'
   }
 };
 
