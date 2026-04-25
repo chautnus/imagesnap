@@ -134,9 +134,16 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const handleExtensionSnap = async () => {
     setIsExtracting(true);
     try {
-      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
+      if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab?.id) {
+          // 1. Programmatically inject the content script
+          await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content.js'] // Vite bundles content_script.js as content.js
+          });
+
+          // 2. Send extraction message
           chrome.tabs.sendMessage(tab.id, { action: "extract" }, (response) => {
             if (chrome.runtime.lastError) {
               console.error(chrome.runtime.lastError);
@@ -200,6 +207,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       }
     } catch (e) {
       console.error(e);
+      alert(t('noActiveTab'));
     } finally {
       setIsExtracting(false);
     }

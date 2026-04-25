@@ -9,11 +9,8 @@ This document provides the text you need to copy-paste into the Chrome Developer
 
 ## 2. Permission Justifications
 
-### `tabs` Permission
-**Justification:** ImageSnap requires the `tabs` permission to facilitate communication between the extension's popup and the content script injected into the webpage. This allows the extension to query the active tab for specific image data and metadata elements (like product titles or prices) that the user wishes to save.
-
-### `activeTab` & Host Permissions (`<all_urls>`)
-**Justification:** ImageSnap needs to access the content of the webpage the user is currently viewing to identify and extract image assets. The `<all_urls>` permission is required because users need to collect assets from a wide variety of e-commerce, portfolio, and inspiration websites across the internet. Access is only triggered when the user explicitly interacts with the extension.
+### `activeTab` & `scripting` (NO Broad Host Permissions)
+**Justification:** ImageSnap follows the principle of least privilege. We have removed all broad host permissions (`<all_urls>`). Instead, we use the `activeTab` permission combined with the `scripting` API. This allows us to programmatically inject the extraction script ONLY when the user explicitly clicks the extension action button. This ensures that the extension never accesses user data proactively and only interacts with the specific site the user is currently viewing upon request.
 
 ### `storage`
 **Justification:** Used to store user configuration, custom categories, and local synchronization status. This ensures the extension remembers user settings and provides a seamless offline-to-online experience.
@@ -25,6 +22,7 @@ This document provides the text you need to copy-paste into the Chrome Developer
 **Question:** Are you using remote code?
 **Answer:** No.
 **Justification:** ImageSnap does not use any remote-hosted scripts or libraries. All code, including React components and utility libraries, is bundled locally within the extension package. This ensures compliance with Manifest V3 security requirements and protects user privacy.
+
 
 ## 4. User Data Privacy & Collection
 
