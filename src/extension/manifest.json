@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ImageSnap: Asset & Metadata Scraper",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "Capture product images and metadata from any website directly to your Google Drive and Sheets.",
   "author": "ImageSnap Cloud",
   "icons": {
@@ -29,8 +29,11 @@
     "service_worker": "background.js"
   },
   "host_permissions": [
-    "https://*.googleapis.com/",
-    "https://*.googleusercontent.com/"
+    "https://sheets.googleapis.com/*",
+    "https://www.googleapis.com/drive/*",
+    "https://www.googleapis.com/oauth2/*",
+    "https://www.googleapis.com/userinfo/*",
+    "https://lh3.googleusercontent.com/*"
   ],
   "oauth2": {
     "client_id": "271749541534-0ohcjg65bmejf4gjhd4ve17quggp72q1.apps.googleusercontent.com",
