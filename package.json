@@ -7,12 +7,12 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "dev": "vite --config vite.web.config.ts",
+    "dev": "vite",
     "dev:server": "tsx server.ts",
-    "build:web": "vite build --config vite.web.config.ts",
+    "build:web": "vite build",
     "build:ext": "vite build --config vite.ext.config.ts",
     "build": "npm run build:web && npm run build:ext",
-    "preview": "vite preview --config vite.web.config.ts",
+    "preview": "vite preview",
     "start": "node --import tsx/esm server.ts"
   },
   "dependencies": {
