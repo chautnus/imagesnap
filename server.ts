@@ -17,11 +17,28 @@ import fs from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Firebase removed - Using local state for session/demo purposes (In production, use a persistent DB)
-const mockUserDb: Record<string, any> = {};
+// Mock Database for demo/session purposes
+const DB_PATH = path.join(process.cwd(), "user_db.json");
+let mockUserDb: Record<string, any> = {};
+
+if (fs.existsSync(DB_PATH)) {
+  try {
+    mockUserDb = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+  } catch (e) {
+    mockUserDb = {};
+  }
+}
+
+function saveDb() {
+  fs.writeFileSync(DB_PATH, JSON.stringify(mockUserDb, null, 2));
+}
 
 async function getSubscription(email: string) {
-  return mockUserDb[email] || { isPro: false, limit: 30, usage: 0 };
+  if (!mockUserDb[email]) {
+    mockUserDb[email] = { isPro: false, limit: 30, usage: 0 };
+    saveDb();
+  }
+  return mockUserDb[email];
 }
 
 async function startServer() {
@@ -49,6 +66,18 @@ async function startServer() {
     const email = req.query.email as string;
     if (!email) return res.status(400).json({ error: "Email required" });
     const status = await getSubscription(email);
+    res.json(status);
+  });
+  
+  app.post("/api/increment-usage", async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email required" });
+    
+    const status = await getSubscription(email);
+    if (!status.isPro) {
+      status.usage = (status.usage || 0) + 1;
+      saveDb();
+    }
     res.json(status);
   });
 

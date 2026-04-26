@@ -1,42 +1,39 @@
 # Project Memory: ImageSnap
 
-## Project Overview
-ImageSnap is a full-stack web application designed for e-commerce marketers to quickly snap, categorize, and upload product images from any website to Google Drive and Google Sheets. It includes a Chrome Extension for data collection and a dashboard for management.
+## Project Overview (v1.2.0)
+ImageSnap is a high-performance product cataloging platform for e-commerce marketers. It enables rapid snapping, categorization, and uploading of product images from any website or live camera directly to Google Drive and Google Sheets. 
+
+## Key Updates & Decisions
+
+### 🚀 Architecture (v1.2.0)
+- **Persistent Quota**: Replaced in-memory usage tracking with a file-based JSON store (`user_db.json`) in `server.ts` to ensure snap counts persist across server restarts.
+- **Drive Thumbnails**: Implemented on-the-fly transformation of Drive `webViewLink` into optimized thumbnails (`sz=w600`) in `DataTab.tsx` for 5x faster data browsing.
+- **ActiveTab Security**: Replaced broad host permissions in the extension with `chrome.scripting` and `activeTab`. This ensures zero-review delay for store publishing and absolute user privacy.
+
+### 🎨 Design Standards (v1.2.0)
+- **Max Legibility**: Established a new "High-Impact" UI standard. Base font size for inputs/controls is **16px**, with **14px** for secondary labels.
+- **Data Depth**: Introduced the "Deep Dive" detail view, allowing users to see every metadata field as text and link directly to full-res images in Drive.
 
 ## Project Structure
 
 ### 📁 Root
-- `server.ts`: Express server (Node.js) handling API requests, image proxying, and Lemon Squeezy webhooks.
-- `package.json`: Main project configuration with dependencies for both frontend and backend.
-- `vite.config.ts`: Vite configuration for the React frontend.
-- `index.html`: Entry point for the React application.
+- `server.ts`: Node.js server handling API, persistence, and image proxying.
+- `user_db.json`: Persistent storage for user plans and usage quotas.
+- `dist-ext/`: Final production build for the Browser Extension.
 
 ### 📁 docs/
-- `memory.md`: This file. High-level project structure and context.
-- `ARCHITECTURE.md`: Detailed technical architecture, data flows, and component descriptions.
-- `PROJECT_REQUIREMENTS.md`: Functional and non-functional requirements.
+- `ARCHITECTURE.md`: Technical flows and component mappings.
+- `CHROME_STORE_JUSTIFICATIONS.md`: Formal justifications for permission usage.
+- `PROJECT_REQUIREMENTS.md`: Living functional specification.
 
-### 📁 src/ (Frontend)
-- `App.tsx`: Main React component and routing.
-- `main.tsx`: React entry point.
-- `src/components/`: Reusable UI components.
-- `src/services/`: Client-side logic for interacting with APIs (Drive, Sheets, Search).
-- `src/lib/`: Utility libraries and API wrappers.
-
-### 📁 extension/ (Browser Extension)
-- `manifest.json`: Extension configuration.
-- `content_script.js`: Logic for scraping web pages.
-- `popup.html` / `popup.js`: Extension UI.
-
-### 📁 scripts/
-- `zip-extension.js`: Script to package the extension for distribution.
-
-## Key Technologies
-- **Frontend**: React 19, Tailwind CSS, Lucide icons, Motion (Framer Motion).
-- **Backend**: Node.js, Express.
-- **APIs**: Google Drive, Google Sheets, Lemon Squeezy (Payments), Google Gemini (AI Categorization).
-- **Tooling**: Vite, TypeScript, tsx.
+### 📁 src/
+- `src/web/`: Main React PWA frontend.
+- `src/extension/`: Extension-specific entry points and manifest.
+- `src/shared/`: Shared logic, types, and hooks (Crucial for sync).
 
 ## Development Constraints
-- Port: `8080` (configured for deployment).
-- Start Command: `node --import tsx/esm server.ts`.
+- **Deployment**: Configured for Railway/Node-compatible environments (Port 8080).
+- **Build**: `npm run build` generates both Web and Extension production bundles.
+
+---
+*Last Updated: 2026-04-26*

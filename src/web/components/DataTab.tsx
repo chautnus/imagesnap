@@ -3,6 +3,18 @@ import { ChevronRight, Folder, Package, Trash2, Filter, Search, Calendar, User, 
 import { Category, Product } from '@shared/lib/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { translate } from '@shared/lib/translations';
+import { ExternalLink } from 'lucide-react';
+
+const getDriveThumbnail = (url: string) => {
+  if (!url || !url.includes('drive.google.com')) return url;
+  // Extract file ID from webViewLink
+  // Format: https://drive.google.com/file/d/FILE_ID/view?usp=drivesdk
+  const match = url.match(/\/d\/(.+?)\//);
+  if (match && match[1]) {
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
+  }
+  return url;
+};
 
 interface DataTabProps {
   categories: Category[];
@@ -138,12 +150,12 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
           <div className="w-28 flex-none bg-black overflow-hidden relative">
             {item.images[0] ? (
               <img 
-                src={item.images[0]} 
-                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                src={getDriveThumbnail(item.images[0])} 
+                className="w-full h-full object-cover transition-all duration-500" 
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted"><Package size={20} /></div>
+              <div className="w-full h-full flex items-center justify-center text-muted"><Package size={24} /></div>
             )}
             <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-accent/90 text-bg text-[10px] font-black rounded uppercase">
               {cat?.icon} {cat && translate(cat.name, lang)}
@@ -263,10 +275,10 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
                 className="card p-3 flex items-center justify-between hover:border-accent group bg-white/5 border-transparent hover:border-line"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-black rounded-lg overflow-hidden border border-line">
-                    <img src={firstImg} className="w-full h-full object-cover grayscale opacity-50 group-hover:opacity-100 transition-all" />
+                  <div className="w-12 h-12 bg-black rounded-lg overflow-hidden border border-line">
+                    <img src={getDriveThumbnail(firstImg || '')} className="w-full h-full object-cover transition-all" />
                   </div>
-                  <div className="font-bold text-sm text-left">{name}</div>
+                  <div className="font-bold text-base text-left">{name}</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] text-muted font-mono">[{count}]</span>
@@ -330,9 +342,11 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
                   rel="noopener noreferrer"
                   className="aspect-square bg-black rounded-2xl overflow-hidden border-2 border-line hover:border-accent transition-all group relative"
                 >
-                  <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                  <img src={getDriveThumbnail(img)} className="w-full h-full object-cover grayscale-0 transition-all" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                    <span className="text-[10px] font-black text-white uppercase tracking-widest">Open in Drive</span>
+                    <span className="text-[12px] font-black text-white uppercase tracking-widest flex items-center gap-2">
+                       <ExternalLink size={14} /> Open Drive
+                    </span>
                   </div>
                 </a>
               ))}

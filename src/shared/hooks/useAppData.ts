@@ -86,6 +86,17 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       }
 
       await refreshData(spreadsheetId);
+
+      // Increment usage on server
+      if (user?.email) {
+        try {
+          await fetch('/api/increment-usage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email })
+          });
+        } catch (e) { console.error("Failed to increment usage", e); }
+      }
     } catch (err) {
       console.error("Save product error:", err);
     } finally {
