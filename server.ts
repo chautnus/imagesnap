@@ -35,7 +35,18 @@ function saveDb() {
 
 async function getSubscription(email: string) {
   if (!mockUserDb[email]) {
-    mockUserDb[email] = { isPro: false, limit: 30, usage: 0 };
+    // First user or specific email can be admin
+    const isFirst = Object.keys(mockUserDb).length === 0;
+    const adminEmails = ["chau.tnus@gmail.com", "admin@imagesnap.cloud"];
+    const isAdmin = isFirst || adminEmails.includes(email.toLowerCase());
+    
+    mockUserDb[email] = { 
+      isPro: isAdmin, // Admins are PRO by default
+      isAdmin: isAdmin,
+      limit: isAdmin ? 999999 : 1, 
+      usage: 0,
+      role: isAdmin ? 'admin' : 'user'
+    };
     saveDb();
   }
   return mockUserDb[email];
@@ -79,6 +90,39 @@ async function startServer() {
       saveDb();
     }
     res.json(status);
+  });
+
+  // --- ADMIN ROUTES ---
+  app.get("/api/admin/users", async (req, res) => {
+    const adminEmail = req.query.adminEmail as string;
+    const status = await getSubscription(adminEmail || "");
+    if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
+    
+    res.json(mockUserDb);
+  });
+
+  app.post("/api/admin/update-user", async (req, res) => {
+    const { adminEmail, targetEmail, updates } = req.body;
+    const status = await getSubscription(adminEmail || "");
+    if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
+    
+    if (!mockUserDb[targetEmail]) {
+      mockUserDb[targetEmail] = { isPro: false, limit: 1, usage: 0, role: 'user' };
+    }
+    
+    mockUserDb[targetEmail] = { ...mockUserDb[targetEmail], ...updates };
+    saveDb();
+    res.json(mockUserDb[targetEmail]);
+  });
+
+  app.post("/api/admin/delete-user", async (req, res) => {
+    const { adminEmail, targetEmail } = req.body;
+    const status = await getSubscription(adminEmail || "");
+    if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
+    
+    delete mockUserDb[targetEmail];
+    saveDb();
+    res.json({ success: true });
   });
 
   app.post("/api/create-checkout-session", async (req, res) => {

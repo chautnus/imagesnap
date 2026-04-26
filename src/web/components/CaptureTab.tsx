@@ -628,11 +628,12 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           </div>
 
           <button 
-            onClick={handleSave}
-            disabled={isSaving || isAtLimit || images.length === 0 || !formData[activeCategory.fields.find(f => f.type === 'key')?.id || '']}
-            className={`btn btn-primary mt-4 py-4 flex items-center justify-center gap-2 text-lg ${isAtLimit ? 'opacity-30 grayscale' : ''}`}
+            onClick={handleSave} 
+            disabled={isSaving || isAtLimit || subStatus.role === 'user'}
+            className={`btn btn-primary py-4 flex items-center justify-center gap-3 font-black text-xs tracking-[0.2em] shadow-[4px_4px_0_#000] border-2 border-black transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${isSaving ? 'opacity-70 animate-pulse' : ''} ${(isAtLimit || subStatus.role === 'user') ? 'grayscale opacity-50 cursor-not-allowed' : ''}`}
           >
-            {isSaving ? <RefreshCw className="animate-spin" /> : <span>{isAtLimit ? 'LIMIT REACHED' : 'Save Item'}</span>}
+            {isSaving ? <RefreshCw size={20} className="animate-spin" /> : <Save size={20} />}
+            {subStatus.role === 'user' ? 'VIEW_ONLY_MODE' : (isAtLimit ? 'LIMIT_REACHED' : t('save'))}
           </button>
         </motion.div>
       )}

@@ -32,6 +32,47 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Category>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [users, setUsers] = useState<Record<string, any>>({});
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+  useEffect(() => {
+    if (subStatus.isAdmin && user?.email) {
+      fetchUsers();
+    }
+  }, [subStatus.isAdmin, user?.email]);
+
+  const fetchUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      const res = await fetch(`/api/admin/users?adminEmail=${encodeURIComponent(user.email)}`);
+      const data = await res.json();
+      setUsers(data);
+    } catch (e) { console.error("Fetch users error", e); }
+    finally { setIsLoadingUsers(false); }
+  };
+
+  const handleUpdateUser = async (targetEmail: string, updates: any) => {
+    try {
+      await fetch('/api/admin/update-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminEmail: user.email, targetEmail, updates })
+      });
+      fetchUsers();
+    } catch (e) { console.error("Update user error", e); }
+  };
+
+  const handleDeleteUser = async (targetEmail: string) => {
+    if (!confirm(`Delete user ${targetEmail}?`)) return;
+    try {
+      await fetch('/api/admin/delete-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminEmail: user.email, targetEmail })
+      });
+      fetchUsers();
+    } catch (e) { console.error("Delete user error", e); }
+  };
 
   const handleEdit = (cat: Category) => {
     setEditingCatId(cat.id);
@@ -126,6 +167,57 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           SWITCH_LANG
         </button>
       </div>
+
+      {/* User Management (Admin Only) */}
+      {subStatus.isAdmin && (
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center border-b border-line pb-2">
+            <h2 className="label-meta tracking-[0.1em]">USER_DIRECTORY</h2>
+            <button onClick={fetchUsers} className="text-accent flex items-center gap-1 font-bold text-xs uppercase">
+              <RefreshCw size={14} className={isLoadingUsers ? 'animate-spin' : ''} /> REFRESH
+            </button>
+          </div>
+          
+          <div className="flex flex-col gap-3">
+            {Object.entries(users).map(([email, data]) => (
+              <div key={email} className="card p-5 flex items-center justify-between bg-white/5 border-transparent">
+                <div className="flex items-center gap-5">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${data.role === 'admin' ? 'bg-accent/20 text-accent' : 'bg-white/5 text-muted'}`}>
+                    {data.role === 'admin' ? <Shield size={24} /> : <UserIcon size={24} />}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-mono font-black text-sm text-accent">{email}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-40">
+                      {data.role || 'user'} • Usage: {data.usage || 0} / {data.limit}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                   {email !== user.email && (
+                     <>
+                        <button 
+                          onClick={() => handleUpdateUser(email, { role: data.role === 'admin' ? 'user' : 'admin', isAdmin: data.role !== 'admin' })}
+                          className="p-3 text-muted hover:text-accent transition-colors border border-line/20 rounded-lg"
+                          title="Change Role"
+                        >
+                          <RefreshCw size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteUser(email)}
+                          className="p-3 text-muted hover:text-red-500 transition-colors border border-line/20 rounded-lg"
+                          title="Delete User"
+                        >
+                          <UserMinus size={18} />
+                        </button>
+                     </>
+                   )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Categories Management */}
       <div className="flex flex-col gap-4">

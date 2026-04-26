@@ -22,10 +22,12 @@ interface DataTabProps {
   onDelete: (id: string) => Promise<void>;
   t: (key: string) => string;
   lang: string;
+  subStatus?: any;
 }
 
-export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete, t, lang }) => {
+export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete, t, lang, subStatus }) => {
   const [view, setView] = useState<'categories' | 'names' | 'items' | 'search'>('categories');
+  const isAdmin = subStatus?.role === 'admin';
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedProdName, setSelectedProdName] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -185,22 +187,91 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
               <span className="text-[11px] text-muted opacity-50 font-mono whitespace-nowrap font-bold">{new Date(item.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
-          <button 
-            onClick={() => onDelete(item.id)}
-            className="absolute top-3 right-3 p-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-card/80 rounded-lg border border-line"
-          >
-            <Trash2 size={16} />
-          </button>
+          {isAdmin && (
+            <button 
+              onClick={() => onDelete(item.id)}
+              className="absolute top-3 right-3 p-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-card/80 rounded-lg border border-line"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
         </div>
       </div>
     );
   };
+
+  if (selectedProduct) {
+    const cat = categories.find(c => c.id === selectedProduct.categoryId);
+    return (
+      <div className="pb-24 p-6 flex flex-col gap-8">
+        <div className="flex items-center gap-3 text-muted text-[12px] font-black uppercase tracking-[0.2em] mb-2">
+          <button onClick={() => setSelectedProduct(null)} className="hover:text-accent flex items-center gap-1">
+             <X size={14} /> {t('back')}
+          </button>
+          {!isAdmin && <span className="ml-auto px-2 py-0.5 bg-accent/10 text-accent rounded text-[10px]">VIEW ONLY</span>}
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{cat?.icon}</span>
+              <h2 className="text-3xl font-black tracking-tight uppercase">{selectedProduct.name}</h2>
+            </div>
+            <div className="label-meta">{cat && translate(cat.name, lang)} • {new Date(selectedProduct.createdAt).toLocaleString()}</div>
+          </div>
+
+          <div className="card p-6 flex flex-col gap-6 bg-accent/5 border-accent/20">
+            {cat?.fields.map(field => {
+              const value = selectedProduct.data[field.id];
+              return (
+                <div key={field.id} className="flex flex-col gap-1.5 border-b border-line/10 pb-4 last:border-0 last:pb-0">
+                  <label className="label-meta text-accent opacity-70">{translate(field.label, lang)}</label>
+                  <div className="text-lg font-medium leading-relaxed break-words">
+                    {field.type === 'url' ? (
+                      <a href={value} target="_blank" rel="noopener noreferrer" className="text-accent underline break-all font-mono text-sm">
+                        {value || '---'}
+                      </a>
+                    ) : (
+                      value || '---'
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h3 className="label-meta">Captured Images ({selectedProduct.images.length})</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {selectedProduct.images.map((img, i) => (
+                <a 
+                  key={i} 
+                  href={img} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="aspect-square bg-black rounded-2xl overflow-hidden border-2 border-line hover:border-accent transition-all group relative"
+                >
+                  <img src={getDriveThumbnail(img)} className="w-full h-full object-cover grayscale-0 transition-all" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                    <span className="text-[12px] font-black text-white uppercase tracking-widest flex items-center gap-2">
+                       <ExternalLink size={14} /> Open Drive
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isSearching) {
     return (
       <div className="pb-24 p-6 flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <h2 className="text-3xl font-black uppercase tracking-tight">{t('data')}</h2>
+          {!isAdmin && <span className="px-2 py-1 bg-accent/10 text-accent rounded text-[10px] font-black">VIEW ONLY</span>}
           <span className="text-[12px] font-mono text-muted font-bold tracking-widest">{allFilteredProducts.length} ITEMS FOUND</span>
         </div>
         {renderSearchHeader()}
@@ -225,7 +296,10 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
 
     return (
       <div className="pb-24 p-6 flex flex-col gap-6">
-        <h2 className="text-3xl font-black uppercase tracking-tight">{t('data')}</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl font-black uppercase tracking-tight">{t('data')}</h2>
+          {!isAdmin && <span className="px-2 py-1 bg-accent/10 text-accent rounded text-[10px] font-black">VIEW ONLY</span>}
+        </div>
         {renderSearchHeader()}
         <div className="grid grid-cols-2 gap-3">
           {categories.filter(c => !c._deleted).map((cat, idx) => (
@@ -292,70 +366,8 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
     );
   }
 
-  if (selectedProduct) {
-    const cat = categories.find(c => c.id === selectedProduct.categoryId);
-    return (
-      <div className="pb-24 p-6 flex flex-col gap-8">
-        <div className="flex items-center gap-3 text-muted text-[12px] font-black uppercase tracking-[0.2em] mb-2">
-          <button onClick={() => setSelectedProduct(null)} className="hover:text-accent flex items-center gap-1">
-             <X size={14} /> {t('back')}
-          </button>
-        </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <span className="text-4xl">{cat?.icon}</span>
-              <h2 className="text-3xl font-black tracking-tight uppercase">{selectedProduct.name}</h2>
-            </div>
-            <div className="label-meta">{cat && translate(cat.name, lang)} • {new Date(selectedProduct.createdAt).toLocaleString()}</div>
-          </div>
 
-          <div className="card p-6 flex flex-col gap-6 bg-accent/5 border-accent/20">
-            {cat?.fields.map(field => {
-              const value = selectedProduct.data[field.id];
-              return (
-                <div key={field.id} className="flex flex-col gap-1.5 border-b border-line/10 pb-4 last:border-0 last:pb-0">
-                  <label className="label-meta text-accent opacity-70">{translate(field.label, lang)}</label>
-                  <div className="text-lg font-medium leading-relaxed break-words">
-                    {field.type === 'url' ? (
-                      <a href={value} target="_blank" rel="noopener noreferrer" className="text-accent underline break-all font-mono text-sm">
-                        {value || '---'}
-                      </a>
-                    ) : (
-                      value || '---'
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <h3 className="label-meta">Captured Images ({selectedProduct.images.length})</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {selectedProduct.images.map((img, i) => (
-                <a 
-                  key={i} 
-                  href={img} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="aspect-square bg-black rounded-2xl overflow-hidden border-2 border-line hover:border-accent transition-all group relative"
-                >
-                  <img src={getDriveThumbnail(img)} className="w-full h-full object-cover grayscale-0 transition-all" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                    <span className="text-[12px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-                       <ExternalLink size={14} /> Open Drive
-                    </span>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (view === 'items') {
     const items = allFilteredProducts.filter(p => p.categoryId === selectedCatId && p.name === selectedProdName);
