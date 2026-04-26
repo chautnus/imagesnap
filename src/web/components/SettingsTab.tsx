@@ -61,40 +61,52 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       {/* Subscription Status */}
       <div className="flex flex-col gap-4">
         <h2 className="label-meta tracking-[0.3em]">PLAN_STATUS</h2>
-        <div className={`card p-6 flex flex-col gap-4 border-2 transition-all ${subStatus.isPro ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-accent/20'}`}>
+        <div className={`card p-6 flex flex-col gap-6 border-2 transition-all ${subStatus.isPro ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-accent/20'}`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${subStatus.isPro ? 'bg-yellow-500 text-bg shadow-[4px_4px_0_rgba(0,0,0,0.5)]' : 'bg-accent/10 text-accent'}`}>
-                {subStatus.isPro ? <Crown size={24} /> : <CreditCard size={24} />}
+            <div className="flex items-center gap-5">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${subStatus.isPro ? 'bg-yellow-500 text-bg shadow-[4px_4px_0_rgba(0,0,0,0.5)]' : 'bg-accent/10 text-accent'}`}>
+                {subStatus.isPro ? <Crown size={28} /> : <CreditCard size={28} />}
               </div>
               <div className="flex flex-col">
-                <span className="font-display font-black text-xl leading-none">
+                <span className="font-display font-black text-2xl tracking-tighter uppercase leading-none mb-1">
                   {subStatus.isPro ? 'PRO_LIFETIME' : 'FREE_TIER'}
                 </span>
-                <span className="label-meta mt-1 text-[11px]">{user?.email || 'OFFLINE_USER'}</span>
+                <span className="text-[12px] font-mono font-black text-accent">{user?.email || 'OFFLINE_USER'}</span>
               </div>
             </div>
             {!subStatus.isPro && (
-              <button onClick={onUpgrade} className="btn btn-primary text-[11px] py-1.5 px-3 font-black shadow-[4px_4px_0_#000]">
+              <button onClick={onUpgrade} className="btn btn-primary text-[12px] py-2 px-4 font-black shadow-[4px_4px_0_#000] tracking-widest">
                 UPGRADE
               </button>
             )}
           </div>
           
-          <div className="flex flex-col gap-2 mt-2">
-            <div className="flex justify-between text-[11px] font-bold tracking-widest text-muted">
-              <span>USAGE_QUOTA</span>
-              <span>{subStatus.isPro ? '∞' : `${subStatus.usage}/${subStatus.limit} SNAPS`}</span>
+          <div className="flex flex-col gap-3 pt-2 border-t border-line/10">
+            <div className="flex justify-between items-end">
+               <div className="flex flex-col gap-1">
+                  <span className="label-meta text-accent opacity-60">CURRENT_USAGE</span>
+                  <span className="text-3xl font-black font-mono tracking-tighter">
+                    {subStatus.isPro ? '∞' : subStatus.usage}
+                  </span>
+               </div>
+               <div className="flex flex-col items-end gap-1">
+                  <span className="label-meta opacity-60 text-right">PLAN_LIMIT</span>
+                  <span className="text-xl font-bold font-mono text-muted">
+                    {subStatus.isPro ? 'UNLIMITED' : `/ ${subStatus.limit} SNAPS`}
+                  </span>
+               </div>
             </div>
-            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+            <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border-2 border-white/5">
               <div 
-                className={`h-full transition-all duration-1000 ${subStatus.isPro ? 'w-full bg-yellow-500' : 'bg-accent'}`}
+                className={`h-full transition-all duration-1000 ${subStatus.isPro ? 'w-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'bg-accent shadow-[0_0_10px_rgba(212,255,0,0.5)]'}`}
                 style={{ width: subStatus.isPro ? '100%' : `${Math.min(100, (subStatus.usage / subStatus.limit) * 100)}%` }}
               />
             </div>
             {!subStatus.isPro && (
-              <p className="text-[11px] text-muted-foreground opacity-80 leading-relaxed">
-                The Free Tier allows up to 30 snaps per month. Upgrade to Pro for unlimited snaps and marketplace features.
+              <p className="text-[12px] text-muted-foreground opacity-80 leading-relaxed font-medium">
+                {lang === 'en' 
+                  ? 'Your current plan allows up to 30 snaps per month. PRO users enjoy unlimited data capture and marketplace integration.' 
+                  : 'Gói hiện tại của bạn giới hạn 30 lượt lưu mỗi tháng. Nâng cấp PRO để lưu không giới hạn và dùng các tính năng nâng cao.'}
               </p>
             )}
           </div>
@@ -110,7 +122,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             <span className="label-meta">Current: {lang === 'en' ? 'EN_US' : 'VI_VN'}</span>
           </div>
         </div>
-        <button onClick={toggleLang} className="btn btn-primary text-[11px] font-black">
+        <button onClick={toggleLang} className="btn btn-primary text-[12px] font-black tracking-widest">
           SWITCH_LANG
         </button>
       </div>
@@ -134,9 +146,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   <span className="font-bold text-base">{translate(cat.name, lang)}</span>
                 </div>
               </div>
-              <div className="flex gap-1">
-                <button onClick={() => handleEdit(cat)} className="p-2 text-muted hover:text-accent transition-colors"><Edit3 size={18} /></button>
-                <button onClick={() => onDeleteCategory(cat.id)} className="p-2 text-muted hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
+              <div className="flex gap-2">
+                <button onClick={() => handleEdit(cat)} className="p-3 text-muted hover:text-accent transition-colors"><Edit3 size={20} /></button>
+                <button onClick={() => onDeleteCategory(cat.id)} className="p-3 text-muted hover:text-red-500 transition-colors"><Trash2 size={20} /></button>
               </div>
             </div>
           ))}

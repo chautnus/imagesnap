@@ -17,7 +17,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab,
         <div className={`p-2 rounded-xl transition-all ${activeTab === 'capture' ? 'bg-accent/10' : ''}`}>
           <Camera size={22} />
         </div>
-        <span className={`text-[8px] font-bold uppercase tracking-widest ${activeTab === 'capture' ? 'opacity-100' : 'opacity-40'}`}>{t('capture')}</span>
+        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'capture' ? 'opacity-100' : 'opacity-40'}`}>{t('capture')}</span>
       </button>
 
       <button 
@@ -27,7 +27,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab,
         <div className={`p-2 rounded-xl transition-all ${activeTab === 'data' ? 'bg-accent/10' : ''}`}>
           <TableProperties size={22} />
         </div>
-        <span className={`text-[8px] font-bold uppercase tracking-widest ${activeTab === 'data' ? 'opacity-100' : 'opacity-40'}`}>{t('data')}</span>
+        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'data' ? 'opacity-100' : 'opacity-40'}`}>{t('data')}</span>
       </button>
 
       <button 
@@ -37,7 +37,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab,
         <div className={`p-2 rounded-xl transition-all ${activeTab === 'settings' ? 'bg-accent/10' : ''}`}>
           <Settings size={22} />
         </div>
-        <span className={`text-[8px] font-bold uppercase tracking-widest ${activeTab === 'settings' ? 'opacity-100' : 'opacity-40'}`}>{t('settings')}</span>
+        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'settings' ? 'opacity-100' : 'opacity-40'}`}>{t('settings')}</span>
       </button>
     </nav>
   );

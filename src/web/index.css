@@ -63,7 +63,7 @@
   }
 
   .input {
-    @apply w-full px-4 py-3 bg-bg text-ink border border-line rounded-lg focus:outline-none focus:border-accent transition-all font-sans text-sm;
+    @apply w-full px-5 py-4 bg-bg text-ink border-2 border-line rounded-xl focus:outline-none focus:border-accent transition-all font-sans text-base font-medium;
   }
 
   /* Force date picker icon visibility in dark theme */
@@ -73,7 +73,7 @@
   }
   
   .label-meta {
-    @apply text-[11px] text-muted font-mono font-bold uppercase tracking-wider;
+    @apply text-[12px] text-muted font-mono font-black uppercase tracking-[0.15em];
   }
 }
 

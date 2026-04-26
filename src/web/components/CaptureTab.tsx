@@ -303,11 +303,21 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
   return (
     <div className="pb-24 p-6 flex flex-col gap-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight">{t('capture')}</h2>
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-3xl font-bold tracking-tight">{t('capture')}</h2>
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${subStatus.isPro ? 'bg-yellow-500/20 text-yellow-500' : 'bg-accent/10 text-accent'}`}>
+              {subStatus.isPro ? 'PRO' : 'FREE'}
+            </span>
+            <span className="text-[10px] text-muted font-mono font-bold">
+              {subStatus.isPro ? 'UNLIMITED' : `USAGE: ${subStatus.usage}/${subStatus.limit}`}
+            </span>
+          </div>
+        </div>
         <button 
-          onClick={() => setShowBulkModal(false)} 
-          className="text-[11px] text-accent underline font-bold uppercase"
+          onClick={() => setShowBulkModal(true)} 
+          className="text-[12px] text-accent underline font-black uppercase mt-1"
         >
           {t('bulkImport')}
         </button>
@@ -334,10 +344,10 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           <button 
             onClick={handleExtensionSnap}
             disabled={isExtracting || isAtLimit}
-            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)]'} active:scale-95`}
+            className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)]'} active:scale-95`}
           >
-            {isExtracting ? <RefreshCw size={20} className="animate-spin" /> : <GlobeIcon size={20} />}
-            <span className="text-[11px] font-black tracking-tighter uppercase whitespace-pre-wrap text-center">{t('snapFromBrowser')}</span>
+            {isExtracting ? <RefreshCw size={24} className="animate-spin" /> : <GlobeIcon size={24} />}
+            <span className="text-[12px] font-black tracking-tighter uppercase whitespace-pre-wrap text-center">{t('snapFromBrowser')}</span>
           </button>
         )}
 
@@ -488,13 +498,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       {/* Category Selection */}
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
-          <label className="label-meta tracking-widest text-[11px]">Select Category</label>
+          <label className="label-meta tracking-widest text-[12px]">Select Category</label>
           <input 
             type="text"
             placeholder={lang === 'en' ? 'Search...' : 'Tìm kiếm...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-card border border-line rounded-lg px-3 py-1.5 text-xs w-32 focus:border-accent outline-none"
+            className="bg-card border-2 border-line rounded-xl px-4 py-2 text-sm w-40 focus:border-accent outline-none"
           />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1">
@@ -518,7 +528,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                 className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${selectedCategoryId === cat.id ? 'border-accent bg-accent/10 text-accent font-bold shadow-[0_0_10px_rgba(212,255,0,0.1)]' : 'border-line bg-card text-muted opacity-80'}`}
               >
                 <span className="text-sm">{cat.icon}</span>
-                <span className="text-[11px] uppercase tracking-tight truncate">
+                <span className="text-[12px] uppercase tracking-tight truncate font-bold">
                   {translate(cat.name, lang)}
                 </span>
                 </button>

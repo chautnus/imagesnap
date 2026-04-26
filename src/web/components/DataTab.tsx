@@ -16,6 +16,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
   const [view, setView] = useState<'categories' | 'names' | 'items' | 'search'>('categories');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedProdName, setSelectedProdName] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -148,32 +149,35 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
               {cat?.icon} {cat && translate(cat.name, lang)}
             </div>
           </div>
-          <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+          <div 
+            onClick={() => setSelectedProduct(item)}
+            className="flex-1 p-4 flex flex-col justify-between min-w-0 cursor-pointer hover:bg-accent/5 transition-colors"
+          >
             <div>
-              <div className="flex justify-between items-start mb-0.5">
-                <h3 className="font-bold text-sm truncate pr-2">{item.name}</h3>
+              <div className="flex justify-between items-start mb-1">
+                <h3 className="font-bold text-base truncate pr-2">{item.name}</h3>
               </div>
-              <div className="flex flex-wrap gap-1 mb-1">
+              <div className="flex flex-wrap gap-1.5 mb-2">
                 {item.tags.map(tag => (
-                  <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-white/5 text-muted-foreground uppercase rounded-sm border border-white/5">#{tag}</span>
+                  <span key={tag} className="text-[11px] px-2 py-0.5 bg-white/5 text-muted-foreground uppercase rounded-sm border border-white/5">#{tag}</span>
                 ))}
               </div>
             </div>
-            <div className="flex justify-between items-end border-t border-line/10 pt-2">
-              <div className="flex items-center gap-1.5 overflow-hidden">
-                <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[11px] font-black flex-none">
+            <div className="flex justify-between items-end border-t border-line/10 pt-3">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[12px] font-black flex-none">
                   {item.authorName?.charAt(0) || 'U'}
                 </div>
-                <span className="text-[11px] text-muted truncate max-w-[80px] font-medium">{item.authorName || 'Unknown'}</span>
+                <span className="text-[12px] text-muted truncate max-w-[100px] font-bold">{item.authorName || 'Unknown'}</span>
               </div>
-              <span className="text-[10px] text-muted opacity-50 font-mono whitespace-nowrap">{new Date(item.createdAt).toLocaleDateString()}</span>
+              <span className="text-[11px] text-muted opacity-50 font-mono whitespace-nowrap font-bold">{new Date(item.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
           <button 
             onClick={() => onDelete(item.id)}
-            className="absolute top-2 right-2 p-1 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-card/80 rounded"
+            className="absolute top-3 right-3 p-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-card/80 rounded-lg border border-line"
           >
-            <Trash2 size={12} />
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
@@ -184,16 +188,16 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
     return (
       <div className="pb-24 p-6 flex flex-col gap-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">{t('data')}</h2>
-          <span className="text-[10px] font-mono text-muted">{allFilteredProducts.length} ITEMS FOUND</span>
+          <h2 className="text-3xl font-black uppercase tracking-tight">{t('data')}</h2>
+          <span className="text-[12px] font-mono text-muted font-bold tracking-widest">{allFilteredProducts.length} ITEMS FOUND</span>
         </div>
         {renderSearchHeader()}
         <div className="grid grid-cols-1 gap-3">
           {allFilteredProducts.map((item, idx) => renderProductItem(item, idx))}
           {allFilteredProducts.length === 0 && (
-            <div className="py-12 flex flex-col items-center justify-center text-muted card border-dashed">
-              <Search size={32} className="opacity-20 mb-2" />
-              <p className="text-[10px] uppercase tracking-widest">No matching records</p>
+            <div className="py-16 flex flex-col items-center justify-center text-muted card border-dashed border-2 border-line/50">
+              <Search size={48} className="opacity-10 mb-4" />
+              <p className="text-[12px] uppercase tracking-[0.3em] font-black">{t('noResults') || 'No matching records'}</p>
             </div>
           )}
         </div>
@@ -209,7 +213,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
 
     return (
       <div className="pb-24 p-6 flex flex-col gap-6">
-        <h2 className="text-2xl font-bold">{t('data')}</h2>
+        <h2 className="text-3xl font-black uppercase tracking-tight">{t('data')}</h2>
         {renderSearchHeader()}
         <div className="grid grid-cols-2 gap-3">
           {categories.filter(c => !c._deleted).map((cat, idx) => (
@@ -276,24 +280,90 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
     );
   }
 
+  if (selectedProduct) {
+    const cat = categories.find(c => c.id === selectedProduct.categoryId);
+    return (
+      <div className="pb-24 p-6 flex flex-col gap-8">
+        <div className="flex items-center gap-3 text-muted text-[12px] font-black uppercase tracking-[0.2em] mb-2">
+          <button onClick={() => setSelectedProduct(null)} className="hover:text-accent flex items-center gap-1">
+             <X size={14} /> {t('back')}
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{cat?.icon}</span>
+              <h2 className="text-3xl font-black tracking-tight uppercase">{selectedProduct.name}</h2>
+            </div>
+            <div className="label-meta">{cat && translate(cat.name, lang)} • {new Date(selectedProduct.createdAt).toLocaleString()}</div>
+          </div>
+
+          <div className="card p-6 flex flex-col gap-6 bg-accent/5 border-accent/20">
+            {cat?.fields.map(field => {
+              const value = selectedProduct.data[field.id];
+              return (
+                <div key={field.id} className="flex flex-col gap-1.5 border-b border-line/10 pb-4 last:border-0 last:pb-0">
+                  <label className="label-meta text-accent opacity-70">{translate(field.label, lang)}</label>
+                  <div className="text-lg font-medium leading-relaxed break-words">
+                    {field.type === 'url' ? (
+                      <a href={value} target="_blank" rel="noopener noreferrer" className="text-accent underline break-all font-mono text-sm">
+                        {value || '---'}
+                      </a>
+                    ) : (
+                      value || '---'
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h3 className="label-meta">Captured Images ({selectedProduct.images.length})</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {selectedProduct.images.map((img, i) => (
+                <a 
+                  key={i} 
+                  href={img} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="aspect-square bg-black rounded-2xl overflow-hidden border-2 border-line hover:border-accent transition-all group relative"
+                >
+                  <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest">Open in Drive</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (view === 'items') {
     const items = allFilteredProducts.filter(p => p.categoryId === selectedCatId && p.name === selectedProdName);
     const currentCat = categories.find(c => c.id === selectedCatId);
 
     return (
       <div className="pb-24 p-6 flex flex-col gap-6">
-        <div className="flex items-center gap-2 text-muted text-[10px] font-bold uppercase tracking-widest overflow-x-auto whitespace-nowrap">
+        <div className="flex items-center gap-2 text-muted text-[12px] font-bold uppercase tracking-widest overflow-x-auto whitespace-nowrap">
           <button onClick={() => setView('categories')}>DATA</button>
-          <ChevronRight size={12} className="flex-none" />
+          <ChevronRight size={14} className="flex-none" />
           <button onClick={() => setView('names')}>{currentCat && translate(currentCat.name, lang)}</button>
-          <ChevronRight size={12} className="flex-none" />
+          <ChevronRight size={14} className="flex-none" />
           <span className="text-accent truncate">{selectedProdName}</span>
         </div>
 
-        <h2 className="text-2xl font-bold">{selectedProdName}</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl font-black uppercase tracking-tight">{selectedProdName}</h2>
+          <span className="text-[10px] font-mono text-muted">[{items.length}]</span>
+        </div>
         {renderSearchHeader()}
 
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 gap-4">
           {items.map((item, idx) => renderProductItem(item, idx))}
         </div>
       </div>
