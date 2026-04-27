@@ -345,6 +345,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             </span>
           </div>
         </div>
+        <button 
+          onClick={() => setShowBulkModal(true)} 
           className="text-[12px] text-accent underline font-black uppercase mt-1"
         >
           {t('bulkImport')}
