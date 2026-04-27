@@ -228,17 +228,33 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const streamRef = useRef<MediaStream | null>(null);
 
   const startCamera = async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Trình duyệt này không hỗ trợ Live Camera hoặc bạn đang không sử dụng HTTPS. Hãy dùng nút FAST_CAM bên cạnh để thay thế.");
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment', width: { ideal: 1920 } } 
+        video: { 
+          facingMode: 'environment', 
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.play().catch(e => console.warn("Auto-play failed:", e));
       }
       setIsCameraOpen(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Camera error:", err);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        alert("Quyền truy cập Camera bị chặn. Hãy kiểm tra cài đặt trình duyệt hoặc dùng nút FAST_CAM.");
+      } else {
+        alert("Không thể khởi động Camera. Hãy thử dùng nút FAST_CAM.");
+      }
     }
   };
 
