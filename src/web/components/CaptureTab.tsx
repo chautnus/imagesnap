@@ -24,7 +24,8 @@ interface CaptureTabProps {
   importedMetadata?: ProductMetadata;
   onClearInitialImages?: () => void;
   onClearImportedUrl?: () => void;
-  onClearImportedMetadata?: () => void;
+  onClearImportedMetadata: () => void;
+  onSaveCategory?: (cat: Category) => Promise<void>;
 }
 
 export const CaptureTab: React.FC<CaptureTabProps> = ({ 
@@ -40,9 +41,10 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   importedMetadata = {} as ProductMetadata,
   onClearInitialImages,
   onClearImportedUrl,
-  onClearImportedMetadata
+  onClearImportedMetadata,
+  onSaveCategory
 }) => {
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>(initialImages || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [recentCatIds, setRecentCatIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('ps_recent_cats');
@@ -51,6 +53,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(() => {
     return recentCatIds[0] || categories[0]?.id || null;
   });
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
 
   useEffect(() => {
     if (selectedCategoryId) {
@@ -81,7 +85,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             return newData;
           });
         }
-        // Clear only after we've had a chance to apply it to the active category
         if (onClearImportedUrl) onClearImportedUrl();
       }
     }
@@ -97,23 +100,19 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           cat.fields.forEach(f => {
             const label = translate(f.label, lang).toLowerCase();
             
-            // Map Title
             if (importTitle && !newData[f.id]) {
               if (f.type === 'key' || label.includes('tên') || label.includes('name') || label.includes('title')) {
                 newData[f.id] = importTitle;
               }
             }
 
-            // Map Price
             if (importPrice && !newData[f.id]) {
               if (f.type === 'number' || label.includes('giá') || label.includes('price')) {
-                // Try to extract only numbers for price fields
                 const priceMatch = importPrice.match(/[\d.]+/);
                 newData[f.id] = priceMatch ? priceMatch[0] : importPrice;
               }
             }
 
-            // Map Description
             if (importDesc && !newData[f.id]) {
               if (label.includes('mô tả') || label.includes('description') || label.includes('desc')) {
                 newData[f.id] = importDesc;
@@ -135,7 +134,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [isExtracting, setIsExtracting] = useState(false);
   const [keySearchFocus, setKeySearchFocus] = useState<string | null>(null);
   
-  // Image Picker States
   const [showPicker, setShowPicker] = useState(false);
   const [extractedImages, setExtractedImages] = useState<{url: string, type: string, width: number, height: number, alt: string}[]>([]);
   const [pickerSelection, setPickerSelection] = useState<Set<string>>(new Set());
@@ -147,15 +145,30 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab?.id) {
-          await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['content.js']
-          });
+          // Check for restricted URLs
+          if (tab.url?.startsWith('chrome://') || tab.url?.startsWith('edge://') || tab.url?.startsWith('about:') || tab.url?.startsWith('https://chrome.google.com/webstore')) {
+            alert("TRANG WEB BỊ CHẶN: Trình duyệt không cho phép Extension truy cập vào các trang hệ thống (Cài đặt, Tab mới, Web Store...). Vui lòng sử dụng tính năng này trên các trang web mua sắm hoặc tin tức.");
+            setIsExtracting(false);
+            return;
+          }
+
+          try {
+            await chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              files: ['content.js']
+            });
+          } catch (e) {
+            console.error("Script injection failed", e);
+            alert("KHÔNG THỂ TRUY CẬP TRANG: Trang web này chặn các tiện ích mở rộng hoặc chưa được tải xong. Vui lòng thử lại hoặc tải lại trang.");
+            setIsExtracting(false);
+            return;
+          }
 
           chrome.tabs.sendMessage(tab.id, { action: "extract" }, (response) => {
             if (chrome.runtime.lastError) {
               console.error(chrome.runtime.lastError);
-              alert(t('noActiveTab'));
+              alert("LỖI KẾT NỐI: Không thể liên lạc với trang web. Vui lòng F5 (Tải lại) trang web bạn muốn lấy ảnh và thử lại.");
+              setIsExtracting(false);
               return;
             }
             if (response) {
@@ -163,13 +176,12 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
               
               if (extImgs && extImgs.length > 0) {
                 setExtractedImages(extImgs);
-                setPickerSelection(new Set()); // Bỏ tự động chọn nhóm MAIN
+                setPickerSelection(new Set());
                 setShowPicker(true);
               } else {
                 alert(t('noImagesFound'));
               }
               
-              // Apply metadata mapping logic (Keep existing logic)
               if (selectedCategoryId && categories.length > 0) {
                 const cat = categories.find(c => c.id === selectedCategoryId);
                 if (cat) {
@@ -251,9 +263,11 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     } catch (err: any) {
       console.error("Camera error:", err);
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        alert("Quyền truy cập Camera bị chặn. Hãy kiểm tra cài đặt trình duyệt hoặc dùng nút FAST_CAM.");
+        alert("QUYỀN CAMERA BỊ CHẶN: Vui lòng vào cài đặt trình duyệt, tìm mục ImageSnap và chọn 'Allow Camera' sau đó thử lại.");
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        alert("KHÔNG TÌM THẤY CAMERA: Vui lòng kiểm tra xem thiết bị của bạn có Camera hoạt động không.");
       } else {
-        alert("Không thể khởi động Camera. Hãy thử dùng nút FAST_CAM.");
+        alert("LỖI CAMERA: " + (err.message || "Không thể khởi động camera. Hãy thử sử dụng nút FAST_CAM."));
       }
     }
   };
@@ -312,8 +326,16 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   return (
     <div className="pb-24 p-6 flex flex-col gap-6">
       <div className="flex justify-between items-start">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col">
           <h2 className="text-3xl font-bold tracking-tight">{t('capture')}</h2>
+          <button 
+            onClick={() => window.open('https://www.imagesnap.cloud/guide', '_blank')}
+            className="text-[10px] text-accent font-black uppercase tracking-widest mt-1 flex items-center gap-1 hover:underline"
+          >
+            <GlobeIcon size={10} /> User Guide & Documentation
+          </button>
+        </div>
+        <div className="flex flex-col items-end gap-1">
           <div className="flex items-center gap-2">
             <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${subStatus.isPro ? 'bg-yellow-500/20 text-yellow-500' : 'bg-accent/10 text-accent'}`}>
               {subStatus.isPro ? 'PRO' : 'FREE'}
@@ -323,8 +345,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             </span>
           </div>
         </div>
-        <button 
-          onClick={() => setShowBulkModal(true)} 
           className="text-[12px] text-accent underline font-black uppercase mt-1"
         >
           {t('bulkImport')}
@@ -628,7 +648,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           <div className="flex items-center gap-3">
             <label className="label-meta tracking-widest text-[12px]">Select Category</label>
             <button 
-              onClick={() => (window as any).switchToSettings && (window as any).switchToSettings('category-new')}
+              onClick={() => setShowQuickAdd(true)}
               className="flex items-center gap-1 text-[10px] font-black text-accent bg-accent/10 px-2 py-1 rounded-lg border border-accent/20 hover:bg-accent/20 transition-all"
             >
               <Plus size={12} /> NEW
@@ -639,7 +659,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             placeholder={lang === 'en' ? 'Search...' : 'Tìm kiếm...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-card border-2 border-line rounded-xl px-4 py-2 text-sm w-36 focus:border-accent outline-none"
+            className="bg-card border-2 border-line rounded-xl px-4 py-2 text-sm w-36 focus:border-accent outline-none font-bold"
           />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1">
@@ -772,6 +792,69 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           </button>
         </motion.div>
       )}
+      {/* Quick Add Category Modal */}
+      <AnimatePresence>
+        {showQuickAdd && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="card w-full max-w-sm p-8 flex flex-col gap-6 shadow-2xl border-accent/20 bg-card"
+            >
+              <div className="text-center">
+                <h3 className="text-2xl font-black uppercase tracking-tight">Quick Add Category</h3>
+                <p className="text-muted text-[10px] font-bold uppercase mt-1">Create a new registry folder</p>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="label-meta">CATEGORY_NAME</label>
+                  <input 
+                    type="text" 
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    placeholder="e.g. Shoes, Electronics..."
+                    className="input font-bold"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="label-meta">ICON / EMOJI</label>
+                  <input 
+                    type="text" 
+                    value={newCatIcon}
+                    onChange={(e) => setNewCatIcon(e.target.value)}
+                    className="input text-center text-2xl"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setShowQuickAdd(false)} className="btn btn-secondary flex-1 font-black">CANCEL</button>
+                <button 
+                  onClick={async () => {
+                    if (!newCatName || !onSaveCategory) return;
+                    const cat: Category = {
+                      id: `cat_${Date.now()}`,
+                      name: newCatName,
+                      icon: newCatIcon,
+                      fields: [{ id: `k_${Date.now()}`, label: 'Product ID', type: 'key', required: true }],
+                      updatedAt: new Date().toISOString()
+                    };
+                    await onSaveCategory(cat);
+                    setShowQuickAdd(false);
+                    setNewCatName('');
+                    setSelectedCategoryId(cat.id);
+                  }}
+                  className="btn btn-primary flex-1 font-black"
+                >
+                  CREATE
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -19,6 +19,7 @@ interface SettingsTabProps {
   user: any;
   subStatus: SubscriptionStatus;
   onUpgrade: () => void;
+  onLogout: () => void;
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ 
@@ -31,7 +32,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   t,
   user,
   subStatus,
-  onUpgrade
+  onUpgrade,
+  onLogout
 }) => {
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Category>>({});
@@ -425,12 +427,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
       {/* Logout */}
       <button 
-        onClick={() => {
-          localStorage.removeItem('ps_sheet_id');
-          revokeToken();
-          window.location.reload();
-        }}
-        className="btn btn-secondary mt-12 border-red-900 text-red-500 flex items-center justify-center gap-3 grayscale hover:grayscale-0"
+        onClick={onLogout}
+        className="btn btn-secondary mt-12 border-red-900/30 text-red-500 flex items-center justify-center gap-3 grayscale hover:grayscale-0 bg-red-500/5"
       >
         <LogOut size={18} />
         TERMINATE_SESSION

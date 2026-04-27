@@ -201,31 +201,40 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-20 max-w-md mx-auto relative bg-bg">
-      <header className="px-6 py-8 flex bg-bg items-center justify-between">
+      <header className="px-6 py-6 flex bg-bg items-center justify-between border-b border-white/5 shadow-xl">
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <div className="label-meta text-accent mb-0.5">V5.1_STABLE</div>
-            {subStatus.isPro && (
-              <div className="px-2 py-0.5 bg-yellow-500/20 text-yellow-500 text-[10px] font-black rounded-full flex items-center gap-1 border border-yellow-500/30">
-                <Crown size={10} /> PRO
-              </div>
-            )}
+             <div className="w-5 h-5 bg-accent rounded flex items-center justify-center">
+               <ImageIcon size={12} className="text-bg fill-current" />
+             </div>
+             <span className="text-[10px] font-black tracking-widest text-white uppercase italic">ImageSnap_</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            ImageSnap<span className="text-accent">_</span>
+          <h1 className="text-2xl font-black tracking-tighter mt-1">
+             {activeTab.toUpperCase()}
           </h1>
         </div>
-        <div className="flex flex-col items-end gap-2">
+
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-1.5">
+               <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${subStatus.isAdmin ? 'bg-accent text-bg' : 'bg-blue-500 text-white'}`}>
+                 {subStatus.isAdmin ? 'ADMIN' : 'STAFF'}
+               </span>
+               <span className="text-[11px] font-bold text-white max-w-[120px] truncate">
+                 {user?.email || user?.username || 'OFFLINE'}
+               </span>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+               {subStatus.isPro && <span className="text-[8px] font-black text-yellow-500 flex items-center gap-0.5"><Crown size={8} /> PRO</span>}
+               <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-muted animate-pulse' : 'bg-accent shadow-[0_0_8px_var(--accent)]'}`} />
+            </div>
+          </div>
           <button 
              onClick={() => window.open(window.location.origin, '_blank')}
-             title="Open Standalone"
-             className="w-8 h-8 rounded-full border border-accent/30 flex items-center justify-center text-accent hover:bg-accent hover:text-bg transition-colors shadow-[0_0_10px_rgba(212,255,0,0.1)]"
+             className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center text-muted hover:text-accent hover:border-accent/30 transition-all bg-card"
           >
-            <ExternalLink size={16} />
+            <ExternalLink size={18} />
           </button>
-          <div className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-widest ${isSyncing ? 'bg-muted/20 text-muted' : 'bg-accent/10 text-accent'}`}>
-            {isSyncing ? 'SYNCING' : 'ONLINE'}
-          </div>
         </div>
       </header>
  
@@ -254,6 +263,7 @@ export default function App() {
             onClearInitialImages={() => setImportedImages([])}
             onClearImportedUrl={() => setImportedUrl('')}
             onClearImportedMetadata={() => setImportedMetadata({})}
+            onSaveCategory={handleSaveCategory}
           />
         )}
         {activeTab === 'data' && (
@@ -278,6 +288,13 @@ export default function App() {
             user={user}
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
+            onLogout={() => {
+              revokeToken();
+              setUser(null);
+              setAccessToken(null);
+              setView('landing');
+              window.location.reload();
+            }}
           />
         )}
       </main>

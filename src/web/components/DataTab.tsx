@@ -6,8 +6,10 @@ import { translate } from '@shared/lib/translations';
 import { ExternalLink } from 'lucide-react';
 
 const getDriveThumbnail = (url: string) => {
-  if (!url || !url.includes('drive.google.com')) return url;
-  // Extract file ID using a more robust regex (match alphanumeric ID string)
+  if (!url) return '';
+  if (url.startsWith('data:')) return url;
+  if (!url.includes('drive.google.com')) return url;
+  
   const match = url.match(/[-\w]{25,}/);
   if (match) {
     return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w600`;
@@ -169,28 +171,28 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
           <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
             <div>
               <div className="flex justify-between items-start mb-1">
-                <h3 className="font-bold text-base truncate pr-2">{item.name}</h3>
+                <h3 className="font-black text-base truncate pr-2 text-white">{item.name}</h3>
               </div>
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {item.tags.map(tag => (
-                  <span key={tag} className="text-[11px] px-2 py-0.5 bg-white/5 text-muted-foreground uppercase rounded-sm border border-white/5">#{tag}</span>
+                  <span key={tag} className="text-[10px] px-2 py-0.5 bg-accent/10 text-accent uppercase rounded font-black border border-accent/20">#{tag}</span>
                 ))}
               </div>
             </div>
             <div className="flex justify-between items-end border-t border-line/10 pt-3">
               <div className="flex items-center gap-2 overflow-hidden">
-                <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[12px] font-black flex-none">
-                  {item.authorName?.charAt(0) || 'U'}
+                <div className="w-6 h-6 rounded-lg bg-accent text-bg flex items-center justify-center text-[10px] font-black flex-none">
+                  {item.authorName?.charAt(0).toUpperCase() || 'U'}
                 </div>
-                <span className="text-[12px] text-muted truncate max-w-[100px] font-bold">{item.authorName || 'Unknown'}</span>
+                <span className="text-[11px] text-white font-bold truncate max-w-[100px]">{item.authorName || 'User'}</span>
               </div>
-              <span className="text-[11px] text-muted opacity-50 font-mono whitespace-nowrap font-bold">{new Date(item.createdAt).toLocaleDateString()}</span>
+              <span className="text-[10px] text-muted font-mono whitespace-nowrap font-black">{new Date(item.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
           {isAdmin && (
             <button 
-              onClick={() => onDelete(item.id)}
-              className="absolute top-3 right-3 p-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-card/80 rounded-lg border border-line"
+              onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+              className="absolute top-3 right-3 p-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-card/80 backdrop-blur-md rounded-lg border border-line"
             >
               <Trash2 size={16} />
             </button>

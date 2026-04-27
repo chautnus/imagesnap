@@ -1,16 +1,18 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=Inter:wght@400;700&display=swap');
 
 @theme {
   --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display: "Outfit", "Inter", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-bg: #0A0A0C;
-  --color-ink: #FFFFFF;
-  --color-accent: #D4FF00;
-  --color-line: #1F1F23;
-  --color-card: #141417;
-  --color-muted: #8E8E93;
+  --color-bg: #0a0a0c;
+  --color-ink: #ffffff;
+  --color-accent: #d4ff00;
+  --color-line: #1f1f27;
+  --color-card: #121217;
+  --color-muted: #a1a1aa;
+  --color-accent-soft: rgba(212, 255, 0, 0.1);
 
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;

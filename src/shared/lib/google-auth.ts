@@ -146,12 +146,20 @@ export const setAccessToken = (token: string | null) => {
 };
 
 export const revokeToken = () => {
-  if (!accessToken) return;
-  const google = (window as any).google;
-  if (!google) return;
-  // @ts-ignore
-  google.accounts.oauth2.revoke(accessToken, () => {
-    accessToken = null;
-    localStorage.removeItem('ps_access_token');
-  });
+  const currentToken = accessToken;
+  accessToken = null;
+  localStorage.removeItem('ps_access_token');
+  localStorage.removeItem('ps_staff_token');
+  localStorage.removeItem('ps_staff_email');
+  localStorage.removeItem('ps_is_staff');
+  
+  if (currentToken) {
+    const google = (window as any).google;
+    if (google && google.accounts && google.accounts.oauth2) {
+      // @ts-ignore
+      google.accounts.oauth2.revoke(currentToken, () => {
+        console.log('Token revoked from Google');
+      });
+    }
+  }
 };
