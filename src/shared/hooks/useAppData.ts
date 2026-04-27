@@ -6,7 +6,7 @@ import { saveCategory, deleteCategory } from '../services/categoryService';
 import { appendRow } from '../lib/sheets';
 
 const API_BASE_URL = (typeof window !== 'undefined' && (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:')) 
-  ? 'https://imagesnap.cloud' 
+  ? 'https://www.imagesnap.cloud' 
   : '';
 
 const DEFAULT_CATEGORIES: Category[] = [

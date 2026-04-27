@@ -5,7 +5,7 @@ import { revokeToken, getAccessToken } from '@shared/lib/google-auth';
 import { translate } from '@shared/lib/translations';
 
 const API_BASE_URL = (typeof window !== 'undefined' && (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:')) 
-  ? 'https://imagesnap.cloud' 
+  ? 'https://www.imagesnap.cloud' 
   : '';
 
 interface SettingsTabProps {

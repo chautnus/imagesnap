@@ -3,7 +3,7 @@ import { User, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const API_BASE_URL = (typeof window !== 'undefined' && (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:')) 
-  ? 'https://imagesnap.cloud' 
+  ? 'https://www.imagesnap.cloud' 
   : '';
 
 interface StaffLoginProps {

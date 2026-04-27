@@ -227,7 +227,7 @@ async function startServer() {
       const { data, error } = await createCheckout(storeId, variantId, {
         checkoutData: { email },
         productOptions: {
-          redirectUrl: `${process.env.APP_URL || "https://imagesnap.cloud"}?success=true`,
+          redirectUrl: `${process.env.APP_URL || "https://www.imagesnap.cloud"}?success=true`,
         },
       });
 

@@ -33,7 +33,8 @@
     "https://www.googleapis.com/drive/*",
     "https://www.googleapis.com/oauth2/*",
     "https://www.googleapis.com/userinfo/*",
-    "https://lh3.googleusercontent.com/*"
+    "https://lh3.googleusercontent.com/*",
+    "https://www.imagesnap.cloud/*"
   ],
   "oauth2": {
     "client_id": "495332791945-jshf9fvhe496jfbanig1qd2c7utl28up.apps.googleusercontent.com",

@@ -18,7 +18,7 @@ import { ExternalLink, Crown } from 'lucide-react';
 import { SubscriptionStatus } from '@shared/lib/types';
 
 const API_BASE_URL = (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:') 
-  ? 'https://imagesnap.cloud' 
+  ? 'https://www.imagesnap.cloud' 
   : '';
 
 export default function App() {
