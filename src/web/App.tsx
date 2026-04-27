@@ -289,11 +289,21 @@ export default function App() {
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
             onLogout={() => {
-              revokeToken();
+              // 1. Clear memory state
               setUser(null);
+              setSpreadsheetId(null);
               setAccessToken(null);
+              setIsStaff(false);
+              
+              // 2. Clear storage synchronously
+              localStorage.clear(); // Clear all to be absolutely sure
+              
+              // 3. Revoke Google token
+              revokeToken();
+              
+              // 4. Reset view and reload
               setView('landing');
-              window.location.reload();
+              window.location.href = window.location.origin; // Hard redirect
             }}
           />
         )}
