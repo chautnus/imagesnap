@@ -625,13 +625,21 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       {/* Category Selection */}
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
-          <label className="label-meta tracking-widest text-[12px]">Select Category</label>
+          <div className="flex items-center gap-3">
+            <label className="label-meta tracking-widest text-[12px]">Select Category</label>
+            <button 
+              onClick={() => (window as any).switchToSettings && (window as any).switchToSettings('category-new')}
+              className="flex items-center gap-1 text-[10px] font-black text-accent bg-accent/10 px-2 py-1 rounded-lg border border-accent/20 hover:bg-accent/20 transition-all"
+            >
+              <Plus size={12} /> NEW
+            </button>
+          </div>
           <input 
             type="text"
             placeholder={lang === 'en' ? 'Search...' : 'Tìm kiếm...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-card border-2 border-line rounded-xl px-4 py-2 text-sm w-40 focus:border-accent outline-none"
+            className="bg-card border-2 border-line rounded-xl px-4 py-2 text-sm w-36 focus:border-accent outline-none"
           />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1">

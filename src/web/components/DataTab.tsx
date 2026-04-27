@@ -26,7 +26,7 @@ interface DataTabProps {
 
 export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete, t, lang, subStatus }) => {
   const [view, setView] = useState<'categories' | 'names' | 'items' | 'search'>('categories');
-  const isAdmin = subStatus?.role === 'admin';
+  const isAdmin = subStatus?.isAdmin || subStatus?.role === 'admin';
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedProdName, setSelectedProdName] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -208,7 +208,6 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
           <button onClick={() => setSelectedProduct(null)} className="hover:text-accent flex items-center gap-1">
              <X size={14} /> {t('back')}
           </button>
-          {!isAdmin && <span className="ml-auto px-2 py-0.5 bg-accent/10 text-accent rounded text-[10px]">VIEW ONLY</span>}
         </div>
 
         <div className="flex flex-col gap-6">

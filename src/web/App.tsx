@@ -42,6 +42,7 @@ export default function App() {
   } = useAppData(spreadsheetId, user);
 
   useEffect(() => {
+    (window as any).switchToSettings = () => setActiveTab('settings');
     const handleInit = () => {
       initGis(async (token) => {
         setAccessToken(token);
