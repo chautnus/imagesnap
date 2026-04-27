@@ -7,11 +7,10 @@ import { ExternalLink } from 'lucide-react';
 
 const getDriveThumbnail = (url: string) => {
   if (!url || !url.includes('drive.google.com')) return url;
-  // Extract file ID from webViewLink
-  // Format: https://drive.google.com/file/d/FILE_ID/view?usp=drivesdk
-  const match = url.match(/\/d\/(.+?)\//);
-  if (match && match[1]) {
-    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w600`;
+  // Extract file ID using a more robust regex (match alphanumeric ID string)
+  const match = url.match(/[-\w]{25,}/);
+  if (match) {
+    return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w600`;
   }
   return url;
 };
@@ -147,13 +146,17 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
   const renderProductItem = (item: Product, idx: number) => {
     const cat = categories.find(c => c.id === item.categoryId);
     return (
-      <div key={item.id} className="card group hover:border-accent/40 transition-all">
+      <div 
+        key={item.id} 
+        onClick={() => setSelectedProduct(item)}
+        className="card group hover:border-accent/40 transition-all cursor-pointer"
+      >
         <div className="flex h-28 relative">
           <div className="w-28 flex-none bg-black overflow-hidden relative">
             {item.images[0] ? (
               <img 
                 src={getDriveThumbnail(item.images[0])} 
-                className="w-full h-full object-cover transition-all duration-500" 
+                className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110" 
                 referrerPolicy="no-referrer"
               />
             ) : (
@@ -163,10 +166,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
               {cat?.icon} {cat && translate(cat.name, lang)}
             </div>
           </div>
-          <div 
-            onClick={() => setSelectedProduct(item)}
-            className="flex-1 p-4 flex flex-col justify-between min-w-0 cursor-pointer hover:bg-accent/5 transition-colors"
-          >
+          <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
             <div>
               <div className="flex justify-between items-start mb-1">
                 <h3 className="font-bold text-base truncate pr-2">{item.name}</h3>

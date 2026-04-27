@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
-import { LogOut, Globe, Plus, Trash2, Edit3, Save, X, ExternalLink, RefreshCw, Crown, CreditCard } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LogOut, Globe, Plus, Trash2, Edit3, Save, X, ExternalLink, RefreshCw, Crown, CreditCard, Shield, User as UserIcon, UserMinus, CheckSquare, Square, UserCheck } from 'lucide-react';
 import { Category, FieldDefinition, SubscriptionStatus } from '@shared/lib/types';
-import { revokeToken } from '@shared/lib/google-auth';
+import { revokeToken, getAccessToken } from '@shared/lib/google-auth';
 import { translate } from '@shared/lib/translations';
+
+const API_BASE_URL = (typeof window !== 'undefined' && (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:')) 
+  ? 'https://imagesnap.cloud' 
+  : '';
 
 interface SettingsTabProps {
   categories: Category[];
@@ -34,6 +38,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [users, setUsers] = useState<Record<string, any>>({});
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [managingUserEmail, setManagingUserEmail] = useState<string | null>(null);
+  const [showStaffForm, setShowStaffForm] = useState(false);
+  const [staffUsername, setStaffUsername] = useState('');
+  const [staffPassword, setStaffPassword] = useState('');
 
   useEffect(() => {
     if (subStatus.isAdmin && user?.email) {
@@ -44,7 +52,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const fetchUsers = async () => {
     setIsLoadingUsers(true);
     try {
-      const res = await fetch(`/api/admin/users?adminEmail=${encodeURIComponent(user.email)}`);
+      const res = await fetch(`${API_BASE_URL}/api/admin/users?adminEmail=${encodeURIComponent(user.email)}`);
       const data = await res.json();
       setUsers(data);
     } catch (e) { console.error("Fetch users error", e); }
@@ -53,7 +61,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
   const handleUpdateUser = async (targetEmail: string, updates: any) => {
     try {
-      await fetch('/api/admin/update-user', {
+      await fetch(`${API_BASE_URL}/api/admin/update-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminEmail: user.email, targetEmail, updates })
@@ -65,7 +73,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const handleDeleteUser = async (targetEmail: string) => {
     if (!confirm(`Delete user ${targetEmail}?`)) return;
     try {
-      await fetch('/api/admin/delete-user', {
+      await fetch(`${API_BASE_URL}/api/admin/delete-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminEmail: user.email, targetEmail })
@@ -143,12 +151,23 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 style={{ width: subStatus.isPro ? '100%' : `${Math.min(100, (subStatus.usage / subStatus.limit) * 100)}%` }}
               />
             </div>
-            {!subStatus.isPro && (
-              <p className="text-[12px] text-muted-foreground opacity-80 leading-relaxed font-medium">
-                {lang === 'en' 
-                  ? 'Your current plan allows up to 30 snaps per month. PRO users enjoy unlimited data capture and marketplace integration.' 
-                  : 'Gói hiện tại của bạn giới hạn 30 lượt lưu mỗi tháng. Nâng cấp PRO để lưu không giới hạn và dùng các tính năng nâng cao.'}
-              </p>
+            
+            {subStatus.isAdmin && (
+              <button 
+                onClick={async () => {
+                  const token = getAccessToken();
+                  if (!token || !spreadsheetId) return;
+                  await fetch(`${API_BASE_URL}/api/admin/set-master-workspace`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminEmail: user.email, spreadsheetId, accessToken: token })
+                  });
+                  alert("Workspace Published! Staff can now save to your Drive.");
+                }}
+                className="w-full py-3 bg-accent text-bg font-black uppercase tracking-widest text-[10px] rounded shadow-[4px_4px_0_#000] hover:scale-[0.98] transition-transform"
+              >
+                PUBLISH AS MASTER WORKSPACE
+              </button>
             )}
           </div>
         </div>
@@ -173,10 +192,59 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center border-b border-line pb-2">
             <h2 className="label-meta tracking-[0.1em]">USER_DIRECTORY</h2>
-            <button onClick={fetchUsers} className="text-accent flex items-center gap-1 font-bold text-xs uppercase">
-              <RefreshCw size={14} className={isLoadingUsers ? 'animate-spin' : ''} /> REFRESH
-            </button>
+            <div className="flex gap-4">
+              <button onClick={() => setShowStaffForm(!showStaffForm)} className="text-accent flex items-center gap-1 font-bold text-xs uppercase">
+                <Plus size={14} /> ADD_STAFF
+              </button>
+              <button onClick={fetchUsers} className="text-accent flex items-center gap-1 font-bold text-xs uppercase">
+                <RefreshCw size={14} className={isLoadingUsers ? 'animate-spin' : ''} /> REFRESH
+              </button>
+            </div>
           </div>
+
+          <div className="p-3 bg-accent/5 border border-accent/20 rounded-lg text-[10px] font-mono text-accent">
+             STAFF_PORTAL: {window.location.origin}/#staff
+          </div>
+
+          {showStaffForm && (
+            <div className="card p-5 bg-accent/5 border-accent/30 flex flex-col gap-4">
+               <h3 className="font-bold text-sm uppercase">Create Staff Account</h3>
+               <div className="grid grid-cols-2 gap-3">
+                  <input 
+                    type="text" 
+                    placeholder="Username" 
+                    value={staffUsername}
+                    onChange={(e) => setStaffUsername(e.target.value)}
+                    className="input h-10 text-xs"
+                  />
+                  <input 
+                    type="password" 
+                    placeholder="Password" 
+                    value={staffPassword}
+                    onChange={(e) => setStaffPassword(e.target.value)}
+                    className="input h-10 text-xs"
+                  />
+               </div>
+               <button 
+                  onClick={async () => {
+                    if (!staffUsername || !staffPassword) return;
+                    await handleUpdateUser(`${staffUsername}@staff.imagesnap`, { 
+                      username: staffUsername, 
+                      password: staffPassword,
+                      role: 'staff',
+                      isPro: true, // Staff use Admin's PRO quota
+                      limit: 999999
+                    });
+                    setStaffUsername('');
+                    setStaffPassword('');
+                    setShowStaffForm(false);
+                  }}
+                  className="btn btn-primary py-2 text-xs"
+                >
+                  CREATE_ACCOUNT
+               </button>
+            </div>
+          )}
           
           <div className="flex flex-col gap-3">
             {Object.entries(users).map(([email, data]) => (
@@ -197,6 +265,13 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                    {email !== user.email && (
                      <>
                         <button 
+                          onClick={() => setManagingUserEmail(email)}
+                          className={`p-3 border border-line/20 rounded-lg transition-colors ${data.accessibleCategories ? 'text-accent bg-accent/5' : 'text-muted hover:text-accent'}`}
+                          title="Manage Category Access"
+                        >
+                          <UserCheck size={18} />
+                        </button>
+                        <button 
                           onClick={() => handleUpdateUser(email, { role: data.role === 'admin' ? 'user' : 'admin', isAdmin: data.role !== 'admin' })}
                           className="p-3 text-muted hover:text-accent transition-colors border border-line/20 rounded-lg"
                           title="Change Role"
@@ -215,6 +290,56 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Manage Category Access Modal */}
+      {managingUserEmail && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[110] flex items-center justify-center p-6">
+          <div className="card w-full max-w-sm p-8 flex flex-col gap-6 shadow-2xl border-line">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-2xl font-bold">Category Access</h3>
+              <span className="text-xs text-accent font-mono">{managingUserEmail}</span>
+            </div>
+
+            <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              {categories.filter(c => !c._deleted).map(cat => {
+                const userObj = users[managingUserEmail];
+                const isAccessible = !userObj.accessibleCategories || userObj.accessibleCategories.includes(cat.id);
+                
+                return (
+                  <button 
+                    key={cat.id}
+                    onClick={() => {
+                      let current = userObj.accessibleCategories || categories.filter(c => !c._deleted).map(c => c.id);
+                      if (current.includes(cat.id)) {
+                        current = current.filter((id: string) => id !== cat.id);
+                      } else {
+                        current = [...current, cat.id];
+                      }
+                      handleUpdateUser(managingUserEmail, { accessibleCategories: current });
+                    }}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all ${isAccessible ? 'border-accent/40 bg-accent/5' : 'border-line bg-white/5 opacity-50'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{cat.icon}</span>
+                      <span className="font-bold">{translate(cat.name, lang)}</span>
+                    </div>
+                    {isAccessible ? <CheckSquare size={20} className="text-accent" /> : <Square size={20} className="text-muted" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col gap-2 pt-2">
+              <p className="text-[10px] text-muted leading-tight uppercase font-black opacity-50">
+                * If no categories are selected, the user may see all by default or none based on system rules.
+              </p>
+              <button onClick={() => setManagingUserEmail(null)} className="btn btn-primary w-full py-4 mt-2 font-black uppercase tracking-widest">
+                DONE
+              </button>
+            </div>
           </div>
         </div>
       )}

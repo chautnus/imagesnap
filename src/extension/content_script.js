@@ -10,12 +10,24 @@ function upgrade(u) {
 }
 
 function extractImages() {
-  const groups = { 'MAIN': [], 'OTHERS': [], 'ICONS': [] };
+  const imageList = [];
   const allUrls = new Set();
   
   document.querySelectorAll('img').forEach((el) => {
+    // Try to get the highest resolution URL
     let s = el.currentSrc || el.src;
-    if (!s || !s.startsWith('http')) return;
+    
+    // Check for srcset (take the last/largest one)
+    if (el.srcset) {
+      const srcsetArr = el.srcset.split(',').map(s => s.trim().split(' ')[0]);
+      if (srcsetArr.length > 0) s = srcsetArr[srcsetArr.length - 1];
+    }
+    
+    // Check for data attributes commonly used for lazy loading high-res images
+    const dataSrc = el.getAttribute('data-src') || el.getAttribute('data-original') || el.getAttribute('data-lazy-src') || el.getAttribute('data-zoom-target');
+    if (dataSrc && dataSrc.startsWith('http')) s = dataSrc;
+
+    if (!s || !s.startsWith('http') || s.includes('base64')) return;
     s = upgrade(s);
     if (allUrls.has(s)) return;
     allUrls.add(s);
@@ -23,12 +35,28 @@ function extractImages() {
     const w = el.naturalWidth || el.width;
     const h = el.naturalHeight || el.height;
     
-    let group = 'OTHERS';
-    if (w < 50 || h < 50) group = 'ICONS';
-    else if (el.closest('[class*="product-single"], [class*="pdp"], [class*="product-main"], [id*="main-image"]')) group = 'MAIN';
-    else if (w > 400 || h > 400) group = 'MAIN';
+    // Ignore very small images that are likely trackers or spacers
+    if (w < 20 && h < 20) return;
 
-    groups[group].push(s);
+    const alt = el.alt || el.title || '';
+    const className = (el.className || '').toString().toLowerCase();
+    const id = (el.id || '').toString().toLowerCase();
+    const srcLower = s.toLowerCase();
+
+    let type = 'OTHERS';
+    
+    // Logic for classification (Improved)
+    if (className.includes('logo') || id.includes('logo') || srcLower.includes('logo') || alt.toLowerCase().includes('logo')) {
+      type = 'LOGO';
+    } else if (className.includes('banner') || id.includes('banner') || srcLower.includes('banner') || (w > 1000 && h < 600)) {
+      type = 'BANNER';
+    } else if (el.closest('[class*="product-single"], [class*="pdp"], [class*="product-main"], [id*="main-image"], [class*="gallery"]') || (w > 500 && h > 500)) {
+      type = 'MAIN';
+    } else if (w < 60 || h < 60) {
+      type = 'ICONS';
+    }
+
+    imageList.push({ url: s, type, width: w, height: h, alt });
   });
 
   const metadata = {};
@@ -43,7 +71,7 @@ function extractImages() {
     metadata.d = d.slice(0, 1000);
   } catch (e) {}
 
-  return { groups, metadata, url: window.location.href };
+  return { images: imageList, metadata, url: window.location.href };
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

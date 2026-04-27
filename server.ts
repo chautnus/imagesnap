@@ -25,8 +25,10 @@ if (fs.existsSync(DB_PATH)) {
   try {
     mockUserDb = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
   } catch (e) {
-    mockUserDb = {};
+    mockUserDb = { users: {}, config: {} };
   }
+} else {
+  mockUserDb = { users: {}, config: {} };
 }
 
 function saveDb() {
@@ -34,26 +36,49 @@ function saveDb() {
 }
 
 async function getSubscription(email: string) {
-  if (!mockUserDb[email]) {
+  if (!mockUserDb.users[email]) {
     // First user or specific email can be admin
-    const isFirst = Object.keys(mockUserDb).length === 0;
-    const adminEmails = ["chau.tnus@gmail.com", "admin@imagesnap.cloud"];
+    const isFirst = Object.keys(mockUserDb.users).length === 0;
+    const adminEmails = ["chautnus@gmail.com", "admin@imagesnap.cloud"];
     const isAdmin = isFirst || adminEmails.includes(email.toLowerCase());
     
-    mockUserDb[email] = { 
-      isPro: isAdmin, // Admins are PRO by default
+    mockUserDb.users[email] = { 
+      isPro: isAdmin, 
       isAdmin: isAdmin,
-      limit: isAdmin ? 999999 : 1, 
+      limit: isAdmin ? 999999 : 30, 
       usage: 0,
       role: isAdmin ? 'admin' : 'user'
     };
     saveDb();
   }
-  return mockUserDb[email];
+  return mockUserDb.users[email];
 }
 
 async function startServer() {
   const app = express();
+  
+  // CORS Middleware
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    
+    // Explicitly allow extension origins
+    if (origin && (origin.startsWith('chrome-extension://') || origin.startsWith('extension://') || origin.startsWith('ms-browser-extension://'))) {
+      res.header("Access-Control-Allow-Origin", origin);
+    } else {
+      res.header("Access-Control-Allow-Origin", "*");
+    }
+    
+    res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-signature");
+    res.header("Access-Control-Allow-Credentials", "true");
+    
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+      return res.status(200).send();
+    }
+    next();
+  });
+
   const PORT = Number(process.env.PORT) || 8080;
 
   // Middleware for parsing raw body (needed for webhooks)
@@ -98,7 +123,7 @@ async function startServer() {
     const status = await getSubscription(adminEmail || "");
     if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
     
-    res.json(mockUserDb);
+    res.json(mockUserDb.users);
   });
 
   app.post("/api/admin/update-user", async (req, res) => {
@@ -106,13 +131,13 @@ async function startServer() {
     const status = await getSubscription(adminEmail || "");
     if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
     
-    if (!mockUserDb[targetEmail]) {
-      mockUserDb[targetEmail] = { isPro: false, limit: 1, usage: 0, role: 'user' };
+    if (!mockUserDb.users[targetEmail]) {
+      mockUserDb.users[targetEmail] = { isPro: false, limit: 1, usage: 0, role: 'user' };
     }
     
-    mockUserDb[targetEmail] = { ...mockUserDb[targetEmail], ...updates };
+    mockUserDb.users[targetEmail] = { ...mockUserDb.users[targetEmail], ...updates };
     saveDb();
-    res.json(mockUserDb[targetEmail]);
+    res.json(mockUserDb.users[targetEmail]);
   });
 
   app.post("/api/admin/delete-user", async (req, res) => {
@@ -120,9 +145,71 @@ async function startServer() {
     const status = await getSubscription(adminEmail || "");
     if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
     
-    delete mockUserDb[targetEmail];
+    delete mockUserDb.users[targetEmail];
     saveDb();
     res.json({ success: true });
+  });
+
+  // --- STAFF & PROXY ROUTES ---
+
+  app.post("/api/admin/set-master-workspace", async (req, res) => {
+    const { adminEmail, spreadsheetId, accessToken } = req.body;
+    const status = await getSubscription(adminEmail || "");
+    if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
+
+    mockUserDb.config.masterSpreadsheetId = spreadsheetId;
+    mockUserDb.config.adminAccessToken = accessToken; // Note: expires, but used for immediate proxy
+    saveDb();
+    res.json({ success: true });
+  });
+
+  app.post("/api/auth/staff-login", async (req, res) => {
+    const { username, password } = req.body;
+    const userEntry = Object.values(mockUserDb.users).find((u: any) => u.username === username && u.password === password);
+    
+    if (!userEntry) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    res.json({ 
+      success: true, 
+      user: userEntry,
+      masterSpreadsheetId: mockUserDb.config.masterSpreadsheetId
+    });
+  });
+
+  app.post("/api/proxy/save-product", async (req, res) => {
+    const { spreadsheetId, product, base64Images, adminAccessToken } = req.body;
+    
+    // In a real app, we'd use a persistent Refresh Token. 
+    // Here we use the token passed from the client (Admin or Staff using Admin's token cached on server)
+    const token = adminAccessToken || mockUserDb.config.adminAccessToken;
+    
+    if (!token) return res.status(401).json({ error: "Admin must be active to proxy saves" });
+
+    try {
+      // 1. Upload images to Admin's Drive
+      // This part would normally call Google Drive API. 
+      // For simplicity in this proxy, we'll assume the client does the heavy lifting or we forward the request.
+      // Since client-side code is already written for Drive, we'll focus on the Sheets append proxy.
+      
+      const range = `${product.categoryName || 'Data'}!A2`;
+      const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ values: [Object.values(product)] })
+      });
+      
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error?.message || "Proxy error");
+      
+      res.json(result);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
   });
 
   app.post("/api/create-checkout-session", async (req, res) => {
@@ -165,7 +252,8 @@ async function startServer() {
     const email = payload.data.attributes.user_email;
 
     if (eventName === "order_created" || eventName === "subscription_created") {
-      mockUserDb[email] = {
+      mockUserDb.users[email] = {
+        ...mockUserDb.users[email],
         isPro: true,
         limit: 999999,
         updatedAt: new Date().toISOString()

@@ -5,6 +5,10 @@ import { saveProduct, deleteProduct } from '../services/productService';
 import { saveCategory, deleteCategory } from '../services/categoryService';
 import { appendRow } from '../lib/sheets';
 
+const API_BASE_URL = (typeof window !== 'undefined' && (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:')) 
+  ? 'https://imagesnap.cloud' 
+  : '';
+
 const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'plants',
@@ -70,19 +74,38 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     if (!spreadsheetId) return;
     setIsSyncing(true);
     try {
-      const { keyValue } = await saveProduct(
-        spreadsheetId,
-        product,
-        base64Images,
-        appData.categories,
-        user?.id,
-        user?.username
-      );
+      // Check if user is staff (staff email format)
+      const isStaff = user?.email?.endsWith('@staff.imagesnap');
 
-      // Also handle product naming suggestions
-      const existsInNames = appData.productNames.some(pn => pn.categoryId === product.categoryId && pn.name === keyValue);
-      if (!existsInNames) {
-        await appendRow(spreadsheetId, 'ProductNames!A2:B', [product.categoryId, keyValue]);
+      if (isStaff) {
+        // Staff Proxy Save
+        const res = await fetch(`${API_BASE_URL}/api/proxy/save-product`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            spreadsheetId, 
+            product, 
+            base64Images,
+            // The server will use the Admin's token stored in config
+          })
+        });
+        if (!res.ok) throw new Error("Staff Proxy save failed");
+      } else {
+        // Admin Direct Save
+        const { keyValue } = await saveProduct(
+          spreadsheetId,
+          product,
+          base64Images,
+          appData.categories,
+          user?.id,
+          user?.username
+        );
+
+        // Also handle product naming suggestions
+        const existsInNames = appData.productNames.some(pn => pn.categoryId === product.categoryId && pn.name === keyValue);
+        if (!existsInNames) {
+          await appendRow(spreadsheetId, 'ProductNames!A2:B', [product.categoryId, keyValue]);
+        }
       }
 
       await refreshData(spreadsheetId);
@@ -90,7 +113,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       // Increment usage on server
       if (user?.email) {
         try {
-          await fetch('/api/increment-usage', {
+          await fetch(`${API_BASE_URL}/api/increment-usage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: user.email })

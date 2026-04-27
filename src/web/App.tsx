@@ -5,6 +5,7 @@ import { DataTab } from './components/DataTab';
 import { SettingsTab } from './components/SettingsTab';
 import { Wizard } from './components/Wizard';
 import { LandingPage } from './components/LandingPage';
+import { StaffLogin } from './components/StaffLogin';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { initGis, getAccessToken, setAccessToken, getUserInfo, requestToken } from '@shared/lib/google-auth';
 import { 
@@ -16,11 +17,16 @@ import { useI18n } from '@shared/lib/i18n';
 import { ExternalLink, Crown } from 'lucide-react';
 import { SubscriptionStatus } from '@shared/lib/types';
 
+const API_BASE_URL = (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:') 
+  ? 'https://imagesnap.cloud' 
+  : '';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings'>('capture');
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [view, setView] = useState<'app' | 'landing' | 'privacy'>('landing');
   const [user, setUser] = useState<any>(null);
+  const [isStaff, setIsStaff] = useState(false);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(localStorage.getItem('ps_sheet_id'));
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
   
@@ -46,7 +52,6 @@ export default function App() {
              setIsAuthReady(true);
              setView('app');
              fetchSubStatus(profile.email);
-             // Use existing sheet ID if possible to avoid "reconnecting"
              const storedId = localStorage.getItem('ps_sheet_id');
              if (storedId) {
                setSpreadsheetId(storedId);
@@ -65,7 +70,11 @@ export default function App() {
       });
     };
 
-    if ((window as any).google) {
+    // If in extension, we can init immediately as initGis handles both cases
+    // @ts-ignore
+    const isExtension = !!(window.chrome && window.chrome.identity);
+
+    if (isExtension || (window as any).google) {
       handleInit();
     } else {
       window.addEventListener('load', handleInit);
@@ -125,17 +134,24 @@ export default function App() {
   };
 
   const fetchSubStatus = async (email: string) => {
+    // Client-side fallback for main admin
+    const isAdmin = email.toLowerCase() === 'chautnus@gmail.com' || email.toLowerCase() === 'admin@imagesnap.cloud';
+    
     try {
-      const res = await fetch(`/api/user-status?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`${API_BASE_URL}/api/user-status?email=${encodeURIComponent(email)}`);
       const data = await res.json();
-      setSubStatus(data);
-    } catch (e) { console.error("Sub status fetch fail", e); }
+      setSubStatus({ ...data, isAdmin: data.isAdmin || isAdmin });
+    } catch (e) { 
+      console.error("Sub status fetch fail", e);
+      // Use fallback if fetch fails
+      setSubStatus(prev => ({ ...prev, isAdmin }));
+    }
   };
 
   const handleUpgrade = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch('/api/create-checkout-session', {
+      const res = await fetch(`${API_BASE_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email })
@@ -148,6 +164,16 @@ export default function App() {
     }
   };
 
+  const handleStaffLogin = (data: { username: string, masterSpreadsheetId: string, user: any }) => {
+    setUser({ ...data.user, email: `${data.username}@staff.imagesnap` });
+    setIsStaff(true);
+    setSpreadsheetId(data.masterSpreadsheetId);
+    setIsAuthReady(true);
+    setView('app');
+    // Refresh data from the master spreadsheet
+    refreshData(data.masterSpreadsheetId);
+  };
+
   if (view === 'privacy') {
     return <PrivacyPolicy onBack={() => {
       window.location.hash = '';
@@ -156,12 +182,21 @@ export default function App() {
   }
 
   if (view === 'landing' && !user) {
+    if (window.location.hash === '#staff') {
+      return <StaffLogin onLogin={handleStaffLogin} onBack={() => window.location.hash = ''} t={t} />;
+    }
     return <LandingPage onLogin={() => requestToken()} t={t} />;
   }
 
   if (!isAuthReady) {
     return <Wizard t={t} />;
   }
+
+  const accessibleCategories = appData.categories.filter(cat => {
+    if (subStatus.isAdmin) return true;
+    if (!subStatus.accessibleCategories) return true; // Default all if not restricted
+    return subStatus.accessibleCategories.includes(cat.id);
+  });
 
   return (
     <div className="min-h-screen pb-20 max-w-md mx-auto relative bg-bg">
@@ -192,11 +227,11 @@ export default function App() {
           </div>
         </div>
       </header>
-
+ 
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
         {activeTab === 'capture' && (
           <CaptureTab 
-            categories={appData.categories} 
+            categories={accessibleCategories} 
             productNames={appData.productNames}
             onSave={async (product, imgs) => {
               if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
@@ -222,11 +257,12 @@ export default function App() {
         )}
         {activeTab === 'data' && (
           <DataTab 
-            categories={appData.categories} 
+            categories={accessibleCategories} 
             products={appData.products} 
             onDelete={handleDeleteProduct}
             t={t} 
             lang={lang}
+            subStatus={subStatus}
           />
         )}
         {activeTab === 'settings' && (

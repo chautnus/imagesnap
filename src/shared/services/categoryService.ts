@@ -12,7 +12,7 @@ export async function saveCategory(spreadsheetId: string, category: Category, is
   ];
 
   if (isNew) {
-    await appendRow(spreadsheetId, 'Categories!A2', row);
+    await appendRow(spreadsheetId, 'Categories', row);
   } else {
     // Search by ID (column A)
     await updateRowBySearch(spreadsheetId, 'Categories', category.id, row);

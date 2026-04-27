@@ -1,6 +1,4 @@
-// Use the Client ID from environment variables or a fallback for development
-// Note: In AI Studio, users should set VITE_GOOGLE_CLIENT_ID in the Secrets panel.
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '271749541534-0ohcjg65bmejf4gjhd4ve17quggp72q1.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '495332791945-jshf9fvhe496jfbanig1qd2c7utl28up.apps.googleusercontent.com';
 export const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
 let tokenClient: any = null;
@@ -11,23 +9,43 @@ export const initGis = (onSuccess: (token: string) => void) => {
 
   // Extension Check: Use chrome.identity if available
   // @ts-ignore
-  if (window.chrome && window.chrome.identity) {
-    console.log('Detected Chrome Extension environment, using chrome.identity');
-    // @ts-ignore
-    window.chrome.identity.getAuthToken({ interactive: false }, (token: string | undefined) => {
-      if (token) {
-        accessToken = token;
-        localStorage.setItem('ps_access_token', token);
-        onSuccess(token);
-      } else {
-        // If interactive: false fails, try interactive: true later or let user trigger it
-        console.log('Silent extension auth failed, waiting for user trigger');
-      }
-    });
+  const isExtension = !!(window.chrome && window.chrome.identity);
+
+  if (isExtension) {
+    console.log('Detected Chrome Extension environment, checking auth state...');
+    
+    // Check if we're on Edge
+    const isEdge = /Edg/.test(navigator.userAgent);
+    
+    if (isEdge) {
+      console.log('Running on Edge, skipping getAuthToken to avoid error.');
+      if (accessToken) onSuccess(accessToken);
+    } else {
+      // @ts-ignore
+      window.chrome.identity.getAuthToken({ interactive: false }, (token: string | undefined) => {
+        if (chrome.runtime.lastError) {
+          console.warn('Silent getAuthToken failed (standard in some browsers):', chrome.runtime.lastError.message);
+          if (accessToken) onSuccess(accessToken);
+          return;
+        }
+        if (token) {
+          accessToken = token;
+          localStorage.setItem('ps_access_token', token);
+          onSuccess(token);
+        } else if (accessToken) {
+          onSuccess(accessToken);
+        }
+      });
+    }
+    // In extension, we don't necessarily need window.google for everything
   }
-  
+
   const google = (window as any).google;
   if (!google) {
+    if (isExtension) {
+      console.log('Google GSI script blocked by CSP, relying on chrome.identity only');
+      return;
+    }
     console.warn('Google GSI script not loaded yet. Waiting...');
     return;
   }
@@ -51,7 +69,7 @@ export const initGis = (onSuccess: (token: string) => void) => {
       },
     });
     console.log('GIS initialized successfully');
-    
+
     // Auto-login if token exists
     if (accessToken) {
       onSuccess(accessToken);
@@ -69,8 +87,55 @@ export async function getUserInfo(token: string) {
   return response.json();
 }
 
-export const requestToken = (prompt: 'consent' | 'none' = 'consent') => {
-  if (!tokenClient) return;
+export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {
+  // @ts-ignore
+  if (window.chrome && window.chrome.identity) {
+    // For Edge support and better reliability, use launchWebAuthFlow
+    // @ts-ignore
+    const redirectUri = window.chrome.identity.getRedirectURL();
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${GOOGLE_CLIENT_ID}&` +
+      `response_type=token&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `scope=${encodeURIComponent(SCOPES)}&` +
+      `prompt=${prompt}`;
+
+    console.log('Launching WebAuthFlow for extension...');
+    // @ts-ignore
+    window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl: string | undefined) => {
+      if (window.chrome.runtime.lastError) {
+        console.error('LaunchWebAuthFlow Error:', window.chrome.runtime.lastError.message);
+        // Fallback to getAuthToken if launchWebAuthFlow fails (only for Chrome)
+        // @ts-ignore
+        window.chrome.identity.getAuthToken({ interactive: true }, (token: string | undefined) => {
+          if (token) {
+            accessToken = token;
+            localStorage.setItem('ps_access_token', token);
+            if (onSuccess) onSuccess(token);
+            window.location.reload();
+          }
+        });
+        return;
+      }
+
+      if (redirectUrl) {
+        const url = new URL(redirectUrl.replace('#', '?'));
+        const token = url.searchParams.get('access_token');
+        if (token) {
+          accessToken = token;
+          localStorage.setItem('ps_access_token', token);
+          if (onSuccess) onSuccess(token);
+          window.location.reload();
+        }
+      }
+    });
+    return;
+  }
+
+  if (!tokenClient) {
+    alert("Auth client not ready. Please refresh.");
+    return;
+  }
   tokenClient.requestAccessToken({ prompt });
 };
 
