@@ -14,7 +14,7 @@ import {
 } from '@shared/lib/sheets';
 import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
-import { ExternalLink, Crown } from 'lucide-react';
+import { ExternalLink, Crown, Image as ImageIcon } from 'lucide-react';
 import { SubscriptionStatus } from '@shared/lib/types';
 
 const API_BASE_URL = (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:') 
