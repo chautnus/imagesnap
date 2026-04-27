@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, RefreshCw, X, ChevronRight, Check, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, ChevronDown, ChevronUp } from 'lucide-react';
+import { Camera, RefreshCw, X, ChevronRight, Check, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { translate } from '@shared/lib/translations';
