@@ -5,6 +5,19 @@
 
 ---
 
+## Thông tin dự án
+- **Project Name**: ImageSnap
+- **Official Domain**: [www.imagesnap.cloud](https://www.imagesnap.cloud)
+- **Status**: Active / Production Ready
+- **Core Architecture**: Centralized Storage (Staff-to-Admin Proxy)
+
+## 🚀 Key Features
+- **Centralized Storage**: Staff saves directly to Admin's Drive/Sheets.
+- **Admin Dashboard**: Manage users, categories, and master workspace.
+- **Automated Testing**: Playwright suite for E2E reliability.
+
+---
+
 ## Trạng thái hiện tại
 
 **Last updated**: 2026-04-27 02:20

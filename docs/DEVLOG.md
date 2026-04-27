@@ -23,10 +23,13 @@
   - Review: AGENT-REVIEW-A: APPROVE
   - Human: APPROVED by Antigravity on 2026-04-27
 - [DEV-2026W18-05] Sửa lỗi crash tab Settings và nâng cấp Image Picker → [BR-3.3]
-  - Findings: Lỗi thiếu import trong `SettingsTab.tsx` gây crash (black screen). Tính năng snap cũ chọn tất cả ảnh không tối ưu.
-  - Fixes: Bổ sung import; Implement `ImagePickerModal` với cơ chế phân loại ảnh (Logo, Banner, Main...) và cho phép chọn lọc. Thêm custom scrollbar.
-  - Review: AGENT-REVIEW-A: APPROVE
-  - Human: APPROVED by Antigravity on 2026-04-27
+  - Fixes: Bổ sung import; Implement `ImagePickerModal` với cơ chế phân loại ảnh. Thêm custom scrollbar.
+- [DEV-2026W18-06] Triển khai Centralized Storage & Staff Login → [BR-1.3, BR-2.3]
+  - Fixes: Xây dựng Server Proxy để nhân viên lưu data về Drive của Admin. Thêm giao diện Staff Login.
+- [DEV-2026W18-07] Fix lỗi CORS & Edge API support → [BR-3.1]
+  - Fixes: Cấu hình CORS middleware cho domain `www.imagesnap.cloud`. Loại bỏ `getAuthToken` gây lỗi trên Edge.
+- [DEV-2026W18-08] Thiết lập Automated Testing Framework → [BR-5.1]
+  - Fixes: Cài đặt Playwright, viết test script cho luồng Staff Login.
 
 ### 🔄 In Progress
 - [DEV-2026W18-02] Rà soát và cập nhật GEMINI.md và ANTIGRAVITY.md để đồng bộ với doc ecosystem.

@@ -5,13 +5,15 @@ Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based
 
 - **Frontend**: React + Vite (nằm trong `src/web/`).
 - **Backend**: Express + Node.js (File `server.ts`).
-- **Storage**: Google Sheets API (Metadata) & Google Drive API (Images) [→ BR-1.1].
+- **Storage**: Google Sheets API & Google Drive API [→ BR-1.1].
+- **Deployment**: [www.imagesnap.cloud](https://www.imagesnap.cloud) (Railway).
 
 ## ARCH-2. Module Structure
 
 ### ARCH-2.1 Server Side (`server.ts`)
-- **Proxy API**: `/api/proxy-image` giải quyết vấn đề CORS khi collect ảnh từ nguồn ngoài [→ BR-1.1].
-- **Payment API**: Tích hợp Lemon Squeezy Webhooks & Checkout [→ BR-2.2].
+- **Proxy API**: `/api/proxy-image` giải quyết vấn đề CORS [→ BR-1.1].
+- **Centralized Storage Proxy**: `/api/proxy/save-product` cho phép Staff lưu dữ liệu về Drive của Admin mà không cần tài khoản Google riêng [→ BR-1.3].
+- **Staff Auth**: `/api/auth/staff-login` hệ thống đăng nhập bằng Username/Password cho nhân viên [→ BR-2.3].
 - **Quota Management**: API `/api/increment-usage` và `/api/user-status` [→ BR-2.1].
 
 ### ARCH-2.2 Extension (`src/extension/`)

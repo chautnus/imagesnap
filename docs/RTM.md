@@ -13,3 +13,7 @@
 | BR-3.3 | Bulk Import | ARCH-2.3 | `src/web/App.tsx`, `src/web/components/Wizard.tsx` | N/A | Low | 2026-04-27 | Passed | Active |
 | BR-4.1 | UI Standards | ARCH-2.4 | `src/web/index.css` | N/A | Low | 2026-04-27 | Passed | Active |
 | BR-4.2 | Search | ARCH-2.4 | `src/web/components/DataTab.tsx` | N/A | Low | 2026-04-27 | Passed | Active |
+| BR-1.3 | Centralized Storage | ARCH-2.1 | `server.ts`, `useAppData.ts` | N/A | High | 2026-04-27 | Passed | Active |
+| BR-2.3 | Staff Login & Permissions | ARCH-2.1 | `server.ts`, `StaffLogin.tsx` | `tests/staff_login.spec.ts` | Med | 2026-04-27 | Passed | Active |
+| BR-3.4 | Quick Category Creation | ARCH-2.4 | `CaptureTab.tsx`, `App.tsx` | N/A | Low | 2026-04-27 | Passed | Active |
+| BR-5.1 | Automated Testing | ARCH-5 | `playwright.config.ts`, `tests/*` | `npm test` | Low | 2026-04-27 | Passed | Active |
