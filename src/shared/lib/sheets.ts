@@ -31,21 +31,22 @@ export async function sheetsRequest(path: string, options: any = {}) {
 export async function findOrCreateWorkspace() {
   const token = getAccessToken();
   
-  // Ensure "ImageSnap Data" folder exists
-  const parentFolderId = await findOrCreateFolder('ImageSnap Data');
-
-  // Search for the spreadsheet by name in the specific folder
-  const query = `name='imagesnap.xlsx' and mimeType='application/vnd.google-apps.spreadsheet' and '${parentFolderId}' in parents and trashed=false`;
-  const driveSearchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}`;
+  // 1. First, try to find ANY existing imagesnap.xlsx spreadsheet on the user's Drive
+  // ignore folder for a moment to prioritize data recovery
+  const globalQuery = "name='imagesnap.xlsx' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
+  const globalSearchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(globalQuery)}&fields=files(id, parents)`;
   
-  const searchResponse = await fetch(driveSearchUrl, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  const searchData = await searchResponse.json();
+  const gResponse = await fetch(globalSearchUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+  const gData = await gResponse.json();
 
-  if (searchData.files && searchData.files.length > 0) {
-    return searchData.files[0].id;
+  if (gData.files && gData.files.length > 0) {
+    const existingId = gData.files[0].id;
+    console.log("Found existing workspace:", existingId);
+    return existingId;
   }
+
+  // 2. If not found globally, proceed with folder creation and new file
+  const parentFolderId = await findOrCreateFolder('ImageSnap Data');
 
   // Create new spreadsheet
   const createData = await sheetsRequest('', {

@@ -64,11 +64,42 @@ function extractImages() {
     metadata.t = document.querySelector('meta[property="og:title"]')?.content || document.title;
     metadata.p = document.querySelector('meta[property="og:price:amount"]')?.content || "";
     let d = "";
-    [".pdp-product-detail", "._2u0n77", ".product-details__description", "#product-description"].forEach((s) => {
-      const e = document.querySelector(s); if (e && !d) d = e.innerText;
-    });
-    if (!d) d = document.querySelector('meta[property="og:description"]')?.content || "";
-    metadata.d = d.slice(0, 1000);
+    
+    // 1. Try common metadata first (most reliable generic way)
+    const metaDesc = document.querySelector('meta[name="description"]')?.content || 
+                     document.querySelector('meta[property="og:description"]')?.content || 
+                     document.querySelector('meta[name="twitter:description"]')?.content;
+    if (metaDesc) d = metaDesc;
+
+    // 2. Try Schema.org itemprop (very common in e-commerce)
+    if (!d) {
+      const itempropDesc = document.querySelector('[itemprop="description"]');
+      if (itempropDesc) d = itempropDesc.innerText || itempropDesc.getAttribute('content') || "";
+    }
+
+    // 3. Try common CSS selectors for Shopee, Amazon, Shopify, Lazada, etc.
+    if (!d) {
+      const selectors = [
+        "#feature-bullets", // Amazon bullets
+        "#productDescription", // Amazon description
+        ".pdp-product-detail", // Generic/Lazada
+        ".product-description", // Shopify/WooCommerce
+        ".product__description",
+        "div[data-automation='product-description']",
+        ".description",
+        "._2u0n77", // Shopee
+        ".product-details__description"
+      ];
+      for (const s of selectors) {
+        const e = document.querySelector(s);
+        if (e && e.innerText.trim()) {
+          d = e.innerText.trim();
+          break;
+        }
+      }
+    }
+    
+    metadata.d = d.trim().slice(0, 1000);
   } catch (e) {}
 
   return { images: imageList, metadata, url: window.location.href };

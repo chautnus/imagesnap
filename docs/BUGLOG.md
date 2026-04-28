@@ -13,35 +13,7 @@
 
 ## ✅ CLOSED BUGS (Đã fix — kiến thức có thể tái dùng)
 
-### [BUG-002] — Lỗi Login trên Microsoft Edge Extension
-**Status**: CLOSED
-**Severity**: HIGH
-**Discovered**: [DEV-2026W18] | **Fixed**: [DEV-2026W18]
-**Linked BR**: → [BR-3.1]
-**Linked ARCH**: → [ARCH-2.2]
-
-#### Symptom
-Trên trình duyệt Edge, gọi `chrome.identity.getAuthToken` trả về lỗi "This API is not supported". Sau khi đăng nhập Google thành công, app bị quay lại màn hình Landing thay vì vào App.
-
-#### Root Cause
-1. Edge không hỗ trợ `getAuthToken` cho tài khoản Google, yêu cầu luồng OAuth chuẩn qua WebAuthFlow.
-2. App không tự động nhận diện token từ `localStorage` ngay sau khi reload trong môi trường extension.
-
-#### Fix Applied
-```typescript
-// Sử dụng launchWebAuthFlow thay vì getAuthToken
-window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl) => {
-  // Trích xuất token và lưu vào localStorage
-});
-
-// Cập nhật initGis để kiểm tra cả localStorage làm fallback
-```
-
-#### Lesson Learned
-⚠ BÀI HỌC #002: Luôn sử dụng `launchWebAuthFlow` cho extension đa trình duyệt (Cross-browser) khi làm việc với OAuth bên thứ 3.
-
-#### Prevention
-- [x] Sử dụng pattern `PAT-002` cho mọi logic Auth trong extension sau này.
+---
 
 ### [BUG-001] — [Tên lỗi ngắn gọn]
 **Status**: CLOSED
@@ -77,9 +49,34 @@ window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (r
 > Tổng hợp bài học tái sử dụng từ các bug đã fix.
 > Agent phải đọc section này khi implement tính năng liên quan.
 
-### PAT-002: Cross-Browser Extension OAuth
-→ Xem [BUG-002]. Áp dụng khi: Cần đăng nhập Google trên cả Chrome và Edge extension.
-Tóm tắt: Sử dụng `launchWebAuthFlow` kết hợp với `getRedirectURL()` và cơ chế fallback `localStorage` để duy trì session sau reload.
+### PAT-001: [Tên pattern]
+→ Xem [BUG-001]. Áp dụng khi: [...]
+Tóm tắt: [1-2 câu]
+
+---
+
+### PAT-IMPORT-001: Missing Import khi thêm symbol vào file hiện có
+**Áp dụng khi**: thêm component, hook, icon, type, util vào file đã tồn tại
+**Root cause**: AI chỉ thấy đoạn code cần thêm, không thấy toàn bộ import block
+**Rules liên quan**: RULE-16, RULE-17, RULE-18
+
+**Prevention**:
+- Paste toàn bộ import block hiện tại vào prompt khi yêu cầu AI sửa file
+- Yêu cầu AI xuất lại import block đầy đủ, không chỉ đoạn code mới
+- Chạy `tsc --noEmit` (TS/TSX) hoặc ESLint `no-undef` (JS/JSX) trước /review
+- Kiểm tra import_audit: `missing_imports_found = []`
+
+**Prompt pattern đúng**:
+```
+Thêm [symbol] vào [file].
+Import block hiện tại của file:
+[paste toàn bộ import block]
+Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đoạn code mới.
+```
+
+**Tooling note**:
+- TS/TSX: `npx tsc --noEmit` — nguồn xác minh chính. KHÔNG dùng `no-undef` cho TypeScript.
+- JS/JSX: ESLint `no-undef` + `react/jsx-no-undef` — hợp lệ và khuyến nghị.
 
 ---
 

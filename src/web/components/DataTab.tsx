@@ -1,21 +1,11 @@
 import React, { useState } from 'react';
-import { ChevronRight, Folder, Package, Trash2, Filter, Search, Calendar, User, Tag, X } from 'lucide-react';
+import { ChevronRight, Folder, Package, Trash2, Filter, Search, Calendar, User, Tag, X, ExternalLink } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { translate } from '@shared/lib/translations';
-import { ExternalLink } from 'lucide-react';
+import { DriveImage } from './DriveImage';
 
-const getDriveThumbnail = (url: string) => {
-  if (!url) return '';
-  if (url.startsWith('data:')) return url;
-  if (!url.includes('drive.google.com')) return url;
-  
-  const match = url.match(/[-\w]{25,}/);
-  if (match) {
-    return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w600`;
-  }
-  return url;
-};
+// Removed getDriveThumbnail utility in favor of DriveImage component
 
 interface DataTabProps {
   categories: Category[];
@@ -156,10 +146,9 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
         <div className="flex h-28 relative">
           <div className="w-28 flex-none bg-black overflow-hidden relative">
             {item.images[0] ? (
-              <img 
-                src={getDriveThumbnail(item.images[0])} 
+              <DriveImage 
+                url={item.images[0]} 
                 className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110" 
-                referrerPolicy="no-referrer"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted"><Package size={24} /></div>
@@ -252,7 +241,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
                   rel="noopener noreferrer"
                   className="aspect-square bg-black rounded-2xl overflow-hidden border-2 border-line hover:border-accent transition-all group relative"
                 >
-                  <img src={getDriveThumbnail(img)} className="w-full h-full object-cover grayscale-0 transition-all" />
+                  <DriveImage url={img} className="w-full h-full object-cover transition-all" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
                     <span className="text-[12px] font-black text-white uppercase tracking-widest flex items-center gap-2">
                        <ExternalLink size={14} /> Open Drive

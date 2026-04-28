@@ -3,6 +3,7 @@ import { Camera, RefreshCw, X, ChevronRight, Check, Image as ImagesIcon, Link as
 import { Category, Product } from '@shared/lib/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { translate } from '@shared/lib/translations';
+import { DriveImage } from './DriveImage';
 
 export interface ProductMetadata {
   t?: string; // Title
@@ -632,7 +633,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {images.map((img, i) => (
             <div key={i} className="relative flex-none w-20 aspect-square rounded-lg overflow-hidden border border-line">
-              <img src={img} className="w-full h-full object-cover" />
+              <DriveImage url={img} className="w-full h-full object-cover" />
               <button 
                 onClick={() => setImages(images.filter((_, idx) => idx !== i))}
                 className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1"
