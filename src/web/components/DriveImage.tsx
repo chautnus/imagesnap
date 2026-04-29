@@ -13,8 +13,8 @@ const blobCache: Record<string, string> = {};
 
 export const DriveImage: React.FC<DriveImageProps> = ({ url, className, alt }) => {
   const isBase64 = url && url.startsWith('data:');
-  const isDriveUrl = url && (url.includes('drive.google.com') || url.includes('id='));
-  const isNormalUrl = url && url.startsWith('http') && !isDriveUrl;
+  const isDriveUrl = url && (url.includes('drive.google.com') || url.includes('id=') || /[-\w]{25,}/.test(url));
+  const isNormalUrl = url && url.startsWith('http') && !url.includes('drive.google.com') && !url.includes('id=');
 
   const [src, setSrc] = useState<string | null>( (isBase64 || isNormalUrl) ? url : (blobCache[url] || null));
   const [loading, setLoading] = useState(!isBase64 && !isNormalUrl && !blobCache[url]);
@@ -35,14 +35,21 @@ export const DriveImage: React.FC<DriveImageProps> = ({ url, className, alt }) =
 
     const fetchImage = async () => {
       const token = getAccessToken();
-      if (!token || !url || !url.includes('id=')) {
+      if (!token || !url) {
         setLoading(false);
         setError(true);
         return;
       }
 
-      const fileIdMatch = url.match(/id=([-\w]{25,})/);
-      const fileId = fileIdMatch ? fileIdMatch[1] : null;
+      // Try multiple regex patterns for Drive ID
+      let fileId = null;
+      const idParamMatch = url.match(/id=([-\w]{25,})/);
+      const dPathMatch = url.match(/\/d\/([-\w]{25,})/);
+      const rawIdMatch = url.match(/^([-\w]{25,})$/);
+
+      if (idParamMatch) fileId = idParamMatch[1];
+      else if (dPathMatch) fileId = dPathMatch[1];
+      else if (rawIdMatch) fileId = rawIdMatch[1];
 
       if (!fileId) {
         setLoading(false);
