@@ -264,6 +264,13 @@ async function startServer() {
     res.status(200).send("OK");
   });
 
+  app.get("/api/debug/dist", (req, res) => {
+    const distPath = path.join(process.cwd(), "dist");
+    if (!fs.existsSync(distPath)) return res.json({ error: "dist not found" });
+    const files = fs.readdirSync(distPath);
+    res.json({ files, cwd: process.cwd() });
+  });
+
   // --- VITE MIDDLEWARE ---
 
   if (process.env.NODE_ENV !== "production") {
