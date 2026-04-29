@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, RefreshCw, X, ChevronRight, Check, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { Camera, RefreshCw, X, ChevronRight, Check, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, ChevronDown, ChevronUp, Plus, Zap } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { translate } from '@shared/lib/translations';
@@ -129,6 +129,9 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [torch, setTorch] = useState(false);
+  const [capabilities, setCapabilities] = useState<any>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkUrlInput, setBulkUrlInput] = useState('');
@@ -250,7 +253,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
   const startCamera = async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("Trình duyệt này không hỗ trợ Live Camera hoặc bạn đang không sử dụng HTTPS. Hãy dùng nút FAST_CAM bên cạnh để thay thế.");
+      alert("Trình duyệt này không hỗ trợ Live Camera hoặc bạn đang không sử dụng HTTPS. Hãy dùng nút APP CAMERA bên cạnh để thay thế.");
       return;
     }
 
@@ -272,6 +275,15 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       }
 
       streamRef.current = stream;
+      
+      // Get capabilities (Zoom/Torch)
+      const track = stream.getVideoTracks()[0];
+      if (track && 'getCapabilities' in track) {
+        const caps = track.getCapabilities() as any;
+        setCapabilities(caps);
+        if (caps.zoom) setZoom(caps.zoom.min || 1);
+      }
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.setAttribute('playsinline', 'true');
@@ -282,10 +294,33 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       console.error("Camera error:", err);
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         alert("QUYỀN CAMERA BỊ CHẶN: Vui lòng vào cài đặt trình duyệt, tìm mục ImageSnap và chọn 'Allow Camera' sau đó thử lại.");
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        alert("KHÔNG TÌM THẤY CAMERA: Vui lòng kiểm tra xem thiết bị của bạn có Camera hoạt động không.");
       } else {
-        alert("LỖI CAMERA: " + (err.message || "Không thể khởi động camera. Hãy thử sử dụng nút FAST_CAM."));
+        alert("LỖI CAMERA: " + (err.message || "Không thể khởi động camera. Hãy thử sử dụng nút APP CAMERA."));
+      }
+    }
+  };
+
+  const handleZoomChange = async (value: number) => {
+    setZoom(value);
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (track && capabilities?.zoom) {
+      try {
+        await track.applyConstraints({ advanced: [{ zoom: value }] } as any);
+      } catch (e) {
+        console.warn("Zoom failed:", e);
+      }
+    }
+  };
+
+  const toggleTorch = async () => {
+    const nextTorch = !torch;
+    setTorch(nextTorch);
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (track && capabilities?.torch) {
+      try {
+        await track.applyConstraints({ advanced: [{ torch: nextTorch }] } as any);
+      } catch (e) {
+        console.warn("Torch failed:", e);
       }
     }
   };
@@ -295,6 +330,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    setTorch(false);
+    setCapabilities(null);
     setIsCameraOpen(false);
   };
 
@@ -657,6 +694,33 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                   <span className="text-white font-black text-xs tracking-widest">{images.length} PHOTOS</span>
                 </div>
               </div>
+            )}
+
+            {/* Zoom Slider */}
+            {capabilities?.zoom && (
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 h-64 flex flex-col items-center gap-4 z-[170]">
+                <span className="text-white text-[10px] font-black">{zoom.toFixed(1)}x</span>
+                <input 
+                  type="range" 
+                  min={capabilities.zoom.min} 
+                  max={capabilities.zoom.max} 
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
+                  className="w-1 h-full appearance-none bg-white/20 rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:rounded-full"
+                  style={{ writingMode: 'vertical-lr', direction: 'rtl' } as any}
+                />
+              </div>
+            )}
+
+            {/* Torch Button */}
+            {capabilities?.torch && (
+              <button 
+                onClick={toggleTorch}
+                className={`absolute top-10 right-6 w-12 h-12 rounded-full border flex items-center justify-center transition-all z-[170] ${torch ? 'bg-accent border-accent text-bg' : 'bg-black/20 border-white/20 text-white'}`}
+              >
+                <Zap size={20} fill={torch ? "currentColor" : "none"} />
+              </button>
             )}
 
             <div className="p-4 pb-10 bg-black/80 flex justify-around items-center z-[170] flex-none">
