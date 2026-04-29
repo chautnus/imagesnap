@@ -469,7 +469,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${subStatus.isPro ? 'bg-yellow-500/20 text-yellow-500' : 'bg-accent/10 text-accent'}`}>
               {subStatus.isPro ? 'PRO' : 'FREE'}
             </span>
-            <span className="text-[10px] font-black text-muted opacity-40">V1.2.8</span>
+            <span className="text-[10px] font-black text-muted opacity-40">V1.2.9</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted font-mono font-bold">
