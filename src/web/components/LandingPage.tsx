@@ -148,7 +148,7 @@ export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => 
             <div className="absolute inset-0 bg-accent/20 blur-[100px] rounded-full animate-pulse-glow" />
             <div className="relative glass rounded-[2rem] overflow-hidden border-white/20 shadow-2xl">
               <img 
-                src="/imagesnap_extension_form_preview_1777046460505.png" 
+                src="/imagesnap_extension_form_preview.png" 
                 alt="ImageSnap Workflow Illustration" 
                 className="w-full h-auto"
               />
@@ -191,14 +191,14 @@ export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => 
           </div>
 
           <FeatureRow 
-             image="/imagesnap_hero_abstract_1777043515455.png"
+             image="/imagesnap_hero_abstract.png"
              title="Fly straight to Google Drive, in the right folder."
              desc="Forget the 'Downloads' folder. ImageSnap connects directly to your Drive. Just right-click, choose a project folder, and the image sits neatly in your cloud."
              icon={<Globe size={20} />}
           />
 
           <FeatureRow 
-             image="/imagesnap_extension_form_preview_1777046460505.png"
+             image="/imagesnap_extension_form_preview.png"
              title="Tag, categorize, and never get lost."
              desc="Don't just save images, save the context. ImageSnap lets you attach custom fields: Description, Color, Origin. This data stays with the image forever."
              icon={<Tag size={20} />}
@@ -206,7 +206,7 @@ export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => 
           />
 
           <FeatureRow 
-             image="/imagesnap_hero_abstract_1777043515455.png"
+             image="/imagesnap_hero_abstract.png"
              title="Auto-extract data from websites."
              desc="Collecting competitor products? ImageSnap can automatically 'read' the page to grab product titles, prices, and source links to save alongside the image."
              icon={<Database size={20} />}
