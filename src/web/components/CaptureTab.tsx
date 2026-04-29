@@ -631,9 +631,9 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed top-0 left-0 w-full h-[100dvh] z-[150] bg-black flex flex-col overflow-hidden"
+            className="fixed inset-0 z-[150] bg-black flex flex-col overflow-hidden select-none touch-none"
           >
-            <video ref={videoRef} autoPlay playsInline muted className="w-full flex-1 object-cover" />
+            <video ref={videoRef} autoPlay playsInline muted className="w-full flex-1 object-cover min-h-0" />
             
             {/* Shutter Flash Effect */}
             <AnimatePresence>
@@ -659,7 +659,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
               </div>
             )}
 
-            <div className="p-6 pb-8 bg-black/80 flex justify-around items-center z-[170] flex-none">
+            <div className="p-4 pb-10 bg-black/80 flex justify-around items-center z-[170] flex-none">
               <button onClick={stopCamera} className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white">
                 <X size={24} />
               </button>
