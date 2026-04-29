@@ -9,7 +9,7 @@ A powerful browser-based product cataloging application that captures photos, sc
 - **Backend**: Google Sheets (data) and Google Drive (images).
 - **Workspace**: A spreadsheet named `imagesnap.xlsx` (unified naming).
 - **Storage Folder**: Unified root folder named `ImageSnap` on Google Drive for both Web and Extension.
-- **Image Thumbnails**: Optimized Drive thumbnail generation for 5x faster loading in the Data tab.
+- **Image Thumbnails**: Multi-source support (Google Drive, Base64, and external public URLs) for 100% visibility in the Data tab.
 - **Naming Convention**: Images in the folder named `[Key]-xxx.jpg`.
 
 ### 2. Usage Quota & Monetization
@@ -34,7 +34,7 @@ A powerful browser-based product cataloging application that captures photos, sc
     - **Aspect Ratio Lock**: Switch between Full and Square (1:1) modes.
     - **Session Thumbnail Strip**: Scrollable history of shots taken in the current camera session.
     - **Hardware Controls**: Torch/Flash toggle and Exposure Compensation slider.
-- **Version Visibility**: The system version (v1.2.8) is prominently displayed in the header of the Capture tab.
+- **Version Visibility**: The system version (v1.2.9) is prominently displayed in the header of the Capture tab.
 
 - **App Camera (Native)**: Integrated access to the device's native camera app for full hardware support (Zoom, Auto-focus, Macro).
 - **Screenshots & Sequential Native Shooting**: Users are encouraged to take multiple photos/screenshots natively and use the **GALLERY** feature for bulk import, as it preserves full hardware quality and allows multiple selection.

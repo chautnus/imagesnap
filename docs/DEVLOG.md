@@ -51,6 +51,12 @@
   - UI: Added Session Thumbnail Strip to the camera modal for instant review.
   - Fixes: Resolved syntax errors in JSX; optimized touch handling for mobile.
   - Version: Bump to 1.2.8.
+- [DEV-2026W18-14] Multi-source Thumbnail Support → [BR-1.2.1]
+  - Fixes: Enhanced `DriveImage` component to support regular HTTP/HTTPS URLs from scrapers.
+  - Features: Improved error handling and lazy loading for external assets.
+  - Version: Bump to 1.2.9.
+  - Human: APPROVED by user on 2026-04-28
+
   - Human: APPROVED by user on 2026-04-28
 
   - Human: APPROVED by user on 2026-04-28
