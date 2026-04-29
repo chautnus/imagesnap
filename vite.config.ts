@@ -6,7 +6,6 @@ import path from 'path';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   root: 'src/web',
-  publicDir: '../../public',
   build: {
     outDir: '../../dist',
     emptyOutDir: true,

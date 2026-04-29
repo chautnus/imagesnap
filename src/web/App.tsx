@@ -95,6 +95,10 @@ export default function App() {
         setView('privacy');
         return;
       }
+      if (hash === '#staff') {
+        setView('landing'); // App will render StaffLogin based on hash
+        return;
+      }
       if (hash.startsWith('#import=')) {
         const params = new URLSearchParams(hash.substring(1));
         const imgs = params.get('import');
