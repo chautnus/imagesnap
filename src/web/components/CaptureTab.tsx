@@ -130,6 +130,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [exposure, setExposure] = useState(0);
   const [torch, setTorch] = useState(false);
   const [capabilities, setCapabilities] = useState<any>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -282,6 +283,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         const caps = track.getCapabilities() as any;
         setCapabilities(caps);
         if (caps.zoom) setZoom(caps.zoom.min || 1);
+        if (caps.exposureCompensation) setExposure(caps.exposureCompensation.min || 0);
       }
 
       if (videoRef.current) {
@@ -309,6 +311,41 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       } catch (e) {
         console.warn("Zoom failed:", e);
       }
+    }
+  };
+
+  const handleExposureChange = async (value: number) => {
+    setExposure(value);
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (track && capabilities?.exposureCompensation) {
+      try {
+        await track.applyConstraints({ advanced: [{ exposureCompensation: value }] } as any);
+      } catch (e) {
+        console.warn("Exposure failed:", e);
+      }
+    }
+  };
+
+  const handleTapToFocus = async (e: React.MouseEvent) => {
+    if (!videoRef.current || !streamRef.current || !capabilities?.focusMode) return;
+    
+    const track = streamRef.current.getVideoTracks()[0];
+    const rect = videoRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    try {
+      await track.applyConstraints({
+        advanced: [{ 
+          focusMode: 'manual', 
+          pointsOfInterest: [{ x, y }] 
+        }]
+      } as any);
+      
+      // Visual feedback for focus tap (optional, can add a ring here later)
+      console.log("Focused at:", x, y);
+    } catch (e) {
+      console.warn("Focus failed:", e);
     }
   };
 
@@ -399,6 +436,9 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${subStatus.isPro ? 'bg-yellow-500/20 text-yellow-500' : 'bg-accent/10 text-accent'}`}>
               {subStatus.isPro ? 'PRO' : 'FREE'}
             </span>
+            <span className="text-[10px] font-black text-muted opacity-40">V1.2.7</span>
+          </div>
+          <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted font-mono font-bold">
               {subStatus.isPro ? 'UNLIMITED' : `USAGE: ${subStatus.usage}/${subStatus.limit}`}
             </span>
@@ -670,7 +710,14 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             exit={{ opacity: 0, scale: 0.9 }}
             className="fixed inset-0 z-[150] bg-black flex flex-col overflow-hidden select-none touch-none"
           >
-            <video ref={videoRef} autoPlay playsInline muted className="w-full flex-1 object-cover min-h-0" />
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              muted 
+              onClick={handleTapToFocus}
+              className="w-full flex-1 object-cover min-h-0 cursor-crosshair" 
+            />
             
             {/* Shutter Flash Effect */}
             <AnimatePresence>
@@ -696,9 +743,9 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
               </div>
             )}
 
-            {/* Zoom Slider */}
+            {/* Zoom Slider (Right) */}
             {capabilities?.zoom && (
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 h-64 flex flex-col items-center gap-4 z-[170]">
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 h-48 flex flex-col items-center gap-4 z-[170]">
                 <span className="text-white text-[10px] font-black">{zoom.toFixed(1)}x</span>
                 <input 
                   type="range" 
@@ -708,6 +755,23 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                   value={zoom}
                   onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
                   className="w-1 h-full appearance-none bg-white/20 rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:rounded-full"
+                  style={{ writingMode: 'vertical-lr', direction: 'rtl' } as any}
+                />
+              </div>
+            )}
+
+            {/* Exposure Slider (Left) */}
+            {capabilities?.exposureCompensation && (
+              <div className="absolute left-6 top-1/2 -translate-y-1/2 h-48 flex flex-col items-center gap-4 z-[170]">
+                <span className="text-white text-[10px] font-black">{exposure > 0 ? `+${exposure.toFixed(1)}` : exposure.toFixed(1)}</span>
+                <input 
+                  type="range" 
+                  min={capabilities.exposureCompensation.min} 
+                  max={capabilities.exposureCompensation.max} 
+                  step={0.1}
+                  value={exposure}
+                  onChange={(e) => handleExposureChange(parseFloat(e.target.value))}
+                  className="w-1 h-full appearance-none bg-white/20 rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
                   style={{ writingMode: 'vertical-lr', direction: 'rtl' } as any}
                 />
               </div>
@@ -969,11 +1033,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           </div>
         )}
       </AnimatePresence>
-      {/* Version Tag */}
-      <div className="mt-12 mb-4 flex flex-col items-center gap-1 opacity-20 hover:opacity-100 transition-opacity">
-        <span className="text-[9px] font-black tracking-[0.3em] text-muted uppercase">ImageSnap Collector</span>
-        <span className="text-[10px] font-black tracking-[0.5em] text-accent">V1.2.6</span>
-      </div>
     </div>
   );
 };
