@@ -409,7 +409,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${isCameraOpen ? 'bg-accent text-bg border-accent shadow-[0_0_20px_rgba(212,255,0,0.3)]' : 'bg-card border-line text-muted hover:border-accent hover:text-accent'}`}
         >
           <Camera size={20} />
-          <span className="text-[8px] font-black tracking-tighter uppercase">LIVE_CAM</span>
+          <span className="text-[8px] font-black tracking-tighter uppercase">BURST CAM</span>
         </button>
         
         {/* Gallery */}
@@ -447,7 +447,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent hover:text-accent transition-all cursor-pointer"
         >
           <Camera size={20} className="stroke-[3]" />
-          <span className="text-[11px] font-black tracking-tighter uppercase whitespace-nowrap">FAST_CAM</span>
+          <span className="text-[11px] font-black tracking-tighter uppercase whitespace-nowrap">APP CAMERA</span>
             <input 
             type="file" 
             accept="image/*" 
@@ -631,7 +631,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-[150] bg-black flex flex-col"
+            className="fixed top-0 left-0 w-full h-[100dvh] z-[150] bg-black flex flex-col overflow-hidden"
           >
             <video ref={videoRef} autoPlay playsInline muted className="w-full flex-1 object-cover" />
             
@@ -659,7 +659,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
               </div>
             )}
 
-            <div className="p-8 pb-12 bg-black/80 flex justify-around items-center z-[170]">
+            <div className="p-6 pb-8 bg-black/80 flex justify-around items-center z-[170] flex-none">
               <button onClick={stopCamera} className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white">
                 <X size={24} />
               </button>
