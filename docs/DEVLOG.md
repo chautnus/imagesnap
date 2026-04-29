@@ -34,6 +34,12 @@
   - Fixes: Gỡ bỏ code từ xa (GAPI) và quyền storage. Sửa lỗi camera đen.
   - Features: Triển khai Burst Mode, Native Camera Support, h-[100dvh] cho mobile.
   - Version: Bump to 1.2.4.
+- [DEV-2026W18-10] Final UI Polish & Instructional Workflow → [BR-3.2]
+  - Fixes: Triển khai `fixed inset-0` và `min-h-0` cho Burst Cam để sửa triệt để lỗi tràn màn hình trên di động.
+  - Docs: Cập nhật hướng dẫn quy trình chụp ảnh qua Gallery để tối ưu việc dùng Zoom/Focus của máy.
+  - Version: Bump to 1.2.5.
+  - Human: APPROVED by user on 2026-04-28
+
   - Review: AGENT-REVIEW-A: APPROVE
   - Human: APPROVED by user on 2026-04-28
 
