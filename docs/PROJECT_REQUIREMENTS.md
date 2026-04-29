@@ -3,13 +3,13 @@
 ## Core Objective
 A powerful browser-based product cataloging application that captures photos, scrapes web images, and organizes them into a structured Google Drive/Sheets workspace.
 
-## Version 1.2.4 Features (Current Release)
+## Version 1.3.0 Features (Current Release)
 
 ### 1. Data Structure & Storage
 - **Backend**: Google Sheets (data) and Google Drive (images).
 - **Workspace**: A spreadsheet named `imagesnap.xlsx` (unified naming).
 - **Storage Folder**: Unified root folder named `ImageSnap` on Google Drive for both Web and Extension.
-- **Image Thumbnails**: Multi-source support (Google Drive, Base64, and external public URLs) for 100% visibility in the Data tab.
+- **Image Thumbnails**: Universal support for Google Drive URL formats (webViewLink, d/ID, id=ID), Base64, and external public URLs for 100% visibility in the Data tab.
 - **Naming Convention**: Images in the folder named `[Key]-xxx.jpg`.
 
 ### 2. Usage Quota & Monetization

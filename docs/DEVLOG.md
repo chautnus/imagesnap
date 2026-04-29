@@ -55,6 +55,12 @@
   - Fixes: Enhanced `DriveImage` component to support regular HTTP/HTTPS URLs from scrapers.
   - Features: Improved error handling and lazy loading for external assets.
   - Version: Bump to 1.2.9.
+- [DEV-2026W18-15] Universal Drive ID Support for Thumbnails → [BR-1.2.1]
+  - Fixes: Expanded regex and ID detection in `DriveImage` to support `webViewLink` and raw IDs.
+  - UI: Verified version display as V1.3.0.
+  - Version: Bump to 1.3.0.
+  - Human: APPROVED by user on 2026-04-28
+
   - Human: APPROVED by user on 2026-04-28
 
   - Human: APPROVED by user on 2026-04-28
