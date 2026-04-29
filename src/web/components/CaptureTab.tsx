@@ -741,6 +741,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 z-[150] bg-black flex flex-col overflow-hidden select-none touch-none"
+          >
             <div className={`relative flex-1 overflow-hidden bg-black flex items-center justify-center ${aspectRatio === 'square' ? 'aspect-square' : ''}`}>
               <video 
                 ref={videoRef} 
