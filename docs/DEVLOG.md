@@ -46,6 +46,13 @@
   - Features: Implement `exposureCompensation` and experimental `pointsOfInterest` focus.
   - UI: Added exposure slider and moved version display to the Header for 100% visibility.
   - Version: Bump to 1.2.7.
+- [DEV-2026W18-13] Professional Camera Experience (Burst Cam v2) → [BR-3.2]
+  - Features: Implement Pinch-to-Zoom, Grid Overlay, Ratio Lock (Square mode), and Focus visualizer.
+  - UI: Added Session Thumbnail Strip to the camera modal for instant review.
+  - Fixes: Resolved syntax errors in JSX; optimized touch handling for mobile.
+  - Version: Bump to 1.2.8.
+  - Human: APPROVED by user on 2026-04-28
+
   - Human: APPROVED by user on 2026-04-28
 
   - Human: APPROVED by user on 2026-04-28
