@@ -264,11 +264,21 @@ async function startServer() {
     res.status(200).send("OK");
   });
 
+  app.get("/api/health", (req, res) => {
+    res.status(200).send("OK");
+  });
+
   app.get("/api/debug/dist", (req, res) => {
     const distPath = path.join(process.cwd(), "dist");
-    if (!fs.existsSync(distPath)) return res.json({ error: "dist not found" });
-    const files = fs.readdirSync(distPath);
-    res.json({ files, cwd: process.cwd() });
+    const exists = fs.existsSync(distPath);
+    const files = exists ? fs.readdirSync(distPath) : [];
+    res.json({ 
+      exists,
+      files, 
+      cwd: process.cwd(),
+      env: process.env.NODE_ENV,
+      port: PORT
+    });
   });
 
   // --- VITE MIDDLEWARE ---
