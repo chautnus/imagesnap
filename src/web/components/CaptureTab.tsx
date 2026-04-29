@@ -969,6 +969,11 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           </div>
         )}
       </AnimatePresence>
+      {/* Version Tag */}
+      <div className="mt-12 mb-4 flex flex-col items-center gap-1 opacity-20 hover:opacity-100 transition-opacity">
+        <span className="text-[9px] font-black tracking-[0.3em] text-muted uppercase">ImageSnap Collector</span>
+        <span className="text-[10px] font-black tracking-[0.5em] text-accent">V1.2.6</span>
+      </div>
     </div>
   );
 };
