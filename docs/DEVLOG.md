@@ -42,6 +42,12 @@
   - Features: Implement hardware capability detection for `zoom` and `torch`.
   - UI: Added vertical zoom slider and flash toggle button to the in-app camera.
   - Version: Bump to 1.2.6.
+- [DEV-2026W18-12] Advanced Camera Controls & Header Versioning → [BR-3.2, BR-4.1]
+  - Features: Implement `exposureCompensation` and experimental `pointsOfInterest` focus.
+  - UI: Added exposure slider and moved version display to the Header for 100% visibility.
+  - Version: Bump to 1.2.7.
+  - Human: APPROVED by user on 2026-04-28
+
   - Human: APPROVED by user on 2026-04-28
 
   - Human: APPROVED by user on 2026-04-28

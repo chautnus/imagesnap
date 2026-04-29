@@ -27,7 +27,8 @@ A powerful browser-based product cataloging application that captures photos, sc
 
 ### 4. Image Capture & Camera
 - **Extension (Collector)**: Advanced image/metadata extraction with "activeTab".
-- **Burst Cam (In-App)**: Custom camera supporting continuous rapid shooting, shutter flash effect, session counter, and last-shot preview. Optimized for mobile viewports with hardware control support (Zoom slider and Torch/Flash toggle).
+- **Burst Cam (In-App)**: Custom camera supporting continuous rapid shooting, shutter flash effect, session counter, and last-shot preview. Optimized for mobile viewports with hardware control support (Zoom slider, Exposure slider, Torch/Flash toggle, and Tap-to-focus).
+- **Version Visibility**: The system version is prominently displayed in the header of the Capture tab for easy identification during testing.
 
 - **App Camera (Native)**: Integrated access to the device's native camera app for full hardware support (Zoom, Auto-focus, Macro).
 - **Screenshots & Sequential Native Shooting**: Users are encouraged to take multiple photos/screenshots natively and use the **GALLERY** feature for bulk import, as it preserves full hardware quality and allows multiple selection.
