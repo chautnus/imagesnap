@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ImageSnap: Asset & Metadata Scraper",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Capture product images and metadata from any website directly to your Google Drive and Sheets.",
   "author": "ImageSnap Cloud",
   "icons": {

@@ -13,12 +13,15 @@ const blobCache: Record<string, string> = {};
 
 export const DriveImage: React.FC<DriveImageProps> = ({ url, className, alt }) => {
   const isBase64 = url && url.startsWith('data:');
-  const [src, setSrc] = useState<string | null>(isBase64 ? url : (blobCache[url] || null));
-  const [loading, setLoading] = useState(!isBase64 && !blobCache[url]);
+  const isDriveUrl = url && (url.includes('drive.google.com') || url.includes('id='));
+  const isNormalUrl = url && url.startsWith('http') && !isDriveUrl;
+
+  const [src, setSrc] = useState<string | null>( (isBase64 || isNormalUrl) ? url : (blobCache[url] || null));
+  const [loading, setLoading] = useState(!isBase64 && !isNormalUrl && !blobCache[url]);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (isBase64) {
+    if (isBase64 || isNormalUrl) {
       setSrc(url);
       setLoading(false);
       return;
@@ -89,9 +92,10 @@ export const DriveImage: React.FC<DriveImageProps> = ({ url, className, alt }) =
   return (
     <img 
       src={src} 
-      alt={alt || "Drive Content"} 
+      alt={alt || "Content"} 
       className={className}
       loading="lazy"
+      onError={() => setError(true)}
     />
   );
 };
