@@ -230,7 +230,7 @@ export default function App() {
             </div>
           </div>
           <button 
-             onClick={() => window.open(window.location.origin, '_blank')}
+             onClick={() => window.open(API_BASE_URL || window.location.origin, '_blank')}
              className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center text-muted hover:text-accent hover:border-accent/30 transition-all bg-card"
           >
             <ExternalLink size={18} />

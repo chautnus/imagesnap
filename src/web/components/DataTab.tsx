@@ -340,7 +340,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-black rounded-lg overflow-hidden border border-line">
-                    <img src={getDriveThumbnail(firstImg || '')} className="w-full h-full object-cover transition-all" />
+                    <DriveImage url={firstImg || ''} className="w-full h-full object-cover transition-all" />
                   </div>
                   <div className="font-bold text-base text-left">{name}</div>
                 </div>

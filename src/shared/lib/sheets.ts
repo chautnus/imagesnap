@@ -46,7 +46,7 @@ export async function findOrCreateWorkspace() {
   }
 
   // 2. If not found globally, proceed with folder creation and new file
-  const parentFolderId = await findOrCreateFolder('ImageSnap Data');
+  const parentFolderId = await findOrCreateFolder('ImageSnap');
 
   // Create new spreadsheet
   const createData = await sheetsRequest('', {

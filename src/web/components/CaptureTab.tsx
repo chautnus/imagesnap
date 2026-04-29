@@ -128,6 +128,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   }, [importedMetadata, selectedCategoryId, categories, lang, onClearImportedMetadata]);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [showFlash, setShowFlash] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkUrlInput, setBulkUrlInput] = useState('');
@@ -139,6 +140,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [extractedImages, setExtractedImages] = useState<{url: string, type: string, width: number, height: number, alt: string}[]>([]);
   const [pickerSelection, setPickerSelection] = useState<Set<string>>(new Set());
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set(['LOGO', 'BANNER', 'OTHERS', 'ICONS']));
+
+  useEffect(() => {
+    if (isCameraOpen && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(e => console.warn("Auto-play failed:", e));
+    }
+  }, [isCameraOpen]);
 
   const handleExtensionSnap = async () => {
     setIsExtracting(true);
@@ -247,13 +255,22 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'environment', 
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
-      });
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
+        }
+      };
+
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (e) {
+        console.warn("High-res constraints failed, trying basic video...", e);
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -289,8 +306,12 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(videoRef.current, 0, 0);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-        setImages([...images, dataUrl]);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9); // Slightly lower quality for faster sequential shooting
+        setImages(prev => [...prev, dataUrl]);
+        
+        // Shutter effect
+        setShowFlash(true);
+        setTimeout(() => setShowFlash(false), 150);
       }
     }
   };
@@ -427,15 +448,16 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         >
           <Camera size={20} className="stroke-[3]" />
           <span className="text-[11px] font-black tracking-tighter uppercase whitespace-nowrap">FAST_CAM</span>
-          <input 
+            <input 
             type="file" 
             accept="image/*" 
             capture="environment"
+            multiple
             className="hidden" 
             id="file-native"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              const file = e.target.files?.[0];
-              if (file) {
+              const files = Array.from(e.target.files || []);
+              files.forEach((file: File) => {
                 const reader = new FileReader();
                 reader.onload = (re: ProgressEvent<FileReader>) => {
                   const result = re.target?.result;
@@ -444,7 +466,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                   }
                 };
                 reader.readAsDataURL(file);
-              }
+              });
             }}
           />
         </label>
@@ -611,14 +633,39 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             exit={{ opacity: 0, scale: 0.9 }}
             className="fixed inset-0 z-[150] bg-black flex flex-col"
           >
-            <video ref={videoRef} autoPlay playsInline className="w-full flex-1 object-cover" />
-            <div className="p-8 pb-12 bg-black/80 flex justify-around items-center">
+            <video ref={videoRef} autoPlay playsInline muted className="w-full flex-1 object-cover" />
+            
+            {/* Shutter Flash Effect */}
+            <AnimatePresence>
+              {showFlash && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-white z-[160]"
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Last Photo Preview & Counter */}
+            {images.length > 0 && (
+              <div className="absolute top-10 left-6 flex items-center gap-3 z-[170]">
+                <div className="w-14 h-14 rounded-xl border-2 border-white/50 overflow-hidden shadow-2xl">
+                  <img src={images[images.length - 1]} className="w-full h-full object-cover" />
+                </div>
+                <div className="bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                  <span className="text-white font-black text-xs tracking-widest">{images.length} PHOTOS</span>
+                </div>
+              </div>
+            )}
+
+            <div className="p-8 pb-12 bg-black/80 flex justify-around items-center z-[170]">
               <button onClick={stopCamera} className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white">
                 <X size={24} />
               </button>
               <button 
                 onClick={takePhoto}
-                className="w-20 h-20 bg-white rounded-full border-8 border-accent shadow-2xl active:scale-95 transition-transform"
+                className="w-20 h-20 bg-white rounded-full border-8 border-accent shadow-2xl active:scale-90 transition-transform"
               />
               <button className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white">
                 <RefreshCw size={24} />

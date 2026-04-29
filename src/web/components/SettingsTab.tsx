@@ -415,7 +415,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
              </p>
              
              <button 
-               onClick={() => window.open('https://github.com/google/productsnap', '_blank')}
+               onClick={() => window.open('https://www.imagesnap.cloud', '_blank')}
                className="btn btn-primary py-4 flex items-center justify-center gap-3 font-black text-[11px]"
              >
                <ExternalLink size={20} />
