@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, RefreshCw, X, ChevronRight, Check, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, ChevronDown, ChevronUp, Plus, Zap } from 'lucide-react';
+import { Camera, RefreshCw, X, ChevronRight, Check, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, ChevronDown, ChevronUp, Plus, Zap, Grid3X3, Square } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
 import { motion, AnimatePresence } from 'motion/react';
 import { translate } from '@shared/lib/translations';
@@ -133,6 +133,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [exposure, setExposure] = useState(0);
   const [torch, setTorch] = useState(false);
   const [capabilities, setCapabilities] = useState<any>(null);
+  const [showGrid, setShowGrid] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState<'original' | 'square'>('original');
+  const [focusPoint, setFocusPoint] = useState<{ x: number, y: number } | null>(null);
+  const [sessionImages, setSessionImages] = useState<string[]>([]);
+  
+  const touchStartDist = useRef<number | null>(null);
+  const touchStartZoom = useRef<number>(1);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkUrlInput, setBulkUrlInput] = useState('');
@@ -314,78 +321,104 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     }
   };
 
-  const handleExposureChange = async (value: number) => {
-    setExposure(value);
-    const track = streamRef.current?.getVideoTracks()[0];
-    if (track && capabilities?.exposureCompensation) {
-      try {
-        await track.applyConstraints({ advanced: [{ exposureCompensation: value }] } as any);
-      } catch (e) {
-        console.warn("Exposure failed:", e);
-      }
-    }
-  };
-
-  const handleTapToFocus = async (e: React.MouseEvent) => {
-    if (!videoRef.current || !streamRef.current || !capabilities?.focusMode) return;
+  const handleTapToFocus = async (e: React.MouseEvent | React.TouchEvent) => {
+    if (!videoRef.current || !streamRef.current) return;
     
     const track = streamRef.current.getVideoTracks()[0];
     const rect = videoRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-
-    try {
-      await track.applyConstraints({
-        advanced: [{ 
-          focusMode: 'manual', 
-          pointsOfInterest: [{ x, y }] 
-        }]
-      } as any);
-      
-      // Visual feedback for focus tap (optional, can add a ring here later)
-      console.log("Focused at:", x, y);
-    } catch (e) {
-      console.warn("Focus failed:", e);
+    
+    let clientX, clientY;
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
     }
-  };
 
-  const toggleTorch = async () => {
-    const nextTorch = !torch;
-    setTorch(nextTorch);
-    const track = streamRef.current?.getVideoTracks()[0];
-    if (track && capabilities?.torch) {
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
+
+    setFocusPoint({ x: clientX, y: clientY });
+    setTimeout(() => setFocusPoint(null), 1000);
+
+    if (capabilities?.focusMode) {
       try {
-        await track.applyConstraints({ advanced: [{ torch: nextTorch }] } as any);
+        await track.applyConstraints({
+          advanced: [{ 
+            focusMode: 'manual', 
+            pointsOfInterest: [{ x, y }] 
+          }]
+        } as any);
       } catch (e) {
-        console.warn("Torch failed:", e);
+        console.warn("Focus failed:", e);
       }
     }
   };
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      touchStartDist.current = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY
+      );
+      touchStartZoom.current = zoom;
+    } else if (e.touches.length === 1) {
+      // Allow tap to focus on mobile too
+      // handleTapToFocus(e); 
     }
-    setTorch(false);
-    setCapabilities(null);
-    setIsCameraOpen(false);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartDist.current !== null && capabilities?.zoom) {
+      const dist = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY
+      );
+      const delta = dist / touchStartDist.current;
+      const newZoom = Math.min(
+        capabilities.zoom.max,
+        Math.max(capabilities.zoom.min, touchStartZoom.current * delta)
+      );
+      handleZoomChange(newZoom);
+    }
   };
 
   const takePhoto = () => {
     if (videoRef.current) {
       const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.9); // Slightly lower quality for faster sequential shooting
-        setImages(prev => [...prev, dataUrl]);
-        
-        // Shutter effect
-        setShowFlash(true);
-        setTimeout(() => setShowFlash(false), 150);
+      
+      if (aspectRatio === 'square') {
+        const size = Math.min(videoRef.current.videoWidth, videoRef.current.videoHeight);
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(
+            videoRef.current,
+            (videoRef.current.videoWidth - size) / 2,
+            (videoRef.current.videoHeight - size) / 2,
+            size, size,
+            0, 0, size, size
+          );
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          setImages(prev => [...prev, dataUrl]);
+          setSessionImages(prev => [...prev, dataUrl]);
+          setShowFlash(true);
+          setTimeout(() => setShowFlash(false), 150);
+        }
+      } else {
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(videoRef.current, 0, 0);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          setImages(prev => [...prev, dataUrl]);
+          setSessionImages(prev => [...prev, dataUrl]);
+          setShowFlash(true);
+          setTimeout(() => setShowFlash(false), 150);
+        }
       }
     }
   };
@@ -436,7 +469,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${subStatus.isPro ? 'bg-yellow-500/20 text-yellow-500' : 'bg-accent/10 text-accent'}`}>
               {subStatus.isPro ? 'PRO' : 'FREE'}
             </span>
-            <span className="text-[10px] font-black text-muted opacity-40">V1.2.7</span>
+            <span className="text-[10px] font-black text-muted opacity-40">V1.2.8</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted font-mono font-bold">
@@ -708,41 +741,74 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-[150] bg-black flex flex-col overflow-hidden select-none touch-none"
-          >
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              muted 
-              onClick={handleTapToFocus}
-              className="w-full flex-1 object-cover min-h-0 cursor-crosshair" 
-            />
-            
-            {/* Shutter Flash Effect */}
-            <AnimatePresence>
-              {showFlash && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-white z-[160]"
-                />
-              )}
-            </AnimatePresence>
+            <div className={`relative flex-1 overflow-hidden bg-black flex items-center justify-center ${aspectRatio === 'square' ? 'aspect-square' : ''}`}>
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                onClick={handleTapToFocus}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={() => { touchStartDist.current = null; }}
+                className="w-full h-full object-cover cursor-crosshair" 
+              />
 
-            {/* Last Photo Preview & Counter */}
-            {images.length > 0 && (
-              <div className="absolute top-10 left-6 flex items-center gap-3 z-[170]">
-                <div className="w-14 h-14 rounded-xl border-2 border-white/50 overflow-hidden shadow-2xl">
-                  <img src={images[images.length - 1]} className="w-full h-full object-cover" />
+              {/* Grid Overlay */}
+              {showGrid && (
+                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
+                  <div className="border-r border-white/20 border-b"></div>
+                  <div className="border-r border-white/20 border-b"></div>
+                  <div className="border-b border-white/20"></div>
+                  <div className="border-r border-white/20 border-b"></div>
+                  <div className="border-r border-white/20 border-b"></div>
+                  <div className="border-b border-white/20"></div>
+                  <div className="border-r border-white/20"></div>
+                  <div className="border-r border-white/20"></div>
+                  <div></div>
                 </div>
-                <div className="bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                  <span className="text-white font-black text-xs tracking-widest">{images.length} PHOTOS</span>
-                </div>
+              )}
+
+              {/* Focus Ring */}
+              <AnimatePresence>
+                {focusPoint && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 2 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    style={{ left: focusPoint.x - 40, top: focusPoint.y - 40 }}
+                    className="absolute w-20 h-20 border-2 border-accent rounded-sm z-[180] pointer-events-none flex items-center justify-center"
+                  >
+                    <div className="w-1 h-1 bg-accent rounded-full"></div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Shutter Flash Effect */}
+              <AnimatePresence>
+                {showFlash && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-white z-[200]"
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+            
+            {/* Session Thumbnail Strip */}
+            {sessionImages.length > 0 && (
+              <div className="flex-none h-16 bg-black/40 backdrop-blur-md border-y border-white/5 flex items-center gap-2 px-4 overflow-x-auto no-scrollbar py-2">
+                {sessionImages.map((img, idx) => (
+                  <div key={idx} className="h-full aspect-square rounded-md overflow-hidden border border-white/20 flex-none">
+                    <img src={img} className="w-full h-full object-cover" />
+                  </div>
+                ))}
               </div>
             )}
 
+            {/* Controls Overlays */}
             {/* Zoom Slider (Right) */}
             {capabilities?.zoom && (
               <div className="absolute right-6 top-1/2 -translate-y-1/2 h-48 flex flex-col items-center gap-4 z-[170]">
@@ -777,18 +843,40 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
               </div>
             )}
 
-            {/* Torch Button */}
-            {capabilities?.torch && (
-              <button 
-                onClick={toggleTorch}
-                className={`absolute top-10 right-6 w-12 h-12 rounded-full border flex items-center justify-center transition-all z-[170] ${torch ? 'bg-accent border-accent text-bg' : 'bg-black/20 border-white/20 text-white'}`}
-              >
-                <Zap size={20} fill={torch ? "currentColor" : "none"} />
-              </button>
-            )}
+            {/* Top Toolbar */}
+            <div className="absolute top-10 left-6 right-6 flex justify-between items-center z-[170]">
+              <div className="flex items-center gap-3">
+                <div className="bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                  <span className="text-white font-black text-xs tracking-widest">{images.length} PHOTOS</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setShowGrid(!showGrid)} 
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${showGrid ? 'bg-accent border-accent text-bg' : 'bg-black/40 border-white/20 text-white'}`}
+                >
+                  <Grid3X3 size={18} />
+                </button>
+                <button 
+                  onClick={() => setAspectRatio(aspectRatio === 'original' ? 'square' : 'original')} 
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${aspectRatio === 'square' ? 'bg-accent border-accent text-bg' : 'bg-black/40 border-white/20 text-white'}`}
+                >
+                  <Square size={18} />
+                </button>
+                {capabilities?.torch && (
+                  <button 
+                    onClick={toggleTorch}
+                    className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${torch ? 'bg-accent border-accent text-bg' : 'bg-black/40 border-white/20 text-white'}`}
+                  >
+                    <Zap size={18} fill={torch ? "currentColor" : "none"} />
+                  </button>
+                )}
+              </div>
+            </div>
 
+            {/* Bottom Shutter Controls */}
             <div className="p-4 pb-10 bg-black/80 flex justify-around items-center z-[170] flex-none">
-              <button onClick={stopCamera} className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white">
+              <button onClick={() => { setSessionImages([]); stopCamera(); }} className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white">
                 <X size={24} />
               </button>
               <button 
