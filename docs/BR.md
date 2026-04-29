@@ -53,9 +53,17 @@
 
 ---
 
+## BR-5. Compliance & Distribution
+### BR-5.1 Chrome Web Store Compliance
+**BR-5.1.1** System KHÔNG ĐƯỢC sử dụng remotely hosted code (scripts từ URL bên ngoài). Mọi logic phải được đóng gói cục bộ.
+**BR-5.1.2** System phải tuân thủ nguyên tắc "Minimal Permissions", chỉ yêu cầu những quyền thực sự cần thiết (gỡ bỏ `storage` nếu không dùng).
+
+---
+
 ## CHANGELOG
 > Mọi thay đổi BR đều ghi ở đây để trace nguyên nhân.
 
 | Date | ID | Loại thay đổi | Nội dung | Author | Impact |
 |------|----|---------------|----------|--------|--------|
 | 2026-04-27 | BR-1 -> BR-4 | INITIAL | Khởi tạo từ PROJECT_REQUIREMENTS.md | Antigravity | N/A |
+| 2026-04-28 | BR-3, BR-5 | UPDATE | Thêm yêu cầu về Burst Mode, Native Camera và tuân thủ Chrome Store | Antigravity | High |

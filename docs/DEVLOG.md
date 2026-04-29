@@ -30,6 +30,13 @@
   - Fixes: Cấu hình CORS middleware cho domain `www.imagesnap.cloud`. Loại bỏ `getAuthToken` gây lỗi trên Edge.
 - [DEV-2026W18-08] Thiết lập Automated Testing Framework → [BR-5.1]
   - Fixes: Cài đặt Playwright, viết test script cho luồng Staff Login.
+- [DEV-2026W18-09] Chrome Store Compliance & Camera Enhancements → [BR-5.1, BR-3.2]
+  - Fixes: Gỡ bỏ code từ xa (GAPI) và quyền storage. Sửa lỗi camera đen.
+  - Features: Triển khai Burst Mode, Native Camera Support, h-[100dvh] cho mobile.
+  - Version: Bump to 1.2.4.
+  - Review: AGENT-REVIEW-A: APPROVE
+  - Human: APPROVED by user on 2026-04-28
+
 
 ### 🔄 In Progress
 - [DEV-2026W18-02] Rà soát và cập nhật GEMINI.md và ANTIGRAVITY.md để đồng bộ với doc ecosystem.

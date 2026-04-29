@@ -83,7 +83,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 0 |
+| Total bugs logged | 2 |
 | Open | 0 |
-| Closed | 0 |
-| Patterns extracted | 0 |
+| Closed | 2 |
+| Patterns extracted | 2 |

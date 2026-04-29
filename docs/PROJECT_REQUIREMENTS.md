@@ -3,33 +3,37 @@
 ## Core Objective
 A powerful browser-based product cataloging application that captures photos, scrapes web images, and organizes them into a structured Google Drive/Sheets workspace.
 
-## Version 1.2.0 Features (Current Release)
+## Version 1.2.4 Features (Current Release)
 
 ### 1. Data Structure & Storage
 - **Backend**: Google Sheets (data) and Google Drive (images).
-- **Workspace**: A spreadsheet named `ImageSnap Workspace`.
-- **Image Thumbnails**: Optimized Drive thumbnail generation using `https://drive.google.com/thumbnail?id=ID&sz=w600` for 5x faster loading in the Data tab.
-- **Naming Convention**: Images in the folder renamed to `[Key]-xxx.jpg`.
+- **Workspace**: A spreadsheet named `imagesnap.xlsx` (unified naming).
+- **Storage Folder**: Unified root folder named `ImageSnap` on Google Drive for both Web and Extension.
+- **Image Thumbnails**: Optimized Drive thumbnail generation for 5x faster loading in the Data tab.
+- **Naming Convention**: Images in the folder named `[Key]-xxx.jpg`.
 
 ### 2. Usage Quota & Monetization
 - **Free Tier**: 30 snaps per month limit.
 - **PRO Tier**: Unlimited snaps, lifetime access via Stripe/Lemon Squeezy.
-- **Real-time Tracking**: Usage is tracked server-side and synced across Web and Extension via `/api/increment-usage`.
-- **Status Badges**: Plan status (FREE/PRO) and usage quota displayed live on Capture and Settings screens.
+- **Real-time Tracking**: Usage is tracked server-side and synced across Web and Extension.
 
-### 3. User Experience & Detail View
-- **Max Legibility UI**: Base font sizes set to 16px (inputs) and 14px (secondary) for high readability on desktop and mobile.
-- **Data Detail View**: Clicking a record reveals a text-based "Deep Dive" showing every saved field and a gallery of high-res images linking directly to Drive.
-- **ActiveTab Security**: The browser extension uses programmatic injection (`chrome.scripting`) to respect user privacy and bypass "Broad Host Permission" review delays.
+### 3. User Experience & Compliance
+- **Max Legibility UI**: Base font sizes set to 16px (inputs) and 14px (secondary).
+- **Chrome Store Compliance**: 
+    - Removed all remotely hosted code (prohibited GAPI scripts).
+    - Minimalist permissions: Removed unused `storage` permission.
+    - Local assets: All fonts and logic are bundled locally.
+- **Data Detail View**: "Deep Dive" showing every saved field and a gallery of high-res images.
 
-### 4. Image Capture & Scraping
-- **Extension (Collector)**: Advanced image/metadata extraction with context-aware "activeTab" selection.
-- **Camera**: Integrated camera with image strip review.
-- **Bulk Import**: Support for pasting multiple URLs or receiving via `?import=` parameter.
+### 4. Image Capture & Camera
+- **Extension (Collector)**: Advanced image/metadata extraction with "activeTab".
+- **Burst Cam (In-App)**: Custom camera supporting continuous rapid shooting, shutter flash effect, session counter, and last-shot preview.
+- **App Camera (Native)**: Integrated access to the device's native camera app for full hardware support (Zoom, Auto-focus, Macro).
+- **Mobile Optimization**: Fixed viewport height issues with `100dvh` to ensure shutter button is always visible without scrolling.
 
 ### 5. Search & Filtering
 - **Advanced Search**: Filter by Date, Category, Tags, and Author.
 - **Dynamic Search**: Real-time filtering by product name and metadata.
 
 ---
-*Last Updated: 2026-04-26*
+*Last Updated: 2026-04-28*
