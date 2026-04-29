@@ -38,6 +38,12 @@
   - Fixes: Triển khai `fixed inset-0` và `min-h-0` cho Burst Cam để sửa triệt để lỗi tràn màn hình trên di động.
   - Docs: Cập nhật hướng dẫn quy trình chụp ảnh qua Gallery để tối ưu việc dùng Zoom/Focus của máy.
   - Version: Bump to 1.2.5.
+- [DEV-2026W18-11] Burst Cam Hardware Control (Zoom & Torch) → [BR-3.2]
+  - Features: Implement hardware capability detection for `zoom` and `torch`.
+  - UI: Added vertical zoom slider and flash toggle button to the in-app camera.
+  - Version: Bump to 1.2.6.
+  - Human: APPROVED by user on 2026-04-28
+
   - Human: APPROVED by user on 2026-04-28
 
   - Review: AGENT-REVIEW-A: APPROVE
