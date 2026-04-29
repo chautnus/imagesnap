@@ -529,7 +529,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted font-mono font-bold">
-              {subStatus.isPro ? 'UNLIMITED' : `USAGE: ${subStatus.usage}/${subStatus.limit}`}
+              {subStatus.isPro ? `USAGE: ${subStatus.usage} (UNLIMITED)` : `USAGE: ${subStatus.usage}/${subStatus.limit}`}
             </span>
           </div>
         </div>

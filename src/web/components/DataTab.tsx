@@ -295,7 +295,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
           {categories.filter(c => !c._deleted).map((cat, idx) => (
             <button
               key={cat.id}
-              onClick={() => { setSelectedCatId(cat.id); setView('names'); }}
+              onClick={() => { setSelectedCatId(cat.id); setView('items'); setSelectedProdName(null); }}
               className="card p-4 flex flex-col items-center gap-3 text-center group hover:border-accent transition-all"
             >
               <div className="w-12 h-12 rounded-full bg-accent/5 flex items-center justify-center text-3xl transition-transform group-hover:scale-110">
@@ -360,7 +360,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
 
 
   if (view === 'items') {
-    const items = allFilteredProducts.filter(p => p.categoryId === selectedCatId && p.name === selectedProdName);
+    const items = allFilteredProducts.filter(p => p.categoryId === selectedCatId && (!selectedProdName || p.name === selectedProdName));
     const currentCat = categories.find(c => c.id === selectedCatId);
 
     return (
@@ -368,13 +368,11 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
         <div className="flex items-center gap-2 text-muted text-[12px] font-bold uppercase tracking-widest overflow-x-auto whitespace-nowrap">
           <button onClick={() => setView('categories')}>DATA</button>
           <ChevronRight size={14} className="flex-none" />
-          <button onClick={() => setView('names')}>{currentCat && translate(currentCat.name, lang)}</button>
-          <ChevronRight size={14} className="flex-none" />
-          <span className="text-accent truncate">{selectedProdName}</span>
+          <span className="text-accent truncate">{currentCat && translate(currentCat.name, lang)}</span>
         </div>
 
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-black uppercase tracking-tight">{selectedProdName}</h2>
+          <h2 className="text-3xl font-black uppercase tracking-tight">{currentCat && translate(currentCat.name, lang)}</h2>
           <span className="text-[10px] font-mono text-muted">[{items.length}]</span>
         </div>
         {renderSearchHeader()}

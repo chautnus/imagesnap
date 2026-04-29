@@ -110,10 +110,8 @@ async function startServer() {
     if (!email) return res.status(400).json({ error: "Email required" });
     
     const status = await getSubscription(email);
-    if (!status.isPro) {
-      status.usage = (status.usage || 0) + 1;
-      saveDb();
-    }
+    status.usage = (status.usage || 0) + 1;
+    saveDb();
     res.json(status);
   });
 
