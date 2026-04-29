@@ -137,7 +137,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [aspectRatio, setAspectRatio] = useState<'original' | 'square'>('original');
   const [focusPoint, setFocusPoint] = useState<{ x: number, y: number } | null>(null);
   const [sessionImages, setSessionImages] = useState<string[]>([]);
-  
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const touchStartDist = useRef<number | null>(null);
   const touchStartZoom = useRef<number>(1);
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -259,18 +259,33 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const startCamera = async () => {
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraOpen(false);
+    setCapabilities(null);
+    setTorch(false);
+  };
+
+  const startCamera = async (mode = facingMode) => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       alert("Trình duyệt này không hỗ trợ Live Camera hoặc bạn đang không sử dụng HTTPS. Hãy dùng nút APP CAMERA bên cạnh để thay thế.");
       return;
     }
 
+    // Stop existing stream if any
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+
     try {
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 }
+          facingMode: { ideal: mode },
+          width: { ideal: 1920, max: 3840 },
+          height: { ideal: 1080, max: 2160 }
         }
       };
 
@@ -279,12 +294,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         stream = await navigator.mediaDevices.getUserMedia(constraints);
       } catch (e) {
         console.warn("High-res constraints failed, trying basic video...", e);
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: { ideal: mode } } 
+        });
       }
 
       streamRef.current = stream;
       
-      // Get capabilities (Zoom/Torch)
       const track = stream.getVideoTracks()[0];
       if (track && 'getCapabilities' in track) {
         const caps = track.getCapabilities() as any;
@@ -304,10 +320,50 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         alert("QUYỀN CAMERA BỊ CHẶN: Vui lòng vào cài đặt trình duyệt, tìm mục ImageSnap và chọn 'Allow Camera' sau đó thử lại.");
       } else {
-        alert("LỖI CAMERA: " + (err.message || "Không thể khởi động camera. Hãy thử sử dụng nút APP CAMERA."));
+        alert("LỖI CAMERA: " + (err.message || "Không thể khởi động camera."));
+      }
+      setIsCameraOpen(false);
+    }
+  };
+
+  const switchCamera = () => {
+    const newMode = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(newMode);
+    startCamera(newMode);
+  };
+
+  const toggleTorch = async () => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (track && capabilities?.torch) {
+      try {
+        const newTorchState = !torch;
+        await track.applyConstraints({ advanced: [{ torch: newTorchState }] } as any);
+        setTorch(newTorchState);
+      } catch (e) {
+        console.warn("Torch failed:", e);
       }
     }
   };
+
+  const handleExposureChange = async (value: number) => {
+    setExposure(value);
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (track && capabilities?.exposureCompensation) {
+      try {
+        await track.applyConstraints({ advanced: [{ exposureCompensation: value }] } as any);
+      } catch (e) {
+        console.warn("Exposure failed:", e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const handleZoomChange = async (value: number) => {
     setZoom(value);
@@ -885,7 +941,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                 onClick={takePhoto}
                 className="w-20 h-20 bg-white rounded-full border-8 border-accent shadow-2xl active:scale-90 transition-transform"
               />
-              <button className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white">
+              <button onClick={switchCamera} className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white">
                 <RefreshCw size={24} />
               </button>
             </div>
