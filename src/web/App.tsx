@@ -3,11 +3,13 @@ import { Navigation } from './components/Navigation';
 import { CaptureTab, ProductMetadata } from './components/CaptureTab';
 import { DataTab } from './components/DataTab';
 import { SettingsTab } from './components/SettingsTab';
+import { HelpTab } from './components/HelpTab';
+import { Header } from './components/Header';
 import { Wizard } from './components/Wizard';
 import { LandingPage } from './components/LandingPage';
 import { StaffLogin } from './components/StaffLogin';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
-import { initGis, getAccessToken, setAccessToken, getUserInfo, requestToken } from '@shared/lib/google-auth';
+import { initGis, getAccessToken, setAccessToken, getUserInfo, requestToken, revokeToken } from '@shared/lib/google-auth';
 import { 
   findOrCreateWorkspace, 
   appendRow, 
@@ -22,7 +24,7 @@ const API_BASE_URL = (window.location.protocol === 'extension:' || window.locati
   : '';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings'>('capture');
+  const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings' | 'help'>('capture');
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [view, setView] = useState<'app' | 'landing' | 'privacy'>('landing');
   const [user, setUser] = useState<any>(null);
@@ -41,8 +43,18 @@ export default function App() {
     handleDeleteCategory 
   } = useAppData(spreadsheetId, user);
 
+  const [landingVariant, setLandingVariant] = useState<number>(() => {
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    // Match /1, /2, /3 anywhere in the path or as the whole path
+    const match = path.match(/\/([123])\/?$/);
+    return match ? parseInt(match[1]) : 0;
+  });
+
   useEffect(() => {
+    if (landingVariant !== 0) setView('landing');
+    
     (window as any).switchToSettings = () => setActiveTab('settings');
+    (window as any).switchToHelp = () => setActiveTab('help');
     const handleInit = () => {
       initGis(async (token) => {
         setAccessToken(token);
@@ -190,7 +202,7 @@ export default function App() {
     if (window.location.hash === '#staff') {
       return <StaffLogin onLogin={handleStaffLogin} onBack={() => window.location.hash = ''} t={t} />;
     }
-    return <LandingPage onLogin={() => requestToken()} t={t} />;
+    return <LandingPage onLogin={() => requestToken()} t={t} variant={landingVariant} />;
   }
 
   if (!isAuthReady) {
@@ -205,42 +217,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-20 max-w-md mx-auto relative bg-bg">
-      <header className="px-6 py-6 flex bg-bg items-center justify-between border-b border-white/5 shadow-xl">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-             <div className="w-5 h-5 bg-accent rounded flex items-center justify-center">
-               <ImageIcon size={12} className="text-bg fill-current" />
-             </div>
-             <span className="text-[10px] font-black tracking-widest text-white uppercase italic">ImageSnap_</span>
-          </div>
-          <h1 className="text-2xl font-black tracking-tighter mt-1">
-             {activeTab.toUpperCase()}
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end">
-            <div className="flex items-center gap-1.5">
-               <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${subStatus.isAdmin ? 'bg-accent text-bg' : 'bg-blue-500 text-white'}`}>
-                 {subStatus.isAdmin ? 'ADMIN' : 'STAFF'}
-               </span>
-               <span className="text-[11px] font-bold text-white max-w-[120px] truncate">
-                 {user?.email || user?.username || 'OFFLINE'}
-               </span>
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-               {subStatus.isPro && <span className="text-[8px] font-black text-yellow-500 flex items-center gap-0.5"><Crown size={8} /> PRO</span>}
-               <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-muted animate-pulse' : 'bg-accent shadow-[0_0_8px_var(--accent)]'}`} />
-            </div>
-          </div>
-          <button 
-             onClick={() => window.open(API_BASE_URL || window.location.origin, '_blank')}
-             className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center text-muted hover:text-accent hover:border-accent/30 transition-all bg-card"
-          >
-            <ExternalLink size={18} />
-          </button>
-        </div>
-      </header>
+      <Header 
+        activeTab={activeTab}
+        user={user}
+        subStatus={subStatus}
+        isSyncing={isSyncing}
+        version="v1.3.1"
+      />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
         {activeTab === 'capture' && (
@@ -268,6 +251,7 @@ export default function App() {
             onClearImportedUrl={() => setImportedUrl('')}
             onClearImportedMetadata={() => setImportedMetadata({})}
             onSaveCategory={handleSaveCategory}
+            onSwitchToHelp={() => setActiveTab('help')}
           />
         )}
         {activeTab === 'data' && (
@@ -310,6 +294,9 @@ export default function App() {
               window.location.href = window.location.origin; // Hard redirect
             }}
           />
+        )}
+        {activeTab === 'help' && (
+          <HelpTab t={t} />
         )}
       </main>
 

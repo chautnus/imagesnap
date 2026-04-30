@@ -10,9 +10,10 @@
 | BR-2.2 | Payment | ARCH-2.1 | `server.ts` | N/A | High | 2026-04-27 | Passed | Active |
 | BR-3.1 | Extension | ARCH-2.2 | `src/extension/*`, `src/shared/services/dataService.ts` | N/A | Med | 2026-04-28 | Passed | Active |
 | BR-3.2 | Camera | ARCH-2.4 | `src/web/components/CaptureTab.tsx` | N/A | Low | 2026-04-28 | Passed | Active |
-| BR-3.3 | Bulk Import | ARCH-2.3 | `src/web/App.tsx`, `src/web/components/Wizard.tsx` | N/A | Low | 2026-04-27 | Passed | Active |
+| BR-3.3 | Bulk Import | ARCH-2.3 | `src/web/App.tsx`, `src/web/components/Wizard.tsx` | N/A | Low | 2026-04-30 | N/A | REMOVED |
 | BR-4.1 | UI Standards | ARCH-2.4 | `src/web/index.css` | N/A | Low | 2026-04-28 | Passed | Active |
 | BR-4.2 | Search | ARCH-2.4 | `src/web/components/DataTab.tsx` | N/A | Low | 2026-04-27 | Passed | Active |
+| BR-4.3 | Marketing Variants | ARCH-2.4 | `src/web/components/LandingPage.tsx`, `App.tsx` | N/A | Low | 2026-04-30 | N/A | Active |
 | BR-1.3 | Centralized Storage | ARCH-2.1 | `server.ts`, `useAppData.ts` | N/A | High | 2026-04-28 | Passed | Active |
 | BR-2.3 | Staff Login & Permissions | ARCH-2.1 | `server.ts`, `StaffLogin.tsx` | `tests/staff_login.spec.ts` | Med | 2026-04-27 | Passed | Active |
 | BR-3.4 | Quick Category Creation | ARCH-2.4 | `CaptureTab.tsx`, `App.tsx` | N/A | Low | 2026-04-27 | Passed | Active |

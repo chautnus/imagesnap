@@ -78,6 +78,13 @@
 ### 🔄 In Progress
 - [DEV-2026W18-02] Rà soát và cập nhật GEMINI.md và ANTIGRAVITY.md để đồng bộ với doc ecosystem.
   - Status: Implementation
+- [DEV-2026W18-16] Đồng bộ BUGLOG.md với các lỗi đã fix từ tuần 18.
+  - Fixes: Bổ sung BUG-004 đến BUG-008. Cập nhật bảng thống kê lỗi.
+- [DEV-2026W18-17] Nhất quán Metadata PWA/Extension & Fix PWA icon.
+- [DEV-2026W18-18] Cải tổ UI CaptureTab: Xóa Bulk Import, cấu trúc lại Header và Labels.
+- [DEV-2026W18-19] Triển khai 3 biến thể Landing Page (/1, /2, /3) phục vụ Marketing.
+- [DEV-2026W18-20] Khắc phục lỗi hiển thị đồng nhất Landing Page Variants.
+- [DEV-2026W18-21] Fix syntax error trong LandingPage.tsx (duplicated export) ngăn cản việc build/reload.
 
 ### 💡 Decisions Made
 - [DEV-2026W18-D01] Chuyển đổi PROJECT_REQUIREMENTS.md và ARCHITECTURE.md cũ sang format chuẩn Antigravity.

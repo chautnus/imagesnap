@@ -13,7 +13,7 @@ export default defineConfig({
       injectRegister: 'auto',
       manifest: {
         short_name: "ImageSnap",
-        name: "ImageSnap: Ecommerce Image & Data Collector",
+        name: "ImageSnap: Ecommerce Asset Collector",
         description: "Snap product images and metadata from any website directly to your Google Drive and Sheets.",
         id: "com.imagesnap.app",
         start_url: "/",

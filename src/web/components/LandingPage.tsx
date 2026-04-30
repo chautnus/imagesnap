@@ -20,9 +20,67 @@ import {
   X
 } from 'lucide-react';
 
-export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => {
+
+const VARIANT_DATA = {
+  1: {
+    themeColor: "text-accent",
+    heroTitle: <>The Ultimate <span className="text-accent italic">Ecommerce</span> Asset Scraper.</>,
+    heroDesc: "Automate your competitor research. Capture high-res product images and metadata from bất kỳ sàn thương mại điện tử nào trực tiếp về Drive.",
+    heroImage: "/landing_variant_1_ecom.png",
+    primaryFeatureTitle: "Automated Data Extraction",
+    primaryFeatureDesc: "Dừng việc copy-paste thủ công. ImageSnap tự động nhận diện tên sản phẩm, giá cả và ảnh gốc chất lượng cao khi bạn đang lướt web.",
+    problemTitle: "Ecommerce research is a nightmare.",
+    problemCard1: { title: "Drowning in tabs", desc: "Mở hàng chục tab Shopee/Alibaba nhưng không có cách nào lưu lại thông tin giá và ảnh một cách hệ thống." },
+    problemCard2: { title: "Manual Data Entry", desc: "Mất hàng giờ để nhập liệu thủ công từ website vào file Excel. Dễ sai sót và cực kỳ tốn thời gian." },
+    useCaseTitle: "For Dropshippers & Ecom Researchers",
+    useCaseDesc: "Thu thập kho ảnh sản phẩm đối thủ kèm theo giá bán và link nguồn chỉ trong 1 cú click chuột."
+  },
+  2: {
+    themeColor: "text-blue-500",
+    heroTitle: <>Organize your visual life, <span className="text-blue-500 italic">effortlessly</span>.</>,
+    heroDesc: "Sắp xếp hình ảnh theo thư mục chỉ với một click. Gán nhãn, phân loại và lưu trữ thông minh. Truy cập kho ảnh từ mọi nơi.",
+    heroImage: "/landing_variant_2_org.png",
+    primaryFeatureTitle: "Professional Folder Structure",
+    primaryFeatureDesc: "Thiết lập luồng công việc theo từng folder dự án. Mỗi hình ảnh đều có 'nhà' riêng, giúp Drive của bạn luôn ngăn nắp.",
+    problemTitle: "Folder mess kills productivity.",
+    problemCard1: { title: "The 'Downloads' Dumpster", desc: "Thư mục Downloads chứa hàng ngàn ảnh tên 'IMG_xxx' mà bạn không bao giờ tìm lại được." },
+    problemCard2: { title: "Context is lost", desc: "Khi tải ảnh về máy, bạn mất luôn thông tin ảnh đó lấy từ đâu, dùng cho dự án nào và các ghi chú đi kèm." },
+    useCaseTitle: "For Designers & Project Managers",
+    useCaseDesc: "Xây dựng Moodboard chuyên nghiệp ngay trên Google Drive với đầy đủ tag màu sắc và phong cách."
+  },
+  3: {
+    themeColor: "text-yellow-500",
+    heroTitle: <>Google Drive is your new <span className="text-yellow-500 italic">superpower</span>.</>,
+    heroDesc: "Lưu trữ trực tiếp lên Drive. Không tốn dung lượng máy tính. Tìm kiếm và phân loại dữ liệu ở quy mô lớn cho kho tài sản chuyên nghiệp.",
+    heroImage: "/landing_variant_3_cloud.png",
+    primaryFeatureTitle: "Cloud-Native Search",
+    primaryFeatureDesc: "Tận dụng sức mạnh của Google. Hình ảnh của bạn được lập chỉ mục, dễ tìm kiếm và bảo mật ngay khi vừa nhấn 'Snap'.",
+    problemTitle: "Local storage is a dead end.",
+    problemCard1: { title: "Hard Drive full", desc: "Ảnh chất lượng cao làm đầy ổ cứng máy tính, làm chậm hệ thống và khó khăn khi cần chia sẻ." },
+    problemCard2: { title: "Search is impossible", desc: "Tìm kiếm một tấm ảnh cũ trong hàng ngàn folder máy tính là điều không thể. Bạn thường phải tải lại." },
+    useCaseTitle: "For Content Teams & Agencies",
+    useCaseDesc: "Lưu trữ tập trung mọi asset quảng cáo, meme, stock photo vào một workspace chung cho cả team cùng khai thác."
+  },
+  0: { // Default
+    themeColor: "text-red-500",
+    heroTitle: <>Stop saving images as <span className="text-red-500 line-through decoration-white/20 decoration-4">`IMG_8472.jpg`</span>.</>,
+    heroDesc: "Save images from the web directly to Google Drive, auto-classify into folders, and attach detailed metadata without downloading to your computer.",
+    heroImage: "/imagesnap_extension_form_preview.png",
+    primaryFeatureTitle: "Fly straight to Google Drive",
+    primaryFeatureDesc: "Forget the 'Downloads' folder. ImageSnap connects directly to your Drive. Just right-click and choose a project folder.",
+    problemTitle: "Your current image workflow is broken.",
+    problemCard1: { title: "Downloads folder is a dumpster", desc: "You download hundreds of images with meaningless names. You have to open every file to find one." },
+    problemCard2: { title: "Images lose context", desc: "When you download an image, you lose the article title, the source link, and the purpose of that image." },
+    useCaseTitle: "Born for your specific workflow.",
+    useCaseDesc: "Whether you're a designer, researcher, or creator, ImageSnap adapts to how you organize your digital life."
+  }
+};
+
+export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, t: any, variant?: number }) => {
   const [activeTab, setActiveTab] = useState<'designer' | 'ecom' | 'creator'>('designer');
   const [showLoginOptions, setShowLoginOptions] = useState(false);
+
+  const currentData = VARIANT_DATA[variant as keyof typeof VARIANT_DATA] || VARIANT_DATA[0];
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white selection:bg-accent/30 font-sans overflow-x-hidden">
@@ -121,15 +179,15 @@ export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => 
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[0.9] mb-8">
-              Stop saving images as <span className="text-red-500 line-through decoration-white/20 decoration-4">`IMG_8472.jpg`</span>.
+              {currentData.heroTitle}
             </h1>
             <p className="text-muted text-lg md:text-xl font-medium leading-relaxed mb-10 max-w-xl">
-              Save images from the web directly to Google Drive, auto-classify into folders, and attach detailed metadata without downloading to your computer.
+              {currentData.heroDesc}
             </p>
             <div className="flex flex-col gap-4">
               <button 
                 onClick={() => setShowLoginOptions(true)}
-                className="w-fit px-10 py-5 bg-accent text-bg font-black text-xl rounded-2xl flex items-center gap-3 hover:glow-accent transition-all hover:-translate-y-1"
+                className={`w-fit px-10 py-5 bg-accent text-bg font-black text-xl rounded-2xl flex items-center gap-3 hover:glow-accent transition-all hover:-translate-y-1`}
               >
                 <Chrome size={24} strokeWidth={3} /> ADD TO CHROME - FREE 100 IMAGES
               </button>
@@ -148,7 +206,7 @@ export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => 
             <div className="absolute inset-0 bg-accent/20 blur-[100px] rounded-full animate-pulse-glow" />
             <div className="relative glass rounded-[2rem] overflow-hidden border-white/20 shadow-2xl">
               <img 
-                src="/imagesnap_extension_form_preview.png" 
+                src={currentData.heroImage} 
                 alt="ImageSnap Workflow Illustration" 
                 className="w-full h-auto"
               />
@@ -160,22 +218,22 @@ export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => 
         <section id="problem" className="bg-[#111113] py-32 border-y border-white/5 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 relative z-10">
             <h2 className="text-4xl md:text-5xl font-black text-center mb-20 tracking-tight">
-              Your current image workflow is <span className="text-red-500 italic">"broken"</span>.
+              {currentData.problemTitle}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <ProblemCard 
-                icon={<FolderOpen className="text-red-500" />}
-                title="Downloads folder is a dumpster"
-                desc="You download hundreds of reference images with meaningless names. When you need a specific one, you have to open every file."
+                icon={<FolderOpen className={currentData.themeColor} />}
+                title={currentData.problemCard1.title}
+                desc={currentData.problemCard1.desc}
               />
               <ProblemCard 
-                icon={<X className="text-red-500" />}
-                title="Google Photos isn't for work"
-                desc="It sucks everything into one timeline, ignores folder structures, and mixes work with personal photos."
+                icon={<X className={currentData.themeColor} />}
+                title={currentData.problemCard2.title}
+                desc={currentData.problemCard2.desc}
               />
               <ProblemCard 
-                icon={<ShieldAlert className="text-red-500" />}
+                icon={<ShieldAlert className={currentData.themeColor} />}
                 title="Images lose context"
                 desc="When you download an image, you lose the article title, the source link, and the value of that image."
               />
@@ -192,8 +250,8 @@ export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => 
 
           <FeatureRow 
              image="/imagesnap_hero_abstract.png"
-             title="Fly straight to Google Drive, in the right folder."
-             desc="Forget the 'Downloads' folder. ImageSnap connects directly to your Drive. Just right-click, choose a project folder, and the image sits neatly in your cloud."
+             title={currentData.primaryFeatureTitle}
+             desc={currentData.primaryFeatureDesc}
              icon={<Globe size={20} />}
           />
 
@@ -216,7 +274,12 @@ export const LandingPage = ({ onLogin, t }: { onLogin: () => void, t: any }) => 
         {/* 4. Use Case Section */}
         <section id="use-cases" className="bg-[#0D0D0E] py-40 px-6 border-y border-white/5">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-black text-center mb-16 tracking-tight">Born for your specific workflow.</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-center mb-16 tracking-tight">
+              {currentData.useCaseTitle}
+            </h2>
+            <p className="text-center text-muted text-xl mb-16 max-w-2xl mx-auto font-medium">
+              {currentData.useCaseDesc}
+            </p>
             
             <div className="flex flex-wrap justify-center gap-4 mb-16">
                <TabButton active={activeTab === 'designer'} onClick={() => setActiveTab('designer')} label="Designer & Artist" icon={<Palette size={18} />} />

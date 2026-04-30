@@ -18,7 +18,7 @@ interface CaptureTabProps {
   productNames: { categoryId: string, name: string }[];
   t: (key: string) => string;
   lang: string;
-  subStatus: { isPro: boolean, limit: number, usage: number };
+  subStatus: { isPro: boolean, limit: number, usage: number, userEmail?: string, isAdmin?: boolean };
   onUpgrade: () => Promise<void>;
   initialImages?: string[];
   importedUrl?: string;
@@ -27,6 +27,7 @@ interface CaptureTabProps {
   onClearImportedUrl?: () => void;
   onClearImportedMetadata: () => void;
   onSaveCategory?: (cat: Category) => Promise<void>;
+  onSwitchToHelp: () => void;
 }
 
 export const CaptureTab: React.FC<CaptureTabProps> = ({ 
@@ -43,7 +44,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   onClearInitialImages,
   onClearImportedUrl,
   onClearImportedMetadata,
-  onSaveCategory
+  onSaveCategory,
+  onSwitchToHelp
 }) => {
   const [images, setImages] = useState<string[]>(initialImages || []);
   const [searchTerm, setSearchTerm] = useState('');
@@ -142,8 +144,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const touchStartDist = useRef<number | null>(null);
   const touchStartZoom = useRef<number>(1);
   const [formData, setFormData] = useState<Record<string, any>>({});
-  const [showBulkModal, setShowBulkModal] = useState(false);
-  const [bulkUrlInput, setBulkUrlInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [keySearchFocus, setKeySearchFocus] = useState<string | null>(null);
@@ -480,14 +480,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     }
   };
 
-  const handleBulkImport = () => {
-    const urls = bulkUrlInput.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
-    if (urls.length > 0) {
-      setImages(prev => [...prev, ...urls]);
-      setBulkUrlInput('');
-      setShowBulkModal(false);
-    }
-  };
 
   const handleSave = async () => {
     if (!selectedCategoryId || isKeyEmpty || noImages) return;
@@ -511,34 +503,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
   return (
     <div className="pb-24 p-6 flex flex-col gap-6">
-      <div className="flex justify-between items-start">
-        <div className="flex flex-col">
-          <h2 className="text-3xl font-bold tracking-tight">{t('capture')}</h2>
-          <button 
-            onClick={() => window.open('https://www.imagesnap.cloud/guide', '_blank')}
-            className="text-[10px] text-accent font-black uppercase tracking-widest mt-1 flex items-center gap-1 hover:underline"
-          >
-            <GlobeIcon size={10} /> User Guide & Documentation
-          </button>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase ${subStatus.isPro ? 'bg-yellow-500/20 text-yellow-500' : 'bg-accent/10 text-accent'}`}>
-              {subStatus.isPro ? 'PRO' : 'FREE'}
-            </span>
-            <span className="text-[10px] font-black text-muted opacity-40">V1.3.0</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted font-mono font-bold">
-              {subStatus.isPro ? `USAGE: ${subStatus.usage} (UNLIMITED)` : `USAGE: ${subStatus.usage}/${subStatus.limit}`}
-            </span>
-          </div>
-        </div>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-black tracking-tighter uppercase">{t('capture')}</h2>
         <button 
-          onClick={() => setShowBulkModal(true)} 
-          className="text-[12px] text-accent underline font-black uppercase mt-1"
+          onClick={onSwitchToHelp}
+          className="text-[10px] bg-accent/10 text-accent font-black px-2.5 py-1 rounded-lg border border-accent/20 hover:bg-accent/20 transition-all tracking-widest uppercase"
         >
-          {t('bulkImport')}
+          Help Guide
         </button>
       </div>
 
@@ -639,38 +610,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         </label>
       </div>
 
-      {/* Bulk Import Modal */}
-      <AnimatePresence>
-        {showBulkModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-[120] flex items-center justify-center p-6 backdrop-blur-sm"
-          >
-            <div className="card w-full max-w-sm p-6 flex flex-col gap-4 border-accent/20">
-              <h3 className="text-xl font-bold">Bulk URL Import</h3>
-              <div className="flex flex-col gap-2">
-                <label className="label-meta">{t('pasteUrls')}</label>
-                <textarea 
-                  value={bulkUrlInput}
-                  onChange={(e) => setBulkUrlInput(e.target.value)}
-                  placeholder="Paste links here..."
-                  className="input min-h-[120px] text-[10px] font-mono"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setShowBulkModal(false)} className="btn btn-secondary flex-1">
-                  Close
-                </button>
-                <button onClick={handleBulkImport} className="btn btn-primary flex-1">
-                  {t('import')}
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Image Picker Modal */}
       <AnimatePresence>
@@ -1030,7 +969,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                 <div key={field.id} className={`flex flex-col gap-1.5 ${field.type === 'key' ? 'p-3 bg-accent/5 rounded-xl border border-accent/20' : ''}`}>
                   <label className="label-meta text-[9px] flex items-center gap-1.5">
                     {translate(field.label, lang)} {field.required && '*'}
-                    {field.type === 'key' && <span className="text-[7px] bg-accent text-bg px-1 font-bold rounded uppercase">Identity & Name</span>}
                     {field.type === 'url' && <LinkIcon size={10} className="text-muted" />}
                     {field.type === 'date' && <Calendar size={10} className="text-muted" />}
                   </label>
@@ -1053,7 +991,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                           onFocus={() => field.type === 'key' && setKeySearchFocus(field.id)}
                           onBlur={() => setTimeout(() => setKeySearchFocus(null), 200)}
                           onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                          placeholder={field.type === 'key' ? 'SEARCH OR ENTER NEW KEY...' : ''}
+                          placeholder={field.type === 'key' ? 'SEARCH OR ENTER NEW VALUE...' : ''}
                         />
                         
                         {/* Dynamic Icons based on type */}

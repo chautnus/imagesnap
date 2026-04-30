@@ -50,6 +50,10 @@
 ### BR-4.2 Search & Filtering
 **BR-4.2.1** Hỗ trợ search và filter theo Date, Category, Tags, và Author.
 **BR-4.2.2** Phải có tính năng filtering realtime theo tên sản phẩm.
+ 
+## BR-4.3 Marketing Variants
+**BR-4.3.1** Hỗ trợ 3 biến thể Landing Page truy cập qua `/1`, `/2`, `/3`.
+**BR-4.3.2** Nội dung tùy biến (Hero Image/Text) dựa trên variant: Ecommerce, Organization, và Cloud Storage.
 
 ---
 

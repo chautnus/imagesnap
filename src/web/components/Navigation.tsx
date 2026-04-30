@@ -1,9 +1,9 @@
 import React from 'react';
-import { Camera, TableProperties, Settings } from 'lucide-react';
+import { Camera, TableProperties, Settings, HelpCircle } from 'lucide-react';
 
 interface NavigationProps {
-  activeTab: 'capture' | 'data' | 'settings';
-  setActiveTab: (tab: 'capture' | 'data' | 'settings') => void;
+  activeTab: 'capture' | 'data' | 'settings' | 'help';
+  setActiveTab: (tab: 'capture' | 'data' | 'settings' | 'help') => void;
   t: (key: string) => string;
 }
 
@@ -28,6 +28,16 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab,
           <TableProperties size={22} />
         </div>
         <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'data' ? 'opacity-100' : 'opacity-40'}`}>{t('data')}</span>
+      </button>
+
+      <button 
+        onClick={() => setActiveTab('help')}
+        className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'help' ? 'text-accent' : 'text-muted'}`}
+      >
+        <div className={`p-2 rounded-xl transition-all ${activeTab === 'help' ? 'bg-accent/10' : ''}`}>
+          <HelpCircle size={22} />
+        </div>
+        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'help' ? 'opacity-100' : 'opacity-40'}`}>Help</span>
       </button>
 
       <button 

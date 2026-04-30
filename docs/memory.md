@@ -1,18 +1,18 @@
 # Project Memory: ImageSnap
 
-## Project Overview (v1.2.0)
+## Project Overview (v1.3.1)
 ImageSnap is a high-performance product cataloging platform for e-commerce marketers. It enables rapid snapping, categorization, and uploading of product images from any website or live camera directly to Google Drive and Google Sheets. 
 
 ## Key Updates & Decisions
 
-### 🚀 Architecture (v1.2.0)
-- **Persistent Quota**: Replaced in-memory usage tracking with a file-based JSON store (`user_db.json`) in `server.ts` to ensure snap counts persist across server restarts.
-- **Drive Thumbnails**: Implemented on-the-fly transformation of Drive `webViewLink` into optimized thumbnails (`sz=w600`) in `DataTab.tsx` for 5x faster data browsing.
-- **ActiveTab Security**: Replaced broad host permissions in the extension with `chrome.scripting` and `activeTab`. This ensures zero-review delay for store publishing and absolute user privacy.
+### 🚀 Architecture (v1.3.1)
+- **Centralized Header**: Unified user information (Role, Email, Quota) and version tracking into a global `Header` component for absolute UI consistency.
+- **In-App Documentation**: Introduced `HelpTab` and integrated it into the main navigation to eliminate external redirects and maintain user context.
+- **Persistent Quota**: Replaced in-memory usage tracking with a file-based JSON store (`user_db.json`) in `server.ts`.
 
-### 🎨 Design Standards (v1.2.0)
-- **Max Legibility**: Established a new "High-Impact" UI standard. Base font size for inputs/controls is **16px**, with **14px** for secondary labels.
-- **Data Depth**: Introduced the "Deep Dive" detail view, allowing users to see every metadata field as text and link directly to full-res images in Drive.
+### 🎨 Design Standards (v1.3.1)
+- **High-Impact UI**: Established a new standard with base font size **16px** for inputs and **14px** for secondary labels.
+- **Information Density**: Refined `CaptureTab` to remove redundant information, focusing on actionable controls and high-speed snapping.
 
 ## Project Structure
 
@@ -23,8 +23,8 @@ ImageSnap is a high-performance product cataloging platform for e-commerce marke
 
 ### 📁 docs/
 - `ARCHITECTURE.md`: Technical flows and component mappings.
-- `CHROME_STORE_JUSTIFICATIONS.md`: Formal justifications for permission usage.
-- `PROJECT_REQUIREMENTS.md`: Living functional specification.
+- `BUGLOG.md`: Detailed bug & fix knowledge base.
+- `DEVLOG.md`: Weekly development milestone tracking.
 
 ### 📁 src/
 - `src/web/`: Main React PWA frontend.
@@ -36,4 +36,4 @@ ImageSnap is a high-performance product cataloging platform for e-commerce marke
 - **Build**: `npm run build` generates both Web and Extension production bundles.
 
 ---
-*Last Updated: 2026-04-26*
+*Last Updated: 2026-04-30*

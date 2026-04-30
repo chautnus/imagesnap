@@ -11,7 +11,131 @@
 
 ---
 
-## ✅ CLOSED BUGS (Đã fix — kiến thức có thể tái dùng)
+---
+
+### [BUG-009] — Help/Guide Navigation Loop
+**Status**: CLOSED
+**Severity**: LOW
+**Discovered**: [2026-04-30] | **Fixed**: [2026-04-30]
+**Linked BR**: → [BR-3.2]
+
+#### Symptom
+The "Help" link in the Capture tab opened a new browser tab, taking the user away from the app context. If the user was in an extension popup, this could lead to the popup closing or a disjointed experience.
+
+#### Root Cause
+External navigation for primary documentation instead of an integrated in-app view.
+
+#### Fix Applied
+Created a dedicated `HelpTab` component and updated the bottom `Navigation` to include a Help tab. Redirected all in-app "Help" links to switch to this tab.
+
+#### Lesson Learned
+⚠ BÀI HỌC #009: For PWAs and Browser Extensions, keep documentation and guides "in-app" as much as possible to maintain user session and prevent context switching.
+
+---
+
+### [BUG-008] — Thumbnail Visibility Issues
+**Status**: CLOSED
+**Severity**: MEDIUM
+**Discovered**: [2026-04-28] | **Fixed**: [2026-04-28]
+**Linked BR**: → [BR-1.2.1]
+
+#### Symptom
+Some product thumbnails in the Data tab were showing placeholders instead of the actual image from Google Drive, especially for links captured via the Extension.
+
+#### Root Cause
+The `DriveImage` component used a limited regex that only recognized specific Drive URL formats. It failed on `webViewLink` and raw IDs without the `id=` prefix.
+
+#### Fix Applied
+Expanded the regex and ID detection logic to support multiple formats (d/ID, id=ID, and raw strings).
+```tsx
+const extractId = (url: string) => {
+  const match = url.match(/[-\w]{25,}/); // Generic Drive ID pattern
+  return match ? match[0] : null;
+};
+```
+
+#### Lesson Learned
+⚠ BÀI HỌC #008: External APIs (like Google Drive) have multiple URL flavors. Always use robust regex or universal ID extraction logic for media assets.
+
+---
+
+### [BUG-007] — Mobile UI Layout Overflow
+**Status**: CLOSED
+**Severity**: HIGH
+**Discovered**: [2026-04-27] | **Fixed**: [2026-04-27]
+**Linked BR**: → [BR-3.2]
+
+#### Symptom
+The camera interface and some modals were "overflowing" the mobile screen, making buttons at the bottom inaccessible.
+
+#### Root Cause
+Traditional `100vh` in CSS doesn't account for mobile browser toolbars (address bar). `h-screen` often causes overflow.
+
+#### Fix Applied
+Used `fixed inset-0` combined with `min-h-0` and `flex-col` to force the layout to stay within the actual visible area (Visual Viewport).
+
+#### Lesson Learned
+⚠ BÀI HỌC #007: For full-screen mobile apps, avoid `h-screen`. Use `fixed inset-0` or `h-[100dvh]` to ensure UI elements are always reachable.
+
+---
+
+### [BUG-006] — Camera Black Screen
+**Status**: CLOSED
+**Severity**: CRITICAL
+**Discovered**: [2026-04-27] | **Fixed**: [2026-04-27]
+**Linked BR**: → [BR-3.2.1]
+
+#### Symptom
+Users reported the camera preview appearing as a black rectangle on certain Chrome/Edge versions.
+
+#### Root Cause
+Conflict with legacy GAPI (Google API) scripts that were being loaded remotely, interfering with modern `navigator.mediaDevices` access.
+
+#### Fix Applied
+Completely removed all remotely hosted scripts (compliance with Chrome Store) and switched to a pure local implementation using native WebRTC APIs.
+
+#### Lesson Learned
+⚠ BÀI HỌC #006: Remotely hosted scripts are not only a security risk/compliance issue but can also introduce unpredictable side effects in hardware access.
+
+---
+
+### [BUG-005] — Settings Tab Crash
+**Status**: CLOSED
+**Severity**: HIGH
+**Discovered**: [2026-04-27] | **Fixed**: [2026-04-27]
+
+#### Symptom
+Clicking the Settings tab caused the entire application to white-screen (crash).
+
+#### Root Cause
+Reference to a component that was not imported in the `SettingsTab.tsx` file after a refactoring session.
+
+#### Fix Applied
+Added the missing `import` statement.
+
+#### Lesson Learned
+⚠ BÀI HỌC #005: Use `tsc --noEmit` as part of the pre-commit or pre-review check to catch missing imports that ESLint might miss in certain configurations.
+
+---
+
+### [BUG-004] — Extension Login Failure (CSP/Edge)
+**Status**: CLOSED
+**Severity**: CRITICAL
+**Discovered**: [2026-04-27] | **Fixed**: [2026-04-27]
+**Linked BR**: → [BR-3.1]
+
+#### Symptom
+The Extension failed to login on Chrome due to Content Security Policy (CSP) errors and completely failed on Microsoft Edge.
+
+#### Root Cause
+- Chrome: GSI (Google Identity Services) script cannot be loaded from remote URLs in Manifest V3.
+- Edge: `chrome.identity.getAuthToken` is not supported on non-Google browsers.
+
+#### Fix Applied
+Switched to `chrome.identity.launchWebAuthFlow` which works on both Chrome and Edge, and bundled all auth logic locally.
+
+#### Lesson Learned
+⚠ BÀI HỌC #004: When building cross-browser extensions, avoid browser-specific identity APIs. Use universal OAuth flows like `launchWebAuthFlow`.
 
 ---
 
@@ -107,7 +231,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 2 |
+| Total bugs logged | 8 |
 | Open | 0 |
-| Closed | 2 |
+| Closed | 8 |
 | Patterns extracted | 2 |

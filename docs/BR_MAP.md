@@ -11,5 +11,6 @@
 | BR-3.3   | Bulk Import             | bulk, import, url                | Active  |
 | BR-4.1   | UI Standards            | font, legibility, detail, view   | Active  |
 | BR-4.2   | Search & Filtering      | search, filter, realtime         | Active  |
+| BR-4.3   | Marketing Variants      | landing, marketing, /1, /2, /3   | Active  |
 
 # Cập nhật BR_MAP mỗi khi thêm hoặc sửa BR

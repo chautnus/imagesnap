@@ -25,7 +25,6 @@ Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based
 - **Product Service**: Điều phối dữ liệu giữa Sheets và Drive [→ BR-1.1].
 - **Sheets/Drive Libs**: Abstraction cho Google APIs [→ BR-1.1.1, BR-1.1.2].
 - **Thumbnail Handling**: Logic xử lý Drive thumbnail URL [→ BR-1.2.1].
-- **Bulk Import Logic**: Xử lý nhận data qua URL parameters [→ BR-3.3].
 
 ### ARCH-2.4 UI Components (`src/web/components/`)
 - **Capture Tab**: Interface chính để chụp ảnh và trigger extension snap [→ BR-3.2, BR-3.1].
