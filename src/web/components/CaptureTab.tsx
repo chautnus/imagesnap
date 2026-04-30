@@ -56,6 +56,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   });
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [newCatName, setNewCatName] = useState('');
+  const [newCatIcon, setNewCatIcon] = useState('📦');
 
   useEffect(() => {
     if (selectedCategoryId) {

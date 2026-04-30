@@ -15,6 +15,30 @@
 
 ---
 
+### [BUG-003] — New Category Modal Black Screen on Mobile
+**Status**: CLOSED
+**Severity**: HIGH
+**Discovered**: [2026-04-30] | **Fixed**: [2026-04-30]
+
+#### Symptom
+When clicking the "New Category" button on the Capture screen, the screen goes completely black. 
+
+#### Root Cause
+A React runtime error occurred because a state variable (`newCatIcon`) was referenced in a two-way binding (`value={newCatIcon}`) but was not declared in the component's state (`useState`). This caused the component rendering the `AnimatePresence` modal to crash, displaying a black background container.
+
+#### Fix Applied
+Added the missing state variable declaration to `CaptureTab.tsx`.
+```tsx
+// SAU (đúng):
+const [newCatName, setNewCatName] = useState('');
+const [newCatIcon, setNewCatIcon] = useState('📦');
+```
+
+#### Lesson Learned
+⚠ BÀI HỌC #003: Always ensure that all variables bound to input fields are properly initialized in the component state, especially when migrating or adding new UI elements to a complex modal. Uncaught render errors in React will crash the UI.
+
+---
+
 ### [BUG-001] — [Tên lỗi ngắn gọn]
 **Status**: CLOSED
 **Severity**: CRITICAL / HIGH / MEDIUM / LOW
