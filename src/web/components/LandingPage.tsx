@@ -25,41 +25,41 @@ const VARIANT_DATA = {
   1: {
     themeColor: "text-accent",
     heroTitle: <>The Ultimate <span className="text-accent italic">Ecommerce</span> Asset Scraper.</>,
-    heroDesc: "Automate your competitor research. Capture high-res product images and metadata from bất kỳ sàn thương mại điện tử nào trực tiếp về Drive.",
+    heroDesc: "Automate your competitor research. Capture high-res product images and metadata from any ecommerce marketplace directly to your Drive.",
     heroImage: "/landing_variant_1_ecom.png",
     primaryFeatureTitle: "Automated Data Extraction",
-    primaryFeatureDesc: "Dừng việc copy-paste thủ công. ImageSnap tự động nhận diện tên sản phẩm, giá cả và ảnh gốc chất lượng cao khi bạn đang lướt web.",
+    primaryFeatureDesc: "Stop manual copy-pasting. ImageSnap automatically identifies product titles, prices, and high-res source images while you browse.",
     problemTitle: "Ecommerce research is a nightmare.",
-    problemCard1: { title: "Drowning in tabs", desc: "Mở hàng chục tab Shopee/Alibaba nhưng không có cách nào lưu lại thông tin giá và ảnh một cách hệ thống." },
-    problemCard2: { title: "Manual Data Entry", desc: "Mất hàng giờ để nhập liệu thủ công từ website vào file Excel. Dễ sai sót và cực kỳ tốn thời gian." },
+    problemCard1: { title: "Drowning in tabs", desc: "Opening dozens of marketplace tabs but having no systematic way to save prices and images." },
+    problemCard2: { title: "Manual Data Entry", desc: "Spending hours manually entering data from websites into Excel files. Error-prone and time-consuming." },
     useCaseTitle: "For Dropshippers & Ecom Researchers",
-    useCaseDesc: "Thu thập kho ảnh sản phẩm đối thủ kèm theo giá bán và link nguồn chỉ trong 1 cú click chuột."
+    useCaseDesc: "Collect competitor product photo libraries with selling prices and source links in just one click."
   },
   2: {
     themeColor: "text-blue-500",
     heroTitle: <>Organize your visual life, <span className="text-blue-500 italic">effortlessly</span>.</>,
-    heroDesc: "Sắp xếp hình ảnh theo thư mục chỉ với một click. Gán nhãn, phân loại và lưu trữ thông minh. Truy cập kho ảnh từ mọi nơi.",
+    heroDesc: "Organize images into folders with just one click. Assign labels, categorize, and store intelligently. Access your image library from anywhere.",
     heroImage: "/landing_variant_2_org.png",
     primaryFeatureTitle: "Professional Folder Structure",
-    primaryFeatureDesc: "Thiết lập luồng công việc theo từng folder dự án. Mỗi hình ảnh đều có 'nhà' riêng, giúp Drive của bạn luôn ngăn nắp.",
+    primaryFeatureDesc: "Set up workflows for each project folder. Every image has its own 'home', keeping your Drive perfectly tidy.",
     problemTitle: "Folder mess kills productivity.",
-    problemCard1: { title: "The 'Downloads' Dumpster", desc: "Thư mục Downloads chứa hàng ngàn ảnh tên 'IMG_xxx' mà bạn không bao giờ tìm lại được." },
-    problemCard2: { title: "Context is lost", desc: "Khi tải ảnh về máy, bạn mất luôn thông tin ảnh đó lấy từ đâu, dùng cho dự án nào và các ghi chú đi kèm." },
+    problemCard1: { title: "The 'Downloads' Dumpster", desc: "The Downloads folder contains thousands of 'IMG_xxx' files that you can never find again." },
+    problemCard2: { title: "Context is lost", desc: "When downloading images to your computer, you lose information about where they came from and which project they belong to." },
     useCaseTitle: "For Designers & Project Managers",
-    useCaseDesc: "Xây dựng Moodboard chuyên nghiệp ngay trên Google Drive với đầy đủ tag màu sắc và phong cách."
+    useCaseDesc: "Build professional moodboards directly on Google Drive with full color and style tags."
   },
   3: {
     themeColor: "text-yellow-500",
     heroTitle: <>Google Drive is your new <span className="text-yellow-500 italic">superpower</span>.</>,
-    heroDesc: "Lưu trữ trực tiếp lên Drive. Không tốn dung lượng máy tính. Tìm kiếm và phân loại dữ liệu ở quy mô lớn cho kho tài sản chuyên nghiệp.",
+    heroDesc: "Store directly to Drive. No local computer space used. Search and categorize data at scale for a professional asset library.",
     heroImage: "/landing_variant_3_cloud.png",
     primaryFeatureTitle: "Cloud-Native Search",
-    primaryFeatureDesc: "Tận dụng sức mạnh của Google. Hình ảnh của bạn được lập chỉ mục, dễ tìm kiếm và bảo mật ngay khi vừa nhấn 'Snap'.",
+    primaryFeatureDesc: "Leverage the power of Google. Your images are indexed, easy to search, and secure the moment you hit 'Snap'.",
     problemTitle: "Local storage is a dead end.",
-    problemCard1: { title: "Hard Drive full", desc: "Ảnh chất lượng cao làm đầy ổ cứng máy tính, làm chậm hệ thống và khó khăn khi cần chia sẻ." },
-    problemCard2: { title: "Search is impossible", desc: "Tìm kiếm một tấm ảnh cũ trong hàng ngàn folder máy tính là điều không thể. Bạn thường phải tải lại." },
+    problemCard1: { title: "Hard Drive full", desc: "High-quality images fill up your computer's hard drive, slowing down the system and making sharing difficult." },
+    problemCard2: { title: "Search is impossible", desc: "Searching for an old photo in thousands of computer folders is impossible. You often have to download it again." },
     useCaseTitle: "For Content Teams & Agencies",
-    useCaseDesc: "Lưu trữ tập trung mọi asset quảng cáo, meme, stock photo vào một workspace chung cho cả team cùng khai thác."
+    useCaseDesc: "Centrally store every advertising asset, meme, and stock photo into a common workspace for the whole team to use."
   },
   0: { // Default
     themeColor: "text-red-500",
