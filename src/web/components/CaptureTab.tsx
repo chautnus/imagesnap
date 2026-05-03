@@ -178,9 +178,9 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
               target: { tabId: tab.id },
               files: ['content.js']
             });
-          } catch (e) {
+          } catch (e: any) {
             console.error("Script injection failed", e);
-            alert("KHÔNG THỂ TRUY CẬP TRANG: Trang web này chặn các tiện ích mở rộng hoặc chưa được tải xong. Vui lòng thử lại hoặc tải lại trang.");
+            alert("LỖI CẤP QUYỀN HOẶC TRANG CHƯA TẢI: " + (e.message || "Vui lòng tải lại (F5) trang web và thử lại."));
             setIsExtracting(false);
             return;
           }

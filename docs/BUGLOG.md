@@ -11,6 +11,44 @@
 
 ---
 
+### [BUG-011] — Data Desync & 404 between Web App and Extension
+**Status**: CLOSED
+**Severity**: HIGH
+**Discovered**: [2026-05-01] | **Fixed**: [2026-05-01]
+
+#### Symptom
+Users logging into the Chrome Extension and the Web App with the same account see completely different data (separate Workspace spreadsheets). Furthermore, Drive images created by the Web App throw 404 errors in the Extension.
+
+#### Root Cause
+The `drive.file` scope restricts access only to files created by the EXACT SAME Google Cloud Client ID. Since the Web App (on Railway) uses a production Client ID and the Extension uses a local/different Client ID, they are effectively sandboxed from each other's Drive files despite using the same Google account.
+
+#### Fix Applied
+Added an `<img>` fallback in `DriveImage.tsx` that uses the public Google Drive thumbnail URL (`drive.google.com/thumbnail?id=`) when the authenticated API fetch fails. Because the extension runs in the browser, the browser's native cookies authenticate the image request without hitting the strict `drive.file` OAuth limit.
+*Permanent Fix: Ensure VITE_GOOGLE_CLIENT_ID matches perfectly across all deployment environments.*
+
+#### Lesson Learned
+⚠ BÀI HỌC #011: `drive.file` scope is tied strictly to the Google Cloud Project / Client ID. If an architecture spans multiple platforms (Web, Extension, Mobile), they MUST share the same OAuth project origin to share files.
+
+---
+
+### [BUG-010] — Extension Drive Image 401/CORS Failure
+**Status**: CLOSED
+**Severity**: MEDIUM
+**Discovered**: [2026-05-01] | **Fixed**: [2026-05-01]
+
+#### Symptom
+Drive images display perfectly in the Web App but show broken placeholders in the Chrome Extension's Data Tab.
+
+#### Root Cause
+The `chrome.identity.getAuthToken` caches tokens. When the token expires, the Web App's GSI automatically refreshes it, but the extension continues to use the cached, expired token. Fetching the image payload directly via `alt=media` using this expired token results in a 401 Unauthorized error.
+
+#### Fix Applied
+Updated `DriveImage.tsx` to handle 401 errors. Added logic to use `thumbnailLink` (which often bypasses strict auth for previews if constructed correctly) and instructed the user to click the extension icon to refresh the token if a hard 401 occurs. 
+*Note: Extension side needs a token invalidation routine if 401 is encountered, but for now we prioritize thumbnail extraction.*
+
+#### Lesson Learned
+⚠ BÀI HỌC #010: Extensions using `chrome.identity` have different token lifecycles than Web Apps. Always handle 401s explicitly when fetching authenticated resources in an extension context.
+
 ---
 
 ### [BUG-009] — Help/Guide Navigation Loop

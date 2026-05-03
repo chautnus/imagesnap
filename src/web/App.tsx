@@ -9,6 +9,16 @@ import { Wizard } from './components/Wizard';
 import { LandingPage } from './components/LandingPage';
 import { StaffLogin } from './components/StaffLogin';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { PublicLayout } from './components/layouts/PublicLayout';
+import { PricingPage } from './pages/PricingPage';
+import { CompanyCamAlternative } from './pages/alternatives/CompanyCamAlternative';
+import { PicsioAlternative } from './pages/alternatives/PicsioAlternative';
+import { GooglePhotosVsImageSnap } from './pages/alternatives/GooglePhotosVsImageSnap';
+import { ConstructionTeams } from './pages/use-cases/ConstructionTeams';
+import { WebImageImport } from './pages/features/WebImageImport';
+import { GenericSEOPage } from './pages/GenericSEOPage';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { SEO } from './components/SEO';
 import { initGis, getAccessToken, setAccessToken, getUserInfo, requestToken, revokeToken } from '@shared/lib/google-auth';
 import { 
   findOrCreateWorkspace, 
@@ -101,14 +111,61 @@ export default function App() {
   const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
 
   useEffect(() => {
-    const checkImport = () => {
+    const checkImport = async () => {
       let hash = window.location.hash;
+      let search = window.location.search;
+      const searchParams = new URLSearchParams(search);
+
+      // 1. Handle Web Share Target (from Service Worker cache)
+      if (searchParams.get('share-target') === 'true') {
+        try {
+          const cache = await caches.open('shared-data');
+          const metaRes = await cache.match('/shared-metadata');
+          
+          if (metaRes) {
+            const metadata = await metaRes.json();
+            const images: string[] = [];
+            
+            // Load images from cache as Data URLs
+            for (let i = 0; i < metadata.imageCount; i++) {
+              const imgRes = await cache.match(`/shared-image-${i}`);
+              if (imgRes) {
+                const blob = await imgRes.blob();
+                const reader = new FileReader();
+                const dataUrl = await new Promise<string>((resolve) => {
+                  reader.onloadend = () => resolve(reader.result as string);
+                  reader.readAsDataURL(blob);
+                });
+                images.push(dataUrl);
+              }
+            }
+
+            if (images.length > 0) setImportedImages(images);
+            if (metadata.url || metadata.text) {
+              setImportedUrl(metadata.url || metadata.text);
+            }
+            if (metadata.title) {
+              setImportedMetadata(prev => ({ ...prev, title: metadata.title }));
+            }
+
+            // Clean up cache
+            await caches.delete('shared-data');
+            // Clean up URL
+            window.history.replaceState({}, document.title, "/");
+          }
+        } catch (e) {
+          console.error("Failed to load shared data", e);
+        }
+        return;
+      }
+
+      // 2. Handle hash-based import (from Extension)
       if (hash === '#privacy') {
         setView('privacy');
         return;
       }
       if (hash === '#staff') {
-        setView('landing'); // App will render StaffLogin based on hash
+        setView('landing');
         return;
       }
       if (hash.startsWith('#import=')) {
@@ -191,117 +248,160 @@ export default function App() {
     refreshData(data.masterSpreadsheetId);
   };
 
-  if (view === 'privacy') {
-    return <PrivacyPolicy onBack={() => {
-      window.location.hash = '';
-      setView(user ? 'app' : 'landing');
-    }} />;
+  const location = useLocation();
+
+  if (view === 'privacy' || location.pathname === '/privacy') {
+    return (
+      <>
+        <SEO title="Privacy Policy — ImageSnap.cloud" description="Our privacy policy and data protection commitment." />
+        <PrivacyPolicy onBack={() => {
+          window.location.hash = '';
+          setView(user ? 'app' : 'landing');
+          window.location.href = '/';
+        }} />
+      </>
+    );
   }
 
-  if (view === 'landing' && !user) {
-    if (window.location.hash === '#staff') {
-      return <StaffLogin onLogin={handleStaffLogin} onBack={() => window.location.hash = ''} t={t} />;
-    }
-    return <LandingPage onLogin={() => requestToken()} t={t} variant={landingVariant} />;
+  // Auth Guard for the main app
+  if (user && isAuthReady) {
+    const accessibleCategories = appData.categories.filter(cat => {
+      if (subStatus.isAdmin) return true;
+      if (!subStatus.accessibleCategories) return true; // Default all if not restricted
+      return subStatus.accessibleCategories.includes(cat.id);
+    });
+
+    return (
+      <div className="min-h-screen pb-20 max-w-md mx-auto relative bg-bg">
+        <SEO title="ImageSnap Dashboard" description="Capture and organize your images." />
+        <Header 
+          activeTab={activeTab}
+          user={user}
+          subStatus={subStatus}
+          isSyncing={isSyncing}
+          version="v1.3.1"
+        />
+   
+        <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
+          {activeTab === 'capture' && (
+            <CaptureTab 
+              categories={accessibleCategories} 
+              productNames={appData.productNames}
+              onSave={async (product, imgs) => {
+                if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
+                  alert(t('limitReached'));
+                  handleUpgrade();
+                  return;
+                }
+                await handleSaveProduct(product, imgs);
+                // Refresh status after save to update usage count
+                if (user?.email) fetchSubStatus(user.email);
+              }} 
+              t={t} 
+              lang={lang}
+              subStatus={subStatus}
+              onUpgrade={handleUpgrade}
+              initialImages={importedImages}
+              importedUrl={importedUrl}
+              importedMetadata={importedMetadata}
+              onClearInitialImages={() => setImportedImages([])}
+              onClearImportedUrl={() => setImportedUrl('')}
+              onClearImportedMetadata={() => setImportedMetadata({})}
+              onSaveCategory={handleSaveCategory}
+              onSwitchToHelp={() => setActiveTab('help')}
+            />
+          )}
+          {activeTab === 'data' && (
+            <DataTab 
+              categories={accessibleCategories} 
+              products={appData.products} 
+              onDelete={handleDeleteProduct}
+              t={t} 
+              lang={lang}
+              subStatus={subStatus}
+            />
+          )}
+          {activeTab === 'settings' && (
+            <SettingsTab 
+              categories={appData.categories} 
+              onSaveCategory={handleSaveCategory}
+              onDeleteCategory={handleDeleteCategory}
+              toggleLang={toggleLang} 
+              lang={lang}
+              spreadsheetId={spreadsheetId}
+              t={t} 
+              user={user}
+              subStatus={subStatus}
+              onUpgrade={handleUpgrade}
+              onLogout={() => {
+                setUser(null);
+                setSpreadsheetId(null);
+                setAccessToken(null);
+                setIsStaff(false);
+                localStorage.clear();
+                revokeToken();
+                setView('landing');
+                window.location.href = '/';
+              }}
+            />
+          )}
+          {activeTab === 'help' && (
+            <HelpTab t={t} />
+          )}
+        </main>
+  
+        <Navigation activeTab={activeTab} setActiveTab={setActiveTab} t={t} />
+      </div>
+    );
   }
 
-  if (!isAuthReady) {
-    return <Wizard t={t} />;
-  }
-
-  const accessibleCategories = appData.categories.filter(cat => {
-    if (subStatus.isAdmin) return true;
-    if (!subStatus.accessibleCategories) return true; // Default all if not restricted
-    return subStatus.accessibleCategories.includes(cat.id);
-  });
-
+  // Public Routes
   return (
-    <div className="min-h-screen pb-20 max-w-md mx-auto relative bg-bg">
-      <Header 
-        activeTab={activeTab}
-        user={user}
-        subStatus={subStatus}
-        isSyncing={isSyncing}
-        version="v1.3.1"
-      />
- 
-      <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
-        {activeTab === 'capture' && (
-          <CaptureTab 
-            categories={accessibleCategories} 
-            productNames={appData.productNames}
-            onSave={async (product, imgs) => {
-              if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
-                alert(t('limitReached'));
-                handleUpgrade();
-                return;
-              }
-              await handleSaveProduct(product, imgs);
-              // Refresh status after save to update usage count
-              if (user?.email) fetchSubStatus(user.email);
-            }} 
-            t={t} 
-            lang={lang}
-            subStatus={subStatus}
-            onUpgrade={handleUpgrade}
-            initialImages={importedImages}
-            importedUrl={importedUrl}
-            importedMetadata={importedMetadata}
-            onClearInitialImages={() => setImportedImages([])}
-            onClearImportedUrl={() => setImportedUrl('')}
-            onClearImportedMetadata={() => setImportedMetadata({})}
-            onSaveCategory={handleSaveCategory}
-            onSwitchToHelp={() => setActiveTab('help')}
-          />
-        )}
-        {activeTab === 'data' && (
-          <DataTab 
-            categories={accessibleCategories} 
-            products={appData.products} 
-            onDelete={handleDeleteProduct}
-            t={t} 
-            lang={lang}
-            subStatus={subStatus}
-          />
-        )}
-        {activeTab === 'settings' && (
-          <SettingsTab 
-            categories={appData.categories} 
-            onSaveCategory={handleSaveCategory}
-            onDeleteCategory={handleDeleteCategory}
-            toggleLang={toggleLang} 
-            lang={lang}
-            spreadsheetId={spreadsheetId}
-            t={t} 
-            user={user}
-            subStatus={subStatus}
-            onUpgrade={handleUpgrade}
-            onLogout={() => {
-              // 1. Clear memory state
-              setUser(null);
-              setSpreadsheetId(null);
-              setAccessToken(null);
-              setIsStaff(false);
-              
-              // 2. Clear storage synchronously
-              localStorage.clear(); // Clear all to be absolutely sure
-              
-              // 3. Revoke Google token
-              revokeToken();
-              
-              // 4. Reset view and reload
-              setView('landing');
-              window.location.href = window.location.origin; // Hard redirect
-            }}
-          />
-        )}
-        {activeTab === 'help' && (
-          <HelpTab t={t} />
-        )}
-      </main>
+    <Routes>
+      <Route element={<PublicLayout onLogin={() => requestToken()} />}>
+        <Route path="/" element={
+          window.location.hash === '#staff' ? (
+            <StaffLogin onLogin={handleStaffLogin} onBack={() => window.location.hash = ''} t={t} />
+          ) : (
+            <>
+              <SEO 
+                title="ImageSnap — Auto-organize team photos in Google Drive" 
+                description="Save images from the web directly to Google Drive, auto-classify into folders, and attach detailed metadata."
+              />
+              <LandingPage onLogin={() => requestToken()} t={t} variant={landingVariant} />
+            </>
+          )
+        } />
+        <Route path="/pricing" element={<PricingPage onLogin={() => requestToken()} />} />
+        <Route path="/alternatives/companycam-alternative" element={<CompanyCamAlternative onLogin={() => requestToken()} />} />
+        <Route path="/alternatives/pics-io-alternative" element={<PicsioAlternative onLogin={() => requestToken()} />} />
+        <Route path="/alternatives/google-photos-vs-imagesnap" element={<GooglePhotosVsImageSnap onLogin={() => requestToken()} />} />
+        <Route path="/use-cases/construction-teams" element={<ConstructionTeams onLogin={() => requestToken()} />} />
+        <Route path="/use-cases/ecommerce-studios" element={<GenericSEOPage onLogin={() => requestToken()} title="E-commerce Studios — ImageSnap" headline="E-commerce Asset Management" />} />
+        <Route path="/use-cases/real-estate-photographers" element={<GenericSEOPage onLogin={() => requestToken()} title="Real Estate Photographers — ImageSnap" headline="Real Estate Photo Sync" />} />
+        <Route path="/use-cases/field-inspections" element={<GenericSEOPage onLogin={() => requestToken()} title="Field Inspections — ImageSnap" headline="Field Inspection Documentation" />} />
+        
+        <Route path="/features/web-image-import" element={<WebImageImport onLogin={() => requestToken()} />} />
+        <Route path="/features/auto-folder-organization" element={<GenericSEOPage onLogin={() => requestToken()} title="Auto Folder Organization — ImageSnap" headline="Automatic Folder Structure" />} />
+        <Route path="/features/team-collaboration" element={<GenericSEOPage onLogin={() => requestToken()} title="Team Collaboration — ImageSnap" headline="Collaborate with your Team" />} />
+        <Route path="/features/metadata-auto-fill" element={<GenericSEOPage onLogin={() => requestToken()} title="Metadata Auto-fill — ImageSnap" headline="Automatic Metadata Extraction" />} />
+        
+        <Route path="/integrations/google-drive" element={<GenericSEOPage onLogin={() => requestToken()} title="Google Drive Integration — ImageSnap" headline="The Best Google Drive Extension" />} />
+        
+        <Route path="/tools/exif-viewer" element={<GenericSEOPage onLogin={() => requestToken()} title="Free EXIF Viewer — ImageSnap" headline="Online EXIF Data Viewer" />} />
+        <Route path="/tools/bulk-photo-renamer" element={<GenericSEOPage onLogin={() => requestToken()} title="Bulk Photo Renamer — ImageSnap" headline="Batch Photo Renaming Tool" />} />
+        <Route path="/tools/drive-folder-generator" element={<GenericSEOPage onLogin={() => requestToken()} title="Google Drive Folder Generator — ImageSnap" headline="Instant Folder Structure Creator" />} />
+        
+        <Route path="/blog" element={<GenericSEOPage onLogin={() => requestToken()} title="Blog — ImageSnap" headline="Tips & Tricks for Digital Organization" />} />
+      </Route>
+      
+      {/* Privacy Policy outside of PublicLayout if needed, or inside */}
+      <Route path="/privacy" element={
+        <PrivacyPolicy onBack={() => window.location.href = '/'} />
+      } />
 
-      <Navigation activeTab={activeTab} setActiveTab={setActiveTab} t={t} />
-    </div>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

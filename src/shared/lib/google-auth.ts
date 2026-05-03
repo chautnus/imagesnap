@@ -1,4 +1,4 @@
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '495332791945-jshf9fvhe496jfbanig1qd2c7utl28up.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '271749541534-3cqn2t7c28drc79sno6tm9nssc7arbjl.apps.googleusercontent.com';
 export const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
 let tokenClient: any = null;
@@ -13,10 +13,10 @@ export const initGis = (onSuccess: (token: string) => void) => {
 
   if (isExtension) {
     console.log('Detected Chrome Extension environment, checking auth state...');
-    
+
     // Check if we're on Edge
     const isEdge = /Edg/.test(navigator.userAgent);
-    
+
     if (isEdge) {
       console.log('Running on Edge, skipping getAuthToken to avoid error.');
       if (accessToken) onSuccess(accessToken);
@@ -152,7 +152,7 @@ export const revokeToken = () => {
   localStorage.removeItem('ps_staff_token');
   localStorage.removeItem('ps_staff_email');
   localStorage.removeItem('ps_is_staff');
-  
+
   if (currentToken) {
     const google = (window as any).google;
     if (google && google.accounts && google.accounts.oauth2) {

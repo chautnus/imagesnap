@@ -398,32 +398,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
       )}
 
-      {/* Extension Section */}
-      <div className="flex flex-col gap-4">
-        <h2 className="label-meta tracking-[0.1em]">BROWSER_EXTENSION</h2>
-        <div className="card p-6 flex flex-col gap-6 bg-accent/5 border-dashed border-accent/20">
-          <div className="flex justify-between items-center">
-             <div className="font-bold text-lg">ImageSnap Collector</div>
-             <span className="px-2 py-0.5 bg-accent text-bg text-[10px] font-black rounded uppercase">EXTENSION_ONLY</span>
-          </div>
 
-          <div className="flex flex-col gap-4">
-             <p className="text-sm text-muted leading-relaxed">
-               {lang === 'en' 
-                 ? 'ImageSnap is now exclusively developed as a Browser Extension. Please download and install the extension package for the best experience on Chrome or Edge.' 
-                 : 'ImageSnap hiện được phát triển độc quyền dưới dạng Extension trình duyệt. Vui lòng tải và cài đặt gói extension để có trải nghiệm tốt nhất trên Chrome hoặc Edge.'}
-             </p>
-             
-             <button 
-               onClick={() => window.open('https://www.imagesnap.cloud', '_blank')}
-               className="btn btn-primary py-4 flex items-center justify-center gap-3 font-black text-[11px]"
-             >
-               <ExternalLink size={20} />
-               {lang === 'en' ? 'DOWNLOAD EXTENSION (ZIP)' : 'TẢI EXTENSION (ZIP)'}
-             </button>
-          </div>
-        </div>
-      </div>
 
       {/* Logout */}
       <button 

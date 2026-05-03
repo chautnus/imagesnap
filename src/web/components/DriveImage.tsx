@@ -58,19 +58,63 @@ export const DriveImage: React.FC<DriveImageProps> = ({ url, className, alt }) =
       }
 
       try {
-        // Use thumbnail API first (faster)
+        console.log(`[DriveImage] Fetching ${fileId}...`);
+        // Try fetching metadata first to see if we can get a thumbnail or check permissions
+        const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=thumbnailLink,mimeType`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!metaRes.ok) {
+          if (metaRes.status === 401 && typeof window !== 'undefined' && (window as any).chrome?.identity) {
+             (window as any).chrome.identity.removeCachedAuthToken({ token }, () => console.log("Cleared expired token."));
+             throw new Error("Token expired (401). Please close and reopen the extension to refresh.");
+          }
+          // Fallback: If 404 (due to Client ID mismatch/drive.file scope limitation) or other error,
+          // try using the browser's native cookies to fetch the thumbnail directly via img src.
+          console.warn(`[DriveImage] Metadata fetch failed (${metaRes.status}). Falling back to browser cookie auth.`);
+          const fallbackUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+          blobCache[url] = fallbackUrl;
+          setSrc(fallbackUrl);
+          setLoading(false);
+          return;
+        }
+        
+        const metadata = await metaRes.json();
+        console.log(`[DriveImage] Metadata found, type: ${metadata.mimeType}`);
+
+        if (metadata.thumbnailLink) {
+          // Drive provides a thumbnail URL. Replace size param with a larger one.
+          const thumbUrl = metadata.thumbnailLink.replace(/=s\d+/, '=s800').replace(/=w\d+-h\d+/, '=w800-h800');
+          blobCache[url] = thumbUrl;
+          setSrc(thumbUrl);
+          setLoading(false);
+          return;
+        }
+
+        // Try media fetch if no thumbnail
         const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error('Failed to fetch image');
+        if (!response.ok) {
+           if (response.status === 401 && typeof window !== 'undefined' && (window as any).chrome?.identity) {
+             (window as any).chrome.identity.removeCachedAuthToken({ token }, () => console.log("Cleared expired token."));
+           }
+           // Fallback to cookie method
+           console.warn(`[DriveImage] Media fetch failed (${response.status}). Falling back to browser cookie auth.`);
+           const fallbackUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+           blobCache[url] = fallbackUrl;
+           setSrc(fallbackUrl);
+           setLoading(false);
+           return;
+        }
 
         const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
         blobCache[url] = blobUrl;
         setSrc(blobUrl);
-      } catch (err) {
-        console.error("Drive image fetch error:", err);
+      } catch (err: any) {
+        console.error("[DriveImage] Error:", err.message);
         setError(true);
       } finally {
         setLoading(false);

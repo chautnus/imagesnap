@@ -9,24 +9,19 @@ interface HelpTabProps {
 export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
   const steps = [
     {
-      icon: <Globe className="text-blue-400" />,
-      title: "Snap From Browser",
-      desc: "Mở một trang web bất kỳ trên Chrome/Edge, nhấn nút Snap để tự động quét và lấy tất cả ảnh sản phẩm cùng thông tin giá, tên."
+      icon: <Zap className="text-blue-400" />,
+      title: "1. Design your context",
+      desc: "Define the fields that matter for your research — or use defaults. Each category can have its own schema."
     },
     {
       icon: <Camera className="text-accent" />,
-      title: "Burst Camera",
-      desc: "Chế độ chụp liên tục chuyên nghiệp. Hỗ trợ Zoom, Flash, Lưới và Khóa tỉ lệ 1:1. Ảnh sẽ được lưu vào dải xem nhanh bên dưới."
+      title: "2. Browse and capture",
+      desc: "Click the extension on any image worth saving. Context fills automatically. Choose what matters, skip the rest."
     },
     {
-      icon: <Zap className="text-yellow-400" />,
-      title: "Auto-Fill Metadata",
-      desc: "Hệ thống tự động điền URL, Tên và Giá vào các trường dữ liệu tương ứng khi bạn lấy ảnh từ trình duyệt."
-    },
-    {
-      icon: <Save className="text-green-400" />,
-      title: "One-Click Sync",
-      desc: "Dữ liệu được lưu trực tiếp vào Google Drive của Admin và cập nhật tức thì vào Google Sheets để quản lý tập trung."
+      icon: <Globe className="text-green-400" />,
+      title: "3. Search and reuse",
+      desc: "Find any image by its context in the web app, or open your Google Sheet directly. Your research, ready for any later work."
     }
   ];
 
@@ -38,7 +33,7 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
           {t('userGuide') || 'USER_GUIDE'}
         </h2>
         <p className="text-muted text-sm font-medium leading-relaxed">
-          Chào mừng bạn đến với ImageSnap. Dưới đây là các bước cơ bản để bạn làm chủ công cụ lấy dữ liệu sản phẩm này.
+          Welcome to ImageSnap. Here are the three steps to start building your visual database with designed context.
         </p>
       </div>
 
@@ -64,20 +59,20 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
 
       <div className="bg-accent/5 border border-accent/20 p-6 rounded-3xl mt-4">
         <h4 className="font-black text-accent text-xs tracking-widest uppercase mb-4 flex items-center gap-2">
-          <CheckCircle2 size={14} /> Mẹo chụp ảnh chuyên nghiệp
+          <CheckCircle2 size={14} /> Pro Tips
         </h4>
         <ul className="space-y-3">
           <li className="flex gap-3 text-xs font-bold text-white/80">
             <span className="text-accent">•</span>
-            Dùng App Camera để tận dụng tối đa phần cứng máy ảnh (Focus/Exposure).
+            Use custom fields in Settings to adapt ImageSnap to your workflow.
           </li>
           <li className="flex gap-3 text-xs font-bold text-white/80">
             <span className="text-accent">•</span>
-            Bật Lưới (Grid) để căn giữa sản phẩm chuẩn hơn.
+            For ecommerce sites, prices and titles are auto-extracted when possible.
           </li>
           <li className="flex gap-3 text-xs font-bold text-white/80">
             <span className="text-accent">•</span>
-            Dùng tính năng Pinch-to-Zoom để chụp các chi tiết nhỏ.
+            All images are saved directly to your Google Drive to protect your privacy.
           </li>
         </ul>
       </div>

@@ -1,12 +1,69 @@
 
 function upgrade(u) {
   if (!u) return u;
-  if (u.includes('down-cv.img.susercontent.com') || u.includes('down-vn.img.susercontent.com')) {
+  
+  // Shopee
+  if (u.includes('down-cv.img.susercontent.com') || u.includes('down-vn.img.susercontent.com') || u.includes('down-bs.img.susercontent.com') || u.includes('down-tx.img.susercontent.com')) {
     if (u.includes('@resize')) return u.replace(/@resize_w\d+.*$/, '@resize_w800_nl'); 
-    return u.replace(/_tn$/, '').replace(/_zoom$/, '').replace(/_(\d+)x(\d+)$/, '');
+    // Aggressively remove _tn, _zoom, or _WxH even if followed by extension
+    return u.replace(/_(tn|zoom)(?:\.[a-zA-Z]+)?$/i, '').replace(/_(\d+)x(\d+)(?:\.[a-zA-Z]+)?$/i, '');
   }
-  if (u.includes('alicdn.com')) return u.replace(/_\d+x\d+.*\.jpg$/, '').replace(/_\d+x\d+.*\.png$/, '');
-  return u.replace(/\/(thumb|thumbnail|small|sq|mini)\//i, '/original/');
+  
+  // AliExpress / Alibaba / Lazada
+  if (u.includes('alicdn.com') || u.includes('lazcdn.com')) {
+    // Matches _120x120.jpg_.webp, _50x50.jpg, etc.
+    return u.replace(/_\d+x\d+[^/]*$/i, '');
+  }
+
+  // Etsy
+  if (u.includes('etsystatic.com')) {
+    return u.replace(/\/il_\d+x\d+\./i, '/il_fullxfull.');
+  }
+
+  // Generic thumbnail replacements
+  return u.replace(/\/(thumb|thumbnail|small|sq|mini|50x50|72x72|100x100|150x150|200x200)\//i, '/original/')
+          .replace(/-(thumb|thumbnail|small|sq|mini|50x50|72x72|100x100|150x150|200x200)(\.[a-zA-Z]+)$/i, '$2');
+}
+
+function extractJsonLd() {
+  let result = { d: "", p: "" };
+  try {
+    const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+    for (const script of scripts) {
+      if (!script.innerText) continue;
+      
+      let data;
+      try {
+        data = JSON.parse(script.innerText);
+      } catch (e) {
+        continue;
+      }
+
+      const items = Array.isArray(data) ? data : [data];
+      
+      for (const item of items) {
+        if (item['@type'] === 'Product' || (Array.isArray(item['@type']) && item['@type'].includes('Product'))) {
+          if (item.description && !result.d) {
+            result.d = item.description;
+          }
+          
+          if (item.offers) {
+            const offers = Array.isArray(item.offers) ? item.offers[0] : item.offers;
+            if (offers.price && !result.p) {
+              result.p = `${offers.priceCurrency || ''} ${offers.price}`.trim();
+            } else if (offers.lowPrice && offers.highPrice && !result.p) {
+              result.p = `${offers.priceCurrency || ''} ${offers.lowPrice} - ${offers.highPrice}`.trim();
+            } else if (offers.lowPrice && !result.p) {
+              result.p = `${offers.priceCurrency || ''} ${offers.lowPrice}`.trim();
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error parsing JSON-LD:", e);
+  }
+  return result;
 }
 
 function extractImages() {
@@ -62,32 +119,88 @@ function extractImages() {
   const metadata = {};
   try {
     metadata.t = document.querySelector('meta[property="og:title"]')?.content || document.title;
-    metadata.p = document.querySelector('meta[property="og:price:amount"]')?.content || "";
-    let d = "";
     
-    // 1. Try common metadata first (most reliable generic way)
-    const metaDesc = document.querySelector('meta[name="description"]')?.content || 
-                     document.querySelector('meta[property="og:description"]')?.content || 
-                     document.querySelector('meta[name="twitter:description"]')?.content;
-    if (metaDesc) d = metaDesc;
+    // 1. Prioritize JSON-LD
+    const jsonLdData = extractJsonLd();
+    let p = jsonLdData.p;
+    let d = jsonLdData.d;
 
-    // 2. Try Schema.org itemprop (very common in e-commerce)
+    // 2. Fallback for Price
+    if (!p) {
+      const priceSelectors = [
+        'meta[property="og:price:amount"]',
+        'meta[property="product:price:amount"]',
+        '[itemprop="price"]',
+        '.pqTWkA', // Shopee main price
+        '.Y3DvsN', // Shopee variant
+        '.M-Dd8u', // Shopee variant
+        '[data-buy-box-region="price"] p', // Etsy
+        'p.wt-text-title-03.wt-mr-xs-1', // Etsy fallback
+        '.pdp-price_type_normal', // Lazada
+        '.price',
+        '.product-price'
+      ];
+      for (const sel of priceSelectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          p = el.getAttribute('content') || el.innerText || "";
+          if (p.trim()) {
+            p = p.trim();
+            break;
+          }
+        }
+      }
+      
+      // Aggressive fallback for Shopee/Etsy: scan DOM for standalone price text nodes
+      if (!p) {
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while (node = walker.nextNode()) {
+          const text = node.nodeValue?.trim() || "";
+          // Match exact price formats like "₫150.000", "$15.99", "₫150.000 - ₫200.000", "150.000 ₫"
+          if (text.match(/^([₫$]\s*[\d.,]+(\s*-\s*[₫$]?\s*[\d.,]+)?|[\d.,]+\s*[₫$])$/)) {
+            // Verify it's not inside a hidden container or script
+            const parent = node.parentElement;
+            if (parent && parent.tagName !== 'SCRIPT' && parent.tagName !== 'STYLE' && parent.offsetHeight > 0) {
+              p = text;
+              break;
+            }
+          }
+        }
+      }
+    }
+    metadata.p = p;
+    
+    // 3. Fallback for Description
+    // Amazon often puts "About this item" in #feature-bullets. 
+    // JSON-LD might contain a very short generic string, so we override it if the DOM has rich bullets.
+    const amazonBullets = document.querySelector('#feature-bullets ul');
+    if (amazonBullets && amazonBullets.innerText.trim().length > (d ? d.length : 0)) {
+      d = amazonBullets.innerText.trim();
+    }
+
+    if (!d || d.length < 50) {
+      const metaDesc = document.querySelector('meta[name="description"]')?.content || 
+                       document.querySelector('meta[property="og:description"]')?.content || 
+                       document.querySelector('meta[name="twitter:description"]')?.content;
+      if (metaDesc && metaDesc.length > (d ? d.length : 0)) d = metaDesc;
+    }
+
     if (!d) {
       const itempropDesc = document.querySelector('[itemprop="description"]');
       if (itempropDesc) d = itempropDesc.innerText || itempropDesc.getAttribute('content') || "";
     }
 
-    // 3. Try common CSS selectors for Shopee, Amazon, Shopify, Lazada, etc.
     if (!d) {
       const selectors = [
-        "#feature-bullets", // Amazon bullets
-        "#productDescription", // Amazon description
-        ".pdp-product-detail", // Generic/Lazada
-        ".product-description", // Shopify/WooCommerce
+        "#feature-bullets", 
+        "#productDescription", 
+        ".pdp-product-detail", 
+        ".product-description", 
         ".product__description",
         "div[data-automation='product-description']",
         ".description",
-        "._2u0n77", // Shopee
+        "._2u0n77", 
         ".product-details__description"
       ];
       for (const s of selectors) {
@@ -100,7 +213,9 @@ function extractImages() {
     }
     
     metadata.d = d.trim().slice(0, 1000);
-  } catch (e) {}
+  } catch (e) {
+    console.error("Error extracting metadata:", e);
+  }
 
   return { images: imageList, metadata, url: window.location.href };
 }

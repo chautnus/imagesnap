@@ -1,89 +1,110 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Chrome, 
-  FolderOpen, 
-  Image as ImageIcon, 
-  Tag, 
-  Zap, 
-  ShieldAlert, 
-  Clock, 
-  Database, 
-  Layout, 
-  Download, 
-  ArrowRight, 
-  Check, 
-  Globe, 
-  Palette, 
-  ShoppingBag, 
-  Video,
-  X
-} from 'lucide-react';
-
-
-const VARIANT_DATA = {
-  1: {
-    themeColor: "text-accent",
-    heroTitle: <>The Ultimate <span className="text-accent italic">Ecommerce</span> Asset Scraper.</>,
-    heroDesc: "Automate your competitor research. Capture high-res product images and metadata from any ecommerce marketplace directly to your Drive.",
-    heroImage: "/landing_variant_1_ecom.png",
-    primaryFeatureTitle: "Automated Data Extraction",
-    primaryFeatureDesc: "Stop manual copy-pasting. ImageSnap automatically identifies product titles, prices, and high-res source images while you browse.",
-    problemTitle: "Ecommerce research is a nightmare.",
-    problemCard1: { title: "Drowning in tabs", desc: "Opening dozens of marketplace tabs but having no systematic way to save prices and images." },
-    problemCard2: { title: "Manual Data Entry", desc: "Spending hours manually entering data from websites into Excel files. Error-prone and time-consuming." },
-    useCaseTitle: "For Dropshippers & Ecom Researchers",
-    useCaseDesc: "Collect competitor product photo libraries with selling prices and source links in just one click."
-  },
-  2: {
-    themeColor: "text-blue-500",
-    heroTitle: <>Organize your visual life, <span className="text-blue-500 italic">effortlessly</span>.</>,
-    heroDesc: "Organize images into folders with just one click. Assign labels, categorize, and store intelligently. Access your image library from anywhere.",
-    heroImage: "/landing_variant_2_org.png",
-    primaryFeatureTitle: "Professional Folder Structure",
-    primaryFeatureDesc: "Set up workflows for each project folder. Every image has its own 'home', keeping your Drive perfectly tidy.",
-    problemTitle: "Folder mess kills productivity.",
-    problemCard1: { title: "The 'Downloads' Dumpster", desc: "The Downloads folder contains thousands of 'IMG_xxx' files that you can never find again." },
-    problemCard2: { title: "Context is lost", desc: "When downloading images to your computer, you lose information about where they came from and which project they belong to." },
-    useCaseTitle: "For Designers & Project Managers",
-    useCaseDesc: "Build professional moodboards directly on Google Drive with full color and style tags."
-  },
-  3: {
-    themeColor: "text-yellow-500",
-    heroTitle: <>Google Drive is your new <span className="text-yellow-500 italic">superpower</span>.</>,
-    heroDesc: "Store directly to Drive. No local computer space used. Search and categorize data at scale for a professional asset library.",
-    heroImage: "/landing_variant_3_cloud.png",
-    primaryFeatureTitle: "Cloud-Native Search",
-    primaryFeatureDesc: "Leverage the power of Google. Your images are indexed, easy to search, and secure the moment you hit 'Snap'.",
-    problemTitle: "Local storage is a dead end.",
-    problemCard1: { title: "Hard Drive full", desc: "High-quality images fill up your computer's hard drive, slowing down the system and making sharing difficult." },
-    problemCard2: { title: "Search is impossible", desc: "Searching for an old photo in thousands of computer folders is impossible. You often have to download it again." },
-    useCaseTitle: "For Content Teams & Agencies",
-    useCaseDesc: "Centrally store every advertising asset, meme, and stock photo into a common workspace for the whole team to use."
-  },
-  0: { // Default
-    themeColor: "text-red-500",
-    heroTitle: <>Stop saving images as <span className="text-red-500 line-through decoration-white/20 decoration-4">`IMG_8472.jpg`</span>.</>,
-    heroDesc: "Save images from the web directly to Google Drive, auto-classify into folders, and attach detailed metadata without downloading to your computer.",
-    heroImage: "/imagesnap_extension_form_preview.png",
-    primaryFeatureTitle: "Fly straight to Google Drive",
-    primaryFeatureDesc: "Forget the 'Downloads' folder. ImageSnap connects directly to your Drive. Just right-click and choose a project folder.",
-    problemTitle: "Your current image workflow is broken.",
-    problemCard1: { title: "Downloads folder is a dumpster", desc: "You download hundreds of images with meaningless names. You have to open every file to find one." },
-    problemCard2: { title: "Images lose context", desc: "When you download an image, you lose the article title, the source link, and the purpose of that image." },
-    useCaseTitle: "Born for your specific workflow.",
-    useCaseDesc: "Whether you're a designer, researcher, or creator, ImageSnap adapts to how you organize your digital life."
-  }
-};
+import { Helmet } from 'react-helmet-async';
+import { AnimatePresence, motion } from 'motion/react';
+import { Chrome, Zap, X } from 'lucide-react';
 
 export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, t: any, variant?: number }) => {
-  const [activeTab, setActiveTab] = useState<'designer' | 'ecom' | 'creator'>('designer');
   const [showLoginOptions, setShowLoginOptions] = useState(false);
 
-  const currentData = VARIANT_DATA[variant as keyof typeof VARIANT_DATA] || VARIANT_DATA[0];
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowLoginOptions(true);
+  };
+
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ImageSnap",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "url": "https://imagesnap.cloud",
+    "description": "Save any image with your designed context. Images in Google Drive, context in Google Sheets. Research once, use forever.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "One-click capture: images + designed context from any page",
+      "Product images saved to Google Drive",
+      "Designed context fields in Google Sheets",
+      "Unlimited custom fields per category",
+      "Team collaboration",
+      "Data ownership — your Drive, your Sheet"
+    ]
+  };
+
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "ImageSnap",
+    "url": "https://imagesnap.cloud",
+    "description": "Save any image with your designed context. Research once, use forever."
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What does ImageSnap actually do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When you browse a product page, you click the extension. ImageSnap saves the images to your Google Drive and captures the context — title, price, description, source — into your Google Sheet. You can also add your own custom fields to match your workflow."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is \"designed context\"?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "It means you decide what information gets attached to each image. ImageSnap auto-fills what it can from the page, but you can add any custom fields — project name, rating, supplier, status, notes — whatever makes the image useful for your work."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is this different from just saving screenshots?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Screenshots sit in a folder with no context. A month later, you can't remember the price, the source, or why you saved it. ImageSnap attaches context to every image so it stays useful."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data private?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Images go to your Google Drive. Context goes to your Google Sheet. We don't store your research data on our servers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if I cancel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Everything stays. Your Drive images and Sheet records are yours. ImageSnap simply stops adding new captures."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this a scraper?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. ImageSnap works inside your browser while you browse normally. You choose what to capture. It's human-guided, not automated."
+        }
+      }
+    ]
+  };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] text-white selection:bg-accent/30 font-sans overflow-x-hidden">
+    <div className="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen">
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(softwareSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+      </Helmet>
+
       {/* Login Options Modal */}
       <AnimatePresence>
         {showLoginOptions && (
@@ -99,46 +120,46 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg glass rounded-[2.5rem] p-10 border-white/10 shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-10 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-6">
-                <button onClick={() => setShowLoginOptions(false)} className="text-muted hover:text-white"><X size={24} /></button>
+                <button onClick={() => setShowLoginOptions(false)} className="text-gray-400 hover:text-gray-900"><X size={24} /></button>
               </div>
 
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-black mb-2">Welcome to ImageSnap</h2>
-                <p className="text-muted font-medium text-sm">Choose your login type to continue</p>
+                <h2 className="text-3xl font-black text-gray-900 mb-2">Welcome to ImageSnap</h2>
+                <p className="text-gray-500 font-medium text-sm">Choose your login type to continue</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button 
                   onClick={() => { setShowLoginOptions(false); onLogin(); }}
-                  className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-accent hover:bg-accent/10 transition-all group"
+                  className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-gray-50 border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                     <Chrome size={24} className="text-white group-hover:text-accent" />
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200 flex items-center justify-center group-hover:scale-110 transition-transform">
+                     <Chrome size={24} className="text-gray-700 group-hover:text-blue-600" />
                   </div>
                   <div className="text-center">
-                    <div className="font-black text-sm uppercase tracking-widest mb-1">ADMIN_ACCESS</div>
-                    <div className="text-[10px] text-muted font-bold">Log in with Google</div>
+                    <div className="font-black text-gray-900 text-sm uppercase tracking-widest mb-1">ADMIN_ACCESS</div>
+                    <div className="text-[10px] text-gray-500 font-bold">Log in with Google</div>
                   </div>
                 </button>
 
                 <button 
                   onClick={() => { setShowLoginOptions(false); window.location.hash = '#staff'; }}
-                  className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
+                  className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-gray-50 border border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                     <Zap size={24} className="text-white group-hover:text-blue-500" />
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200 flex items-center justify-center group-hover:scale-110 transition-transform">
+                     <Zap size={24} className="text-gray-700 group-hover:text-indigo-600" />
                   </div>
                   <div className="text-center">
-                    <div className="font-black text-sm uppercase tracking-widest mb-1">STAFF_ACCESS</div>
-                    <div className="text-[10px] text-muted font-bold">Username / Password</div>
+                    <div className="font-black text-gray-900 text-sm uppercase tracking-widest mb-1">STAFF_ACCESS</div>
+                    <div className="text-[10px] text-gray-500 font-bold">Username / Password</div>
                   </div>
                 </button>
               </div>
 
-              <div className="mt-8 p-4 bg-white/5 rounded-2xl border border-dashed border-white/10 text-[11px] text-center text-muted font-medium">
+              <div className="mt-8 p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300 text-[11px] text-center text-gray-500 font-medium">
                 Note: Staff accounts must be created by an Admin in the Settings tab.
               </div>
             </motion.div>
@@ -146,318 +167,294 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
         )}
       </AnimatePresence>
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-bg/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-              <ImageIcon size={18} className="text-bg fill-current" />
-            </div>
-            <span className="text-xl font-black tracking-tighter italic">ImageSnap_</span>
+      {/* NAVIGATION */}
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-200">
+          <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+              <a href="/" className="text-xl font-extrabold tracking-tight text-gray-900">Image<span className="text-blue-600">Snap</span></a>
+              <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+                  <a href="#how-it-works" className="hover:text-gray-900 transition">How it works</a>
+                  <a href="#comparison" className="hover:text-gray-900 transition">Compare</a>
+                  <a href="#use-cases" className="hover:text-gray-900 transition">Use cases</a>
+                  <a href="#pricing" className="hover:text-gray-900 transition">Pricing</a>
+                  <a href="#faq" className="hover:text-gray-900 transition">FAQ</a>
+              </div>
+              <div className="flex items-center gap-3">
+                  <a href="#" onClick={handleLoginClick} className="hidden sm:inline-block text-sm font-medium text-gray-600 hover:text-gray-900 transition">Log in</a>
+                  <a href="#" onClick={handleLoginClick} className="bg-blue-600 text-white text-sm px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Try free</a>
+              </div>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted">
-            <a href="#problem" className="hover:text-white transition-colors">The Problem</a>
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#use-cases" className="hover:text-white transition-colors">Use Cases</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-          </div>
-          <button 
-            onClick={() => setShowLoginOptions(true)}
-            className="px-6 py-2 bg-accent text-bg font-bold rounded-full hover:glow-accent transition-all hover:scale-105"
-          >
-            Sign In
-          </button>
-        </div>
       </nav>
 
-      <main className="pt-20">
-        {/* 1. Hero Section */}
-        <section className="px-6 pt-24 pb-32 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[0.9] mb-8">
-              {currentData.heroTitle}
-            </h1>
-            <p className="text-muted text-lg md:text-xl font-medium leading-relaxed mb-10 max-w-xl">
-              {currentData.heroDesc}
-            </p>
-            <div className="flex flex-col gap-4">
-              <button 
-                onClick={() => setShowLoginOptions(true)}
-                className={`w-fit px-10 py-5 bg-accent text-bg font-black text-xl rounded-2xl flex items-center gap-3 hover:glow-accent transition-all hover:-translate-y-1`}
-              >
-                <Chrome size={24} strokeWidth={3} /> ADD TO CHROME - FREE 100 IMAGES
-              </button>
-              <p className="text-xs text-muted font-bold tracking-widest uppercase flex items-center gap-2">
-                <Check size={14} className="text-accent" /> No credit card required — Works directly in your browser.
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 1 }}
-            className="relative"
-          >
-            <div className="absolute inset-0 bg-accent/20 blur-[100px] rounded-full animate-pulse-glow" />
-            <div className="relative glass rounded-[2rem] overflow-hidden border-white/20 shadow-2xl">
-              <img 
-                src={currentData.heroImage} 
-                alt="ImageSnap Workflow Illustration" 
-                className="w-full h-auto"
-              />
-            </div>
-          </motion.div>
-        </section>
-
-        {/* 2. Problem Section */}
-        <section id="problem" className="bg-[#111113] py-32 border-y border-white/5 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 relative z-10">
-            <h2 className="text-4xl md:text-5xl font-black text-center mb-20 tracking-tight">
-              {currentData.problemTitle}
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <ProblemCard 
-                icon={<FolderOpen className={currentData.themeColor} />}
-                title={currentData.problemCard1.title}
-                desc={currentData.problemCard1.desc}
-              />
-              <ProblemCard 
-                icon={<X className={currentData.themeColor} />}
-                title={currentData.problemCard2.title}
-                desc={currentData.problemCard2.desc}
-              />
-              <ProblemCard 
-                icon={<ShieldAlert className={currentData.themeColor} />}
-                title="Images lose context"
-                desc="When you download an image, you lose the article title, the source link, and the value of that image."
-              />
-            </div>
+      {/* HERO SECTION */}
+      <header className="max-w-6xl mx-auto px-6 py-20 text-center">
+          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
+              Your pictures are worthless without context.
+          </h1>
+          <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+              ImageSnap captures any image with your designed context — the fields you choose, the categories you define, the details that make each picture useful forever. One capture, use it in any later work.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
+              <a href="#" onClick={handleLoginClick} className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Try free — 30 captures/month</a>
+              <a href="#how-it-works" className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">See how it works ↓</a>
           </div>
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-500/5 blur-[120px] rounded-full" />
-        </section>
-
-        {/* 3. Solution & Core Features */}
-        <section id="features" className="py-40 px-6 max-w-7xl mx-auto space-y-40">
-          <div className="text-center">
-             <h2 className="text-4xl md:text-6xl font-black mb-4">ImageSnap: Turning images into a data system.</h2>
-          </div>
-
-          <FeatureRow 
-             image="/imagesnap_hero_abstract.png"
-             title={currentData.primaryFeatureTitle}
-             desc={currentData.primaryFeatureDesc}
-             icon={<Globe size={20} />}
-          />
-
-          <FeatureRow 
-             image="/imagesnap_extension_form_preview.png"
-             title="Tag, categorize, and never get lost."
-             desc="Don't just save images, save the context. ImageSnap lets you attach custom fields: Description, Color, Origin. This data stays with the image forever."
-             icon={<Tag size={20} />}
-             reverse
-          />
-
-          <FeatureRow 
-             image="/imagesnap_hero_abstract.png"
-             title="Auto-extract data from websites."
-             desc="Collecting competitor products? ImageSnap can automatically 'read' the page to grab product titles, prices, and source links to save alongside the image."
-             icon={<Database size={20} />}
-          />
-        </section>
-
-        {/* 4. Use Case Section */}
-        <section id="use-cases" className="bg-[#0D0D0E] py-40 px-6 border-y border-white/5">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-black text-center mb-16 tracking-tight">
-              {currentData.useCaseTitle}
-            </h2>
-            <p className="text-center text-muted text-xl mb-16 max-w-2xl mx-auto font-medium">
-              {currentData.useCaseDesc}
-            </p>
-            
-            <div className="flex flex-wrap justify-center gap-4 mb-16">
-               <TabButton active={activeTab === 'designer'} onClick={() => setActiveTab('designer')} label="Designer & Artist" icon={<Palette size={18} />} />
-               <TabButton active={activeTab === 'ecom'} onClick={() => setActiveTab('ecom')} label="E-commerce & Research" icon={<ShoppingBag size={18} />} />
-               <TabButton active={activeTab === 'creator'} onClick={() => setActiveTab('creator')} label="Content Creator" icon={<Video size={18} />} />
-            </div>
-
-            <div className="glass rounded-[3rem] p-12 md:p-20 relative overflow-hidden">
-               <AnimatePresence mode="wait">
-                 <motion.div 
-                   key={activeTab}
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   exit={{ opacity: 0, y: -20 }}
-                   transition={{ duration: 0.4 }}
-                   className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
-                 >
-                   <div>
-                      <h3 className="text-4xl font-black mb-6">
-                        {activeTab === 'designer' && "Build personal Moodboards on Drive"}
-                        {activeTab === 'ecom' && "Competitor Asset Scraper"}
-                        {activeTab === 'creator' && "Project-Specific Asset Storage"}
-                      </h3>
-                      <p className="text-xl text-muted font-medium leading-relaxed">
-                        {activeTab === 'designer' && "Organize visual inspiration with clear tags for color and style. No more retracing web history to find that one reference image."}
-                        {activeTab === 'ecom' && "Collect competitor product photos with price and title automatically from Shopee, Amazon directly to your Google Sheets or Drive."}
-                        {activeTab === 'creator' && "Store memes, stock photos, and video assets in designated project folders while browsing. Keep your creative pipeline clean."}
-                      </p>
-                   </div>
-                   <div className="aspect-video rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                      <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
-                        <ImageIcon size={40} className="text-accent" />
-                      </div>
-                   </div>
-                 </motion.div>
-               </AnimatePresence>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. Pricing Section */}
-        <section id="pricing" className="py-40 px-6 max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-             <h2 className="text-4xl md:text-6xl font-black mb-4">Start for free, upgrade when you need.</h2>
-             <p className="text-muted text-xl">The simplest pricing for professional asset management.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-             {/* Free Tier */}
-             <div className="glass p-12 rounded-[2.5rem] border-white/5 flex flex-col h-full">
-                <div className="mb-10">
-                   <div className="text-sm font-black uppercase tracking-[0.2em] text-muted mb-4">EXPLORE</div>
-                   <div className="text-6xl font-black">$0<span className="text-xl text-muted ml-2">/ lifetime</span></div>
-                </div>
-                <ul className="space-y-6 mb-12 flex-1">
-                   <PricingItem text="Max 100 image captures" />
-                   <PricingItem text="Basic metadata (Desc, Source Link)" />
-                   <PricingItem text="Save directly to Google Drive" />
-                   <PricingItem text="Browser extension access" />
-                </ul>
-                <button onClick={onLogin} className="w-full py-5 glass rounded-2xl font-black text-lg hover:bg-white/10 transition-colors">
-                   INSTALL FOR FREE
-                </button>
-             </div>
-
-             {/* Pro Tier */}
-             <div className="glass p-12 rounded-[2.5rem] border-accent/30 bg-accent/[0.03] flex flex-col h-full relative overflow-hidden">
-                <div className="absolute top-8 right-8 px-3 py-1 bg-accent text-bg text-[10px] font-black rounded-full uppercase tracking-widest">MOST POPULAR</div>
-                <div className="mb-10">
-                   <div className="text-sm font-black uppercase tracking-[0.2em] text-accent mb-4">PROFESSIONAL</div>
-                   <div className="text-6xl font-black">$9<span className="text-xl text-muted ml-2">/ month</span></div>
-                </div>
-                <ul className="space-y-6 mb-12 flex-1">
-                   <PricingItem text="Unlimited image captures" accent />
-                   <PricingItem text="Custom metadata fields (Unlimited)" accent />
-                   <PricingItem text="Auto-Extract from any website" accent />
-                   <PricingItem text="Bulk export to CSV/Sheets" accent />
-                   <PricingItem text="Priority support" accent />
-                </ul>
-                <button onClick={onLogin} className="w-full py-5 bg-accent text-bg rounded-2xl font-black text-lg hover:glow-accent transition-all shadow-[0_0_30px_rgba(212,255,0,0.2)]">
-                   UPGRADE TO PRO
-                </button>
-             </div>
-          </div>
-        </section>
-
-        {/* 6. Footer & Final CTA */}
-        <section className="px-6 pb-20">
-           <div className="max-w-7xl mx-auto">
-              <div className="bg-gradient-to-br from-accent/20 to-transparent rounded-[3rem] p-12 md:p-20 border border-accent/20 text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
-                   <div className="grid grid-cols-12 gap-4 w-full h-full">
-                      {[...Array(48)].map((_, i) => <div key={i} className="aspect-square bg-white border border-white/10 rounded-lg" />)}
-                   </div>
-                </div>
-                
-                <h2 className="text-4xl md:text-6xl font-black mb-10 tracking-tight leading-none relative z-10">Ready to clean up your image library?</h2>
-                <button 
-                  onClick={onLogin}
-                  className="px-16 py-6 bg-accent text-bg font-black text-2xl rounded-3xl hover:scale-110 active:scale-95 transition-all shadow-[0_0_50px_rgba(212,255,0,0.4)] relative z-10"
-                >
-                  ADD TO CHROME NOW
-                </button>
+          <div className="bg-gray-200 border border-gray-300 rounded-xl aspect-video max-w-4xl mx-auto flex items-center justify-center overflow-hidden relative">
+              <img src="/imagesnap_extension_form_preview.png" alt="ImageSnap Preview" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent flex items-end justify-center pb-6 opacity-0 hover:opacity-100 transition-opacity">
+                 <span className="text-white font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">ImageSnap Context Form</span>
               </div>
+          </div>
+      </header>
 
-              <footer className="mt-32 pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8 text-sm text-muted">
-                 <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-white/10 rounded-md flex items-center justify-center">
-                       <ImageIcon size={14} className="text-white" />
-                    </div>
-                    <span className="font-black italic text-white">ImageSnap_</span>
-                 </div>
-                 <div className="flex gap-8 font-bold uppercase tracking-widest text-[10px]">
-                    <button onClick={() => window.location.hash = 'privacy'} className="hover:text-accent transition-colors">Privacy Policy</button>
-                    <a href="#" className="hover:text-accent transition-colors">Terms of Service</a>
-                    <a href="mailto:loch7444@gmail.com" className="hover:text-accent transition-colors">Contact</a>
-                 </div>
-                 <div className="font-mono text-[10px] opacity-30">© 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED.</div>
-              </footer>
-           </div>
-        </section>
-      </main>
+      {/* PROBLEM SECTION */}
+      <section className="max-w-6xl mx-auto px-6 py-16">
+          <h2 className="text-3xl font-bold text-center mb-12">Sound familiar?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
+                  <div className="text-4xl mb-4">📁</div>
+                  <p className="text-gray-700 text-lg italic">"I saved 200 product screenshots but can't remember why I saved half of them."</p>
+              </div>
+              <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
+                  <div className="text-4xl mb-4">🗂️</div>
+                  <p className="text-gray-700 text-lg italic">"My research folder is full of images with no price, no source, no notes. Just dead files."</p>
+              </div>
+              <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
+                  <div className="text-4xl mb-4">🔍</div>
+                  <p className="text-gray-700 text-lg italic">"I did great research last month. Now I need it again and can't find anything useful."</p>
+              </div>
+          </div>
+      </section>
+
+      {/* SOLUTION SECTION */}
+      <section className="bg-white py-20 border-y border-gray-200">
+          <div className="max-w-6xl mx-auto px-6">
+              <h2 className="text-3xl font-bold text-center mb-16">Save the image. Keep the meaning.</h2>
+              <div className="grid md:grid-cols-3 gap-12">
+                  <div>
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                          <span className="text-2xl">📸</span>
+                      </div>
+                      <h3 className="text-xl font-bold mb-4">Capture any image with context</h3>
+                      <p className="text-gray-600">Click the extension on any supported page. ImageSnap saves the image to your Google Drive and captures the context around it — title, price, description, source URL. Auto-filled when possible, customizable always.</p>
+                  </div>
+                  <div>
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                          <span className="text-2xl">🏷️</span>
+                      </div>
+                      <h3 className="text-xl font-bold mb-4">You design the context</h3>
+                      <p className="text-gray-600">Add any fields your workflow needs: supplier name, rating, project code, season, status — whatever matters to you. Every category can have its own schema. Your context, your rules.</p>
+                  </div>
+                  <div>
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                          <span className="text-2xl">♾️</span>
+                      </div>
+                      <h3 className="text-xl font-bold mb-4">Spend one time, use forever</h3>
+                      <p className="text-gray-600">Six months from now, find that image and know exactly why you saved it, where it came from, and what it means. Images live in your Google Drive. Context lives in your Google Sheet. Both stay yours forever.</p>
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-20">
+          <h2 className="text-3xl font-bold text-center mb-16">Three steps. No setup required.</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">1</div>
+                  <h3 className="text-xl font-bold mb-3">Design your context</h3>
+                  <p className="text-gray-600">Define the fields that matter for your research — or use defaults. Each category can have its own schema.</p>
+              </div>
+              <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">2</div>
+                  <h3 className="text-xl font-bold mb-3">Browse and capture</h3>
+                  <p className="text-gray-600">Click the extension on any image worth saving. Context fills automatically. Choose what matters, skip the rest.</p>
+              </div>
+              <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">3</div>
+                  <h3 className="text-xl font-bold mb-3">Search and reuse</h3>
+                  <p className="text-gray-600">Find any image by its context in the web app, or open your Google Sheet directly. Your research, ready for any later work.</p>
+              </div>
+          </div>
+      </section>
+
+      {/* MID-PAGE CTA */}
+      <section className="bg-blue-50 border-y border-blue-100 py-12">
+          <div className="max-w-3xl mx-auto px-6 text-center">
+              <p className="text-xl font-semibold text-gray-800 mb-4">Research once. Use it in any later work.</p>
+              <a href="#" onClick={handleLoginClick} className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Try free — 30 captures/month</a>
+          </div>
+      </section>
+
+      {/* HOW IT'S DIFFERENT */}
+      <section id="comparison" className="bg-gray-900 text-white py-20">
+          <div className="max-w-6xl mx-auto px-6">
+              <h2 className="text-3xl font-bold text-center mb-12">Not a scraper. Not a bookmark. Images with meaning.</h2>
+              <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                      <thead>
+                          <tr className="border-b border-gray-700">
+                              <th className="py-4 px-4 font-semibold text-gray-400"></th>
+                              <th className="py-4 px-4 font-semibold">Screenshot folder</th>
+                              <th className="py-4 px-4 font-semibold">DIY scraper</th>
+                              <th className="py-4 px-4 font-semibold text-blue-400">ImageSnap</th>
+                          </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                          <tr>
+                              <td className="py-4 px-4 font-medium">Images saved</td>
+                              <td className="py-4 px-4">Yes, but no context</td>
+                              <td className="py-4 px-4">Bulk, no curation</td>
+                              <td className="py-4 px-4 text-blue-300 font-medium">Yes, with your context</td>
+                          </tr>
+                          <tr>
+                              <td className="py-4 px-4 font-medium">Context attached</td>
+                              <td className="py-4 px-4">None</td>
+                              <td className="py-4 px-4">Fixed schema only</td>
+                              <td className="py-4 px-4 text-blue-300 font-medium">Your designed context</td>
+                          </tr>
+                          <tr>
+                              <td className="py-4 px-4 font-medium">Findable later</td>
+                              <td className="py-4 px-4">Hard</td>
+                              <td className="py-4 px-4">Requires DB query</td>
+                              <td className="py-4 px-4 text-blue-300 font-medium">Search by any field</td>
+                          </tr>
+                          <tr>
+                              <td className="py-4 px-4 font-medium">Maintenance</td>
+                              <td className="py-4 px-4">None</td>
+                              <td className="py-4 px-4">Ongoing</td>
+                              <td className="py-4 px-4 text-blue-300 font-medium">Low</td>
+                          </tr>
+                          <tr>
+                              <td className="py-4 px-4 font-medium">Policy risk</td>
+                              <td className="py-4 px-4">None</td>
+                              <td className="py-4 px-4">High</td>
+                              <td className="py-4 px-4 text-blue-300 font-medium">Lower</td>
+                          </tr>
+                          <tr>
+                              <td className="py-4 px-4 font-medium">Data ownership</td>
+                              <td className="py-4 px-4">Yours (unstructured)</td>
+                              <td className="py-4 px-4">Yours (custom DB)</td>
+                              <td className="py-4 px-4 text-blue-300 font-medium">Yours (Drive + Sheet)</td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </section>
+
+      {/* USE CASES */}
+      <section id="use-cases" className="max-w-6xl mx-auto px-6 py-20">
+          <h2 className="text-3xl font-bold text-center mb-16">Every image tells a story. ImageSnap remembers it.</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                  <h3 className="text-xl font-bold mb-3">Competitor tracking</h3>
+                  <p className="text-gray-600">Save competitor product images with price, positioning and source. Build a visual database that shows how competitors change over time.</p>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                  <h3 className="text-xl font-bold mb-3">Market research</h3>
+                  <p className="text-gray-600">Capture product trends with images and context. Review visually, compare by fields, share with your team.</p>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                  <h3 className="text-xl font-bold mb-3">Sourcing and procurement</h3>
+                  <p className="text-gray-600">Save supplier products with photos, specs and pricing. Compare visually across sources — no more juggling tabs and screenshots.</p>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                  <h3 className="text-xl font-bold mb-3">Personal knowledge base</h3>
+                  <p className="text-gray-600">Save anything visual from the web with the context that makes it findable later. Recipes, designs, references, inspiration — with your own fields attached.</p>
+              </div>
+          </div>
+      </section>
+
+      {/* CTA after use cases */}
+      <section className="bg-blue-50 border-y border-blue-100 py-12">
+          <div className="max-w-3xl mx-auto px-6 text-center">
+              <p className="text-xl font-semibold text-gray-800 mb-2">Stop losing your valuable research.</p>
+              <p className="text-gray-600 mb-6">30 captures/month free. No credit card required.</p>
+              <a href="#" onClick={handleLoginClick} className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Start capturing with context</a>
+          </div>
+      </section>
+
+      {/* PRICING */}
+      <section id="pricing" className="bg-gray-100 py-20">
+          <div className="max-w-6xl mx-auto px-6">
+              <div className="text-center mb-16">
+                  <h2 className="text-3xl font-bold mb-4">Start free. Pay when your research grows.</h2>
+              </div>
+              <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                  <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+                      <h3 className="text-xl font-bold mb-2">Free</h3>
+                      <div className="text-3xl font-extrabold mb-6">$0<span className="text-base font-normal text-gray-500">/month</span></div>
+                      <ul className="space-y-3 text-gray-600 mb-8">
+                          <li>• 30 captures/month</li>
+                          <li>• 1 user</li>
+                          <li>• 3 categories</li>
+                          <li>• See if it fits your workflow</li>
+                      </ul>
+                      <a href="#" onClick={handleLoginClick} className="block w-full text-center bg-gray-100 text-gray-900 py-2 rounded-lg font-semibold hover:bg-gray-200">Start Free</a>
+                  </div>
+                  <div className="bg-blue-600 text-white p-8 rounded-xl shadow-lg border border-blue-700 transform scale-105">
+                      <h3 className="text-xl font-bold mb-2">Solo</h3>
+                      <div className="text-3xl font-extrabold mb-6">$19<span className="text-base font-normal text-blue-200">/month</span></div>
+                      <ul className="space-y-3 mb-8">
+                          <li>• Unlimited captures</li>
+                          <li>• 1 user</li>
+                          <li>• Unlimited categories</li>
+                          <li>• For serious researchers</li>
+                      </ul>
+                      <a href="#" onClick={handleLoginClick} className="block w-full text-center bg-white text-blue-600 py-2 rounded-lg font-semibold hover:bg-gray-50">Get Solo</a>
+                  </div>
+                  <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+                      <h3 className="text-xl font-bold mb-2">Team</h3>
+                      <div className="text-3xl font-extrabold mb-6">$49<span className="text-base font-normal text-gray-500">/month</span></div>
+                      <ul className="space-y-3 text-gray-600 mb-8">
+                          <li>• Unlimited captures</li>
+                          <li>• 3 users</li>
+                          <li>• Unlimited categories</li>
+                          <li>• Priority support</li>
+                      </ul>
+                      <a href="#" onClick={handleLoginClick} className="block w-full text-center bg-gray-100 text-gray-900 py-2 rounded-lg font-semibold hover:bg-gray-200">Get Team</a>
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="max-w-4xl mx-auto px-6 py-20">
+          <h2 className="text-3xl font-bold text-center mb-12">FAQ</h2>
+          <div className="space-y-4">
+              {faqSchema.mainEntity.map((q, i) => (
+                  <details key={i} className="bg-white border border-gray-200 rounded-lg p-4 group">
+                      <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
+                          {q.name}
+                          <span className="transition group-open:rotate-180">▾</span>
+                      </summary>
+                      <p className="text-gray-600 mt-4 leading-relaxed">{q.acceptedAnswer.text}</p>
+                  </details>
+              ))}
+          </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-gray-900 text-gray-400 py-12">
+          <div className="max-w-6xl mx-auto px-6">
+              <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm">
+                  <a href="#" className="hover:text-white transition">Blog</a>
+                  <a href="#pricing" className="hover:text-white transition">Pricing</a>
+                  <a href="#how-it-works" className="hover:text-white transition">How it works</a>
+                  <a href="#" className="hover:text-white transition">About</a>
+                  <a href="#" className="hover:text-white transition">Help</a>
+                  <a href="#" className="hover:text-white transition">Contact</a>
+                  <a href="/privacy" className="hover:text-white transition">Privacy</a>
+              </div>
+              <div className="flex justify-center gap-6 mb-8 text-sm">
+                  <a href="#" className="hover:text-white transition">Twitter/X</a>
+                  <a href="#" className="hover:text-white transition">IndieHackers</a>
+                  <a href="#" className="hover:text-white transition">Product Hunt</a>
+              </div>
+              <p className="text-center text-gray-500 italic mb-4">"Save the image. Keep the meaning. Use it forever."</p>
+              <p className="text-center text-gray-600 text-sm">© 2026 ImageSnap. All rights reserved.</p>
+          </div>
+      </footer>
+
     </div>
   );
 };
-
-const ProblemCard = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
-  <div className="p-10 rounded-[2.5rem] bg-white/[0.02] border border-white/5 hover:border-red-500/30 transition-all group">
-    <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-6 transition-transform">
-      {icon}
-    </div>
-    <h3 className="text-2xl font-black mb-4">{title}</h3>
-    <p className="text-muted font-medium leading-relaxed">{desc}</p>
-  </div>
-);
-
-const FeatureRow = ({ image, title, desc, icon, reverse }: { image: string, title: string, desc: string, icon: React.ReactNode, reverse?: boolean }) => (
-  <div className={`grid grid-cols-1 lg:grid-cols-2 gap-20 items-center ${reverse ? 'lg:flex-row-reverse' : ''}`}>
-    <motion.div 
-      initial={{ opacity: 0, x: reverse ? 30 : -30 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      className={reverse ? 'lg:order-2' : ''}
-    >
-       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-black uppercase tracking-widest mb-6">
-          {icon} Core Solution
-       </div>
-       <h3 className="text-4xl font-black mb-6 leading-tight">{title}</h3>
-       <p className="text-xl text-muted font-medium leading-relaxed">{desc}</p>
-    </motion.div>
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      className={`relative group ${reverse ? 'lg:order-1' : ''}`}
-    >
-       <div className="absolute inset-0 bg-accent/10 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-       <div className="relative glass rounded-[3rem] p-3 border-white/10 overflow-hidden shadow-2xl">
-          <img src={image} alt={title} className="w-full h-auto rounded-[2.5rem] grayscale group-hover:grayscale-0 transition-all duration-700" />
-       </div>
-    </motion.div>
-  </div>
-);
-
-const TabButton = ({ active, onClick, label, icon }: { active: boolean, onClick: () => void, label: string, icon: React.ReactNode }) => (
-  <button 
-    onClick={onClick}
-    className={`px-8 py-4 rounded-2xl flex items-center gap-3 font-bold transition-all ${active ? 'bg-accent text-bg shadow-[0_0_20px_rgba(212,255,0,0.3)]' : 'bg-white/5 text-muted hover:text-white'}`}
-  >
-    {icon} {label}
-  </button>
-);
-
-const PricingItem = ({ text, accent }: { text: string, accent?: boolean }) => (
-  <li className="flex items-center gap-4 text-sm font-medium">
-    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${accent ? 'bg-accent/20 text-accent' : 'bg-white/10 text-muted'}`}>
-      <Check size={12} strokeWidth={3} />
-    </div>
-    <span className={accent ? 'text-white' : 'text-muted'}>{text}</span>
-  </li>
-);

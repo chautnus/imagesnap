@@ -9,6 +9,9 @@ export default defineConfig({
     react(), 
     tailwindcss(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: '.',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       manifest: {
@@ -35,7 +38,23 @@ export default defineConfig({
             type: "image/png",
             purpose: "any maskable"
           }
-        ]
+        ],
+        share_target: {
+          action: "/share",
+          method: "POST",
+          enctype: "multipart/form-data",
+          params: {
+            title: "title",
+            text: "text",
+            url: "url",
+            files: [
+              {
+                name: "images",
+                accept: ["image/*"]
+              }
+            ]
+          }
+        }
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],

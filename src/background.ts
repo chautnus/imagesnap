@@ -13,9 +13,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// Handle extension icon click to open the app
-chrome.action.onClicked.addListener(() => {
-  chrome.storage.local.get(['customAppUrl'], (result: { [key: string]: any }) => {
-    chrome.tabs.create({ url: (result.customAppUrl as string) || DEFAULT_APP_URL });
-  });
+// Handle extension icon click to open the app (Side Panel)
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error(error));
+
+chrome.runtime.onInstalled.addListener(() => {
+  console.log('ImageSnap Collector Extension installed - Side Panel enabled');
 });
