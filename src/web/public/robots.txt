@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block app-internal routes
+Disallow: /api/
+Disallow: /#staff
+Disallow: /#capture
+Disallow: /#data
+Disallow: /#settings
+Disallow: /#help
+
+Sitemap: https://www.imagesnap.cloud/sitemap.xml

@@ -58,4 +58,9 @@ export interface SubscriptionStatus {
   isPro: boolean;
   limit: number;
   usage: number;
+  isAdmin?: boolean;
+  role?: string;
+  appId?: string;
+  registeredAt?: string;
+  accessibleCategories?: string[];
 }
