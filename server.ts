@@ -37,7 +37,7 @@ function saveDb() {
 
 async function getSubscription(email: string) {
   if (!mockUserDb.users[email]) {
-    const adminEmails = ["chautnus@gmail.com", "admin@imagesnap.cloud"];
+    const adminEmails = ["chautnus@gmail.com", "support@imagesnap.cloud"];
     const isAdmin = adminEmails.includes(email.toLowerCase());
     
     mockUserDb.users[email] = { 
