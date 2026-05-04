@@ -37,10 +37,8 @@ function saveDb() {
 
 async function getSubscription(email: string) {
   if (!mockUserDb.users[email]) {
-    // First user or specific email can be admin
-    const isFirst = Object.keys(mockUserDb.users).length === 0;
     const adminEmails = ["chautnus@gmail.com", "admin@imagesnap.cloud"];
-    const isAdmin = isFirst || adminEmails.includes(email.toLowerCase());
+    const isAdmin = adminEmails.includes(email.toLowerCase());
     
     mockUserDb.users[email] = { 
       isPro: isAdmin, 
