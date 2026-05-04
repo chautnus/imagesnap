@@ -25,6 +25,7 @@ export const CategoryEditor: React.FC<CategoryEditorProps> = ({
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Category>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [optionsRaw, setOptionsRaw] = useState<Record<string, string>>({});
 
   const handleEdit = (cat: Category) => {
     setEditingCatId(cat.id);
@@ -167,11 +168,13 @@ export const CategoryEditor: React.FC<CategoryEditorProps> = ({
                     {field.type === 'select' && (
                       <input
                         type="text"
-                        value={field.options?.join(', ') || ''}
-                        onChange={e => {
+                        value={optionsRaw[field.id] ?? field.options?.join(', ') ?? ''}
+                        onChange={e => setOptionsRaw(prev => ({ ...prev, [field.id]: e.target.value }))}
+                        onBlur={e => {
                           const newFields = [...(editForm.fields || [])];
                           newFields[fIdx] = { ...field, options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) };
                           setEditForm({ ...editForm, fields: newFields });
+                          setOptionsRaw(prev => { const n = { ...prev }; delete n[field.id]; return n; });
                         }}
                         placeholder="Options: S, M, L"
                         className="input !py-1 text-[11px]"
