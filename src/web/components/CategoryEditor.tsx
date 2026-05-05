@@ -168,13 +168,21 @@ export const CategoryEditor: React.FC<CategoryEditorProps> = ({
                     {field.type === 'select' && (
                       <input
                         type="text"
-                        value={optionsRaw[field.id] ?? field.options?.join(', ') ?? ''}
-                        onChange={e => setOptionsRaw(prev => ({ ...prev, [field.id]: e.target.value }))}
+                        value={optionsRaw[field.id] !== undefined ? optionsRaw[field.id] : (field.options?.join(', ') || '')}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setOptionsRaw(prev => ({ ...prev, [field.id]: val }));
+                        }}
                         onBlur={e => {
+                          const val = e.target.value;
                           const newFields = [...(editForm.fields || [])];
-                          newFields[fIdx] = { ...field, options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) };
+                          newFields[fIdx] = { ...field, options: val.split(',').map(s => s.trim()).filter(Boolean) };
                           setEditForm({ ...editForm, fields: newFields });
-                          setOptionsRaw(prev => { const n = { ...prev }; delete n[field.id]; return n; });
+                          setOptionsRaw(prev => {
+                            const next = { ...prev };
+                            delete next[field.id];
+                            return next;
+                          });
                         }}
                         placeholder="Options: S, M, L"
                         className="input !py-1 text-[11px]"

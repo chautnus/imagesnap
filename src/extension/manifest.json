@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnvUUFhT52EQswI3t0iPIS1/9L/gCx9q+6NFRHK6NYtqjhIYNqKvRza60B8oI4SPnSIMa3HdD77J1cu6wQWzg6ergq0HgF/5Sz8VvetbAwuHBfotzTpWja12d3vPazFOhcWzLlCh4zaqZ83T+axzj6O6jdRsvmNfjlnD17nGNiP+lX5/38bMeIdW/YgqzX8v4ibsLzREDsW+NCiCZTFsnBXweyMjPJmrgZ/IiNxDBKcrbO9U56BJ1NxXu6CeTeIdiufL4fj9xV1A3gve4Y38ZkSPBHoMh7Z35FCbA99h6bTMDYFGpUHGc8Bs0coLnEI/V1eJFcEckEe287viT3X93cwIDAQAB",
   "name": "ImageSnap: Ecommerce Asset Collector",
-  "version": "1.3.2",
+  "version": "1.3.4",
   "description": "Snap product images and metadata from any website directly to your Google Drive and Sheets.",
   "author": "ImageSnap Cloud",
   "icons": {

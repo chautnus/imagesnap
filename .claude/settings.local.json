@@ -4,7 +4,15 @@
       "Skill(session-init)",
       "Skill(session-init:*)",
       "Skill(design-feature)",
-      "Skill(design-feature:*)"
+      "Skill(design-feature:*)",
+      "Skill(split-plan)",
+      "Skill(split-plan:*)",
+      "Skill(split-execute)",
+      "Skill(split-execute:*)",
+      "Bash(git -C /c/dev/imagesnap status --short)",
+      "Bash(git -C /c/dev/imagesnap log --oneline -5)",
+      "Bash(git -C /c/dev/imagesnap add server.ts src/db.ts src/shared/lib/types.ts src/web/components/SEO.tsx src/web/components/SettingsTab.tsx src/web/components/UserDirectory.tsx src/web/components/CategoryEditor.tsx src/web/components/CategoryAccessModal.tsx src/web/index.html src/web/public/robots.txt src/web/public/sitemap.xml)",
+      "Bash(railway status *)"
     ]
   }
 }
