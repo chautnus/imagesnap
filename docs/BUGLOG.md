@@ -5,11 +5,69 @@
 
 ---
 
-## 📋 OPEN BUGS (Chưa fix)
-
-<!-- [BUG-XXX] sẽ được thêm vào đây khi phát hiện -->
 
 ---
+
+### [BUG-014] — Version Inconsistency Across UI Components
+**Status**: CLOSED
+**Severity**: LOW
+**Discovered**: [2026-05-04] | **Fixed**: [2026-05-04]
+
+#### Symptom
+The version displayed in the Header was v1.3.1 while the project was already at v1.3.2. Other components like HelpTab were also outdated.
+
+#### Root Cause
+Hardcoded version strings in multiple React components (`App.tsx`, `Header.tsx`, `HelpTab.tsx`) instead of pulling from a single source of truth.
+
+#### Fix Applied
+Updated all hardcoded strings to `v1.3.4` and synchronized with `package.json` and `manifest.json`.
+*Future Fix: Import version from package.json in the build process.*
+
+#### Lesson Learned
+⚠ BÀI HỌC #014: Always search for project version strings across the entire codebase before releasing a new version.
+
+---
+
+### [BUG-013] — User Data Loss on Railway Deployment
+**Status**: CLOSED
+**Severity**: CRITICAL
+**Discovered**: [2026-05-04] | **Fixed**: [2026-05-06]
+
+#### Symptom
+Every time the code was pushed to Railway or the server restarted, all user usage counts and subscription data were reset to 0.
+
+#### Root Cause
+The system was using a local `user_db.json` file for storage. Railway's ephemeral file system wipes all local changes on every deployment/restart.
+
+#### Fix Applied
+Migrated the entire user and configuration storage layer to **PostgreSQL**.
+- Created `src/db-postgres.ts` for connection pooling and schema initialization.
+- Refactored `src/db.ts` to use async SQL queries instead of synchronous JSON reading.
+
+#### Lesson Learned
+⚠ BÀI HỌC #013: NEVER use local file storage for persistent data on ephemeral cloud platforms like Railway/Heroku. Always use a managed database service.
+
+---
+
+### [BUG-012] — Select Options Comma Input Bug
+**Status**: CLOSED
+**Severity**: MEDIUM
+**Discovered**: [2026-05-04] | **Fixed**: [2026-05-05]
+
+#### Symptom
+Users could not type a comma (`,`) when setting options for a 'select' field type in the Category Editor. The character was either blocked or caused the input to reset.
+
+#### Root Cause
+The `onChange` and `value` logic in `CategoryEditor.tsx` was conflicting. React was attempting to parse the comma-separated string into an array and join it back with spaces (`", "`) on every keystroke, which interfered with the user's manual typing.
+
+#### Fix Applied
+Separated the "raw input string" state (`optionsRaw`) from the "parsed array" state. The raw string is preserved during typing, and the array is only updated on `onBlur` or Save.
+
+#### Lesson Learned
+⚠ BÀI HỌC #012: When handling complex string-to-array transformations in inputs (like CSV), always maintain a raw string state for the input field to prevent jumping or blocking characters.
+
+---
+
 
 ### [BUG-011] — Data Desync & 404 between Web App and Extension
 **Status**: CLOSED
@@ -269,7 +327,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 8 |
+| Total bugs logged | 11 |
 | Open | 0 |
-| Closed | 8 |
+| Closed | 11 |
 | Patterns extracted | 2 |

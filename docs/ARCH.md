@@ -6,6 +6,7 @@ Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based
 - **Frontend**: React + Vite (nằm trong `src/web/`).
 - **Backend**: Express + Node.js (File `server.ts`).
 - **Storage**: Google Sheets API & Google Drive API [→ BR-1.1].
+- **Database**: PostgreSQL (Railway) for user metadata and persistence.
 - **Deployment**: [www.imagesnap.cloud](https://www.imagesnap.cloud) (Railway).
 
 ## ARCH-2. Module Structure
@@ -14,7 +15,7 @@ Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based
 - **Proxy API**: `/api/proxy-image` giải quyết vấn đề CORS [→ BR-1.1].
 - **Centralized Storage Proxy**: `/api/proxy/save-product` cho phép Staff lưu dữ liệu về Drive của Admin mà không cần tài khoản Google riêng [→ BR-1.3].
 - **Staff Auth**: `/api/auth/staff-login` hệ thống đăng nhập bằng Username/Password cho nhân viên [→ BR-2.3].
-- **Quota Management**: API `/api/increment-usage` và `/api/user-status` [→ BR-2.1].
+- **Quota Management**: API `/api/increment-usage` và `/api/user-status` tích hợp PostgreSQL [→ BR-2.1].
 
 ### ARCH-2.2 Extension (`src/extension/`)
 - **Content Script**: Chịu trách nhiệm scraping metadata và phân loại ảnh (MAIN, OTHERS, ICONS) [→ BR-3.1].
@@ -40,7 +41,7 @@ Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based
 - `@google/genai`: Hỗ trợ các tính năng AI trong tương lai.
 - `@lemonsqueezy/lemonsqueezy.js`: SDK chính thức cho thanh toán.
 - `sharp`: Xử lý hình ảnh server-side (nếu cần).
+- `pg`: Client kết nối PostgreSQL.
 
 ## ARCH-5. Technical Debt
-- Mock DB trong `server.ts` cần được thay thế bằng Persistent DB nếu lượng user tăng cao.
 - Logic sync giữa Extension và Web có thể tối ưu hơn qua BroadcastChannel hoặc Storage Sync.

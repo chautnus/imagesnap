@@ -75,7 +75,27 @@
   - Human: APPROVED by user on 2026-04-28
 
 
+## [DEV-2026W19] Tuần 19/2026 (04 May – 10 May)
+
+### ✅ Completed
+- [DEV-2026W19-01] PostgreSQL Migration for Permanent Persistence → [BUG-013]
+  - Fixes: Replaced `user_db.json` with a managed PostgreSQL database. Created `src/db-postgres.ts` and refactored `src/db.ts`.
+  - Results: User usage and subscription data now survive Railway deployments and restarts.
+- [DEV-2026W19-02] Fixed Select Field Options Comma Bug → [BUG-012]
+  - Fixes: Decoupled raw input string from parsed array state in `CategoryEditor.tsx`.
+- [DEV-2026W19-03] Unified Versioning and Extension ID Optimization → [BUG-014]
+  - Fixes: Synchronized all version strings to `v1.3.4`.
+  - Features: Added permanent `"key"` to `manifest.json` to lock the Extension ID.
+  - Results: Resolved `redirect_uri_mismatch` by providing a stable ID for Google Cloud Console.
+
 ### 🔄 In Progress
+- [DEV-2026W19-04] Auto-Silent Login implementation for improved UX.
+- [DEV-2026W19-05] Rà soát lại toàn bộ tài liệu dự án để đồng bộ với cấu trúc PostgreSQL mới.
+
+### 💡 Decisions Made
+- [DEV-2026W19-D01] Abandoned local JSON storage in favor of PostgreSQL.
+  - Lý do: Đảm bảo tính toàn vẹn dữ liệu cho người dùng trả phí và tránh lỗi reset quota trên Railway.
+
 - [DEV-2026W18-02] Rà soát và cập nhật GEMINI.md và ANTIGRAVITY.md để đồng bộ với doc ecosystem.
   - Status: Implementation
 - [DEV-2026W18-16] Đồng bộ BUGLOG.md với các lỗi đã fix từ tuần 18.
