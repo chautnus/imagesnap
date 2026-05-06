@@ -96,12 +96,21 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
               </div>
             </div>
             <div className="group relative">
+              <button className="hover:text-white transition-colors py-8">Compare</button>
+              <div className="absolute top-full left-0 w-72 glass p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10">
+                <Link to="/compare/imagesnap-vs-manual-spreadsheet" className="block p-2 hover:bg-white/5 rounded-lg text-xs">vs Manual Spreadsheet</Link>
+                <Link to="/compare/imagesnap-vs-custom-scraper" className="block p-2 hover:bg-white/5 rounded-lg text-xs">vs Custom Scraper</Link>
+                <Link to="/compare/imagesnap-vs-web-clipper" className="block p-2 hover:bg-white/5 rounded-lg text-xs">vs Web Clippers</Link>
+                <Link to="/compare/imagesnap-vs-scraping-api" className="block p-2 hover:bg-white/5 rounded-lg text-xs">vs Scraping APIs</Link>
+              </div>
+            </div>
+            <div className="group relative">
               <button className="hover:text-white transition-colors py-8">Use Cases</button>
-              <div className="absolute top-full left-0 w-64 glass p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10">
-                <Link to="/use-cases/construction-teams" className="block p-2 hover:bg-white/5 rounded-lg">Construction</Link>
-                <Link to="/use-cases/ecommerce-studios" className="block p-2 hover:bg-white/5 rounded-lg">E-commerce</Link>
-                <Link to="/use-cases/real-estate-photographers" className="block p-2 hover:bg-white/5 rounded-lg">Real Estate</Link>
-                <Link to="/use-cases/field-inspections" className="block p-2 hover:bg-white/5 rounded-lg">Field Inspections</Link>
+              <div className="absolute top-full left-0 w-72 glass p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10">
+                <Link to="/use-cases/competitor-tracking-beyond-keyword-tools" className="block p-2 hover:bg-white/5 rounded-lg text-xs">Competitor Tracking</Link>
+                <Link to="/use-cases/swipe-file-tool" className="block p-2 hover:bg-white/5 rounded-lg text-xs">Swipe File Tool</Link>
+                <Link to="/use-cases/construction-teams" className="block p-2 hover:bg-white/5 rounded-lg text-xs">Construction Teams</Link>
+                <Link to="/use-cases/ecommerce-studios" className="block p-2 hover:bg-white/5 rounded-lg text-xs">E-commerce Studios</Link>
               </div>
             </div>
             <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>

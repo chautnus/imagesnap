@@ -8,6 +8,48 @@
 
 ---
 
+### [BUG-016] — Scrape Permission Error on Navigated Tabs
+**Status**: CLOSED
+**Severity**: HIGH
+**Discovered**: [2026-05-06] | **Fixed**: [2026-05-06]
+
+#### Symptom
+Users saw "Cannot access contents of the page. Extension manifest must request permission" when trying to Snap after navigating to a new page.
+
+#### Root Cause
+Broad host permissions (`*://*/*`) were removed in favor of `activeTab`. However, `activeTab` only persists as long as the user stays on the page where they clicked the extension. Navigating away kills the permission, and the Side Panel (which stays open) loses access.
+
+#### Fix Applied
+Restored `*://*/*` to `host_permissions` in `manifest.json`.
+
+#### Lesson Learned
+⚠ BÀI HỌC #016: For extensions with a persistent Side Panel that interacts with tabs (scraping, snapping), broad host permissions are often necessary because `activeTab` is too transient for a "universal tool" experience.
+
+---
+
+### [BUG-015] — Google OAuth redirect_uri_mismatch and 'bad client id'
+**Status**: CLOSED
+**Severity**: CRITICAL
+**Discovered**: [2026-05-06] | **Fixed**: [2026-05-06]
+
+#### Symptom
+Users encountered "Error 400: redirect_uri_mismatch" during login. Console also showed "bad client id" warnings.
+
+#### Root Cause
+1. Mismatch between Client ID in `manifest.json` and the code.
+2. Using `chrome.identity.getAuthToken` (which expects an Extension Client ID) with a Web App Client ID.
+3. Inconsistent `redirect_uri` construction between local and production.
+
+#### Fix Applied
+- Synchronized Client ID `...3arbjl.apps...` across all files.
+- Disabled `getAuthToken` silent check and fallbacks since we use Web App Client IDs.
+- Hardcoded the fixed `redirect_uri` for the production Extension ID.
+
+#### Lesson Learned
+⚠ BÀI HỌC #015: When using a Web Application Client ID in a Chrome Extension (to support Edge/Web cross-platform auth), NEVER use `getAuthToken`. Only use `launchWebAuthFlow` with a fixed, explicitly defined `redirect_uri`.
+
+---
+
 ### [BUG-014] — Version Inconsistency Across UI Components
 **Status**: CLOSED
 **Severity**: LOW
@@ -327,7 +369,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 11 |
+| Total bugs logged | 13 |
 | Open | 0 |
-| Closed | 11 |
+| Closed | 13 |
 | Patterns extracted | 2 |

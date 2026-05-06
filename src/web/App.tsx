@@ -17,6 +17,17 @@ import { GooglePhotosVsImageSnap } from './pages/alternatives/GooglePhotosVsImag
 import { ConstructionTeams } from './pages/use-cases/ConstructionTeams';
 import { WebImageImport } from './pages/features/WebImageImport';
 import { GenericSEOPage } from './pages/GenericSEOPage';
+import { ComparisonManualSheet } from './pages/alternatives/ComparisonManualSheet';
+import { ComparisonCustomScraper } from './pages/alternatives/ComparisonCustomScraper';
+import { ComparisonWebClipper } from './pages/alternatives/ComparisonWebClipper';
+import { ComparisonScrapingAPI } from './pages/alternatives/ComparisonScrapingAPI';
+import { CompetitorTracking } from './pages/use-cases/CompetitorTracking';
+import { SwipeFileTool } from './pages/use-cases/SwipeFileTool';
+import { BlogPage } from './pages/BlogPage';
+import { BlogPost_WhyCopyPasteBreaks } from './pages/blog/WhyCopyPasteBreaks';
+import { BlogPost_BuildingDatabase } from './pages/blog/BuildingDatabase';
+import { BlogPost_HumanGuided } from './pages/blog/HumanGuided';
+import { BlogPost_WhyIBuild } from './pages/blog/WhyIBuild';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SEO } from './components/SEO';
 import { initGis, getAccessToken, setAccessToken, getUserInfo, requestToken, revokeToken } from '@shared/lib/google-auth';
@@ -279,7 +290,7 @@ export default function App() {
           user={user}
           subStatus={subStatus}
           isSyncing={isSyncing}
-          version="v1.3.4"
+          version="v1.3.5"
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
@@ -377,10 +388,17 @@ export default function App() {
         <Route path="/alternatives/pics-io-alternative" element={<PicsioAlternative onLogin={() => requestToken()} />} />
         <Route path="/alternatives/google-photos-vs-imagesnap" element={<GooglePhotosVsImageSnap onLogin={() => requestToken()} />} />
         <Route path="/use-cases/construction-teams" element={<ConstructionTeams onLogin={() => requestToken()} />} />
+        <Route path="/use-cases/competitor-tracking-beyond-keyword-tools" element={<CompetitorTracking onLogin={() => requestToken()} />} />
+        <Route path="/use-cases/swipe-file-tool" element={<SwipeFileTool onLogin={() => requestToken()} />} />
         <Route path="/use-cases/ecommerce-studios" element={<GenericSEOPage onLogin={() => requestToken()} title="E-commerce Studios — ImageSnap" headline="E-commerce Asset Management" />} />
         <Route path="/use-cases/real-estate-photographers" element={<GenericSEOPage onLogin={() => requestToken()} title="Real Estate Photographers — ImageSnap" headline="Real Estate Photo Sync" />} />
         <Route path="/use-cases/field-inspections" element={<GenericSEOPage onLogin={() => requestToken()} title="Field Inspections — ImageSnap" headline="Field Inspection Documentation" />} />
         
+        <Route path="/compare/imagesnap-vs-manual-spreadsheet" element={<ComparisonManualSheet onLogin={() => requestToken()} />} />
+        <Route path="/compare/imagesnap-vs-custom-scraper" element={<ComparisonCustomScraper onLogin={() => requestToken()} />} />
+        <Route path="/compare/imagesnap-vs-web-clipper" element={<ComparisonWebClipper onLogin={() => requestToken()} />} />
+        <Route path="/compare/imagesnap-vs-scraping-api" element={<ComparisonScrapingAPI onLogin={() => requestToken()} />} />
+
         <Route path="/features/web-image-import" element={<WebImageImport onLogin={() => requestToken()} />} />
         <Route path="/features/auto-folder-organization" element={<GenericSEOPage onLogin={() => requestToken()} title="Auto Folder Organization — ImageSnap" headline="Automatic Folder Structure" />} />
         <Route path="/features/team-collaboration" element={<GenericSEOPage onLogin={() => requestToken()} title="Team Collaboration — ImageSnap" headline="Collaborate with your Team" />} />
@@ -392,7 +410,11 @@ export default function App() {
         <Route path="/tools/bulk-photo-renamer" element={<GenericSEOPage onLogin={() => requestToken()} title="Bulk Photo Renamer — ImageSnap" headline="Batch Photo Renaming Tool" />} />
         <Route path="/tools/drive-folder-generator" element={<GenericSEOPage onLogin={() => requestToken()} title="Google Drive Folder Generator — ImageSnap" headline="Instant Folder Structure Creator" />} />
         
-        <Route path="/blog" element={<GenericSEOPage onLogin={() => requestToken()} title="Blog — ImageSnap" headline="Tips & Tricks for Digital Organization" />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/why-copy-paste-research-breaks-at-scale" element={<BlogPost_WhyCopyPasteBreaks onLogin={() => requestToken()} />} />
+        <Route path="/blog/building-competitor-database-without-scraper" element={<BlogPost_BuildingDatabase onLogin={() => requestToken()} />} />
+        <Route path="/blog/human-guided-capture-vs-full-automation" element={<BlogPost_HumanGuided onLogin={() => requestToken()} />} />
+        <Route path="/blog/why-i-built-imagesnap" element={<BlogPost_WhyIBuild onLogin={() => requestToken()} />} />
       </Route>
       
       {/* Privacy Policy outside of PublicLayout if needed, or inside */}

@@ -12,32 +12,13 @@ export const initGis = (onSuccess: (token: string) => void) => {
   const isExtension = !!(window.chrome && window.chrome.identity);
 
   if (isExtension) {
-    console.log('Detected Chrome Extension environment, checking auth state...');
-
+    console.log('Detected Chrome Extension environment.');
     // Check if we're on Edge
     const isEdge = /Edg/.test(navigator.userAgent);
-
-    if (isEdge) {
-      console.log('Running on Edge, skipping getAuthToken to avoid error.');
-      if (accessToken) onSuccess(accessToken);
-    } else {
-      // @ts-ignore
-      window.chrome.identity.getAuthToken({ interactive: false }, (token: string | undefined) => {
-        if (chrome.runtime.lastError) {
-          console.warn('Silent getAuthToken failed (standard in some browsers):', chrome.runtime.lastError.message);
-          if (accessToken) onSuccess(accessToken);
-          return;
-        }
-        if (token) {
-          accessToken = token;
-          localStorage.setItem('ps_access_token', token);
-          onSuccess(token);
-        } else if (accessToken) {
-          onSuccess(accessToken);
-        }
-      });
-    }
-    // In extension, we don't necessarily need window.google for everything
+    
+    // Skip silent getAuthToken because we are using a Web App Client ID
+    // which causes 'bad client id' warnings in the console.
+    if (accessToken) onSuccess(accessToken);
   }
 
   const google = (window as any).google;
@@ -90,9 +71,8 @@ export async function getUserInfo(token: string) {
 export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {
   // @ts-ignore
   if (window.chrome && window.chrome.identity) {
-    // For Edge support and better reliability, use launchWebAuthFlow
-    // @ts-ignore
-    const redirectUri = window.chrome.identity.getRedirectURL();
+    // Force the redirect URI to match our fixed Extension ID
+    const redirectUri = 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${GOOGLE_CLIENT_ID}&` +
       `response_type=token&` +
@@ -105,16 +85,6 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
     window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl: string | undefined) => {
       if (window.chrome.runtime.lastError) {
         console.error('LaunchWebAuthFlow Error:', window.chrome.runtime.lastError.message);
-        // Fallback to getAuthToken if launchWebAuthFlow fails (only for Chrome)
-        // @ts-ignore
-        window.chrome.identity.getAuthToken({ interactive: true }, (token: string | undefined) => {
-          if (token) {
-            accessToken = token;
-            localStorage.setItem('ps_access_token', token);
-            if (onSuccess) onSuccess(token);
-            window.location.reload();
-          }
-        });
         return;
       }
 
@@ -125,7 +95,13 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
           accessToken = token;
           localStorage.setItem('ps_access_token', token);
           if (onSuccess) onSuccess(token);
-          window.location.reload();
+          
+          // Use explicit navigation to avoid ERR_FILE_NOT_FOUND on reload
+          if (window.chrome && window.chrome.runtime && window.chrome.runtime.getURL) {
+            window.location.href = window.chrome.runtime.getURL('index.html');
+          } else {
+            window.location.reload();
+          }
         }
       }
     });

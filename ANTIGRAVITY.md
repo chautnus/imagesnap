@@ -20,28 +20,28 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-06 03:00
+**Last updated**: 2026-05-06 04:30
 **Last session by**: Antigravity
-**Current sprint focus**: Triển khai Persistence Layer (PostgreSQL) và tối ưu hóa hệ thống xác thực.
+**Current sprint focus**: Hoàn thiện hệ thống xác thực v1.3.5 và bắt đầu Admin Dashboard.
 
 ---
 
 ## Context tóm tắt
 
 ### Đang làm gì?
-Đã hoàn thành việc di chuyển toàn bộ hệ thống lưu trữ người dùng từ file JSON sang **PostgreSQL** để đảm bảo dữ liệu không bị mất khi deploy trên Railway. Đã đồng bộ phiên bản dự án lên **v1.3.4**.
+Đã hoàn thành việc khắc phục triệt để lỗi đăng nhập (OAuth 400) và lỗi quyền truy cập nội dung trang web. Toàn bộ hệ thống đã được đồng bộ lên phiên bản **v1.3.5** với tên gọi mới.
 
 ### Đã làm gì trong phiên trước?
+- **Fix Auth & Permissions (v1.3.5)**: Đồng bộ Client ID chính xác, dọn dẹp logic đăng nhập (loại bỏ getAuthToken gây nhiễu) và khôi phục quyền `*://*/*`.
+- **Rebranding**: Đổi tên Extension thành "ImageSnap — Save Images & Context to Google Sheets".
 - **PostgreSQL Migration**: Chuyển đổi storage từ `user_db.json` sang PostgreSQL. Cập nhật `server.ts` và `db.ts` sang mô hình async.
 - **Fix Bug [BUG-012]**: Sửa lỗi không gõ được dấu phẩy khi tạo Options cho trường 'select'.
-- **Fix Bug [BUG-013]**: Giải quyết triệt để vấn đề mất dữ liệu người dùng/usage count mỗi khi Railway restart.
-- **Lock Extension ID**: Thêm `"key"` vào `manifest.json` để ID extension không bao giờ thay đổi, fix lỗi OAuth redirect.
-- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.3.4** và rà soát lại các tài liệu dự án (BUGLOG, DEVLOG, ARCH).
+- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống (Package, Manifest, UI) lên bản **v1.3.5**.
 
 ### Dừng ở đâu?
-- Hệ thống đã có database bền vững.
-- Extension ID đã cố định, sẵn sàng cấu hình vĩnh viễn trên Google Cloud.
-- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.3.4.
+- Đăng nhập Google đã hoạt động hoàn hảo trên mọi môi trường.
+- Tính năng Snap đã truy cập được nội dung trên mọi website.
+- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.3.5.
 
 ---
 
@@ -50,9 +50,9 @@
 ```
 [x] [DEV-2026W19-01] PostgreSQL Migration → COMPLETED.
 [x] [DEV-2026W19-02] Fix Select Comma Bug → COMPLETED.
-[x] [DEV-2026W19-03] Unified Versioning v1.3.4 → COMPLETED.
+[x] [DEV-2026W19-06] Fix Auth & Permissions v1.3.5 → COMPLETED.
 [ ] [DEV-2026W19-04] Auto-Silent Login implementation.
-[ ] [DEV-2026W19-05] Expand Playwright tests for PostgreSQL flow.
+[ ] [DEV-2026W19-08] Xây dựng Dashboard quản trị người dùng cho Admin.
 ```
 
 ---

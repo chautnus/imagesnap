@@ -87,10 +87,17 @@
   - Fixes: Synchronized all version strings to `v1.3.4`.
   - Features: Added permanent `"key"` to `manifest.json` to lock the Extension ID.
   - Results: Resolved `redirect_uri_mismatch` by providing a stable ID for Google Cloud Console.
+- [DEV-2026W19-06] Final Auth & Permission Synchronization → [BUG-015, BUG-016]
+  - Fixes: Fixed Client ID mismatch (`...3arbjl.apps...`) and restored broad host permissions (`*://*/*`).
+  - Results: Auth flow now works reliably without `bad client id` warnings, and scraping works on all domains.
+  - Version: Bump to 1.3.5.
+- [DEV-2026W19-07] Extension Renaming & Branding Update
+  - Features: Renamed extension to "ImageSnap — Save Images & Context to Google Sheets" in `manifest.json`.
+  - Results: Better product positioning for the Chrome Web Store.
 
 ### 🔄 In Progress
 - [DEV-2026W19-04] Auto-Silent Login implementation for improved UX.
-- [DEV-2026W19-05] Rà soát lại toàn bộ tài liệu dự án để đồng bộ với cấu trúc PostgreSQL mới.
+- [DEV-2026W19-08] Xây dựng Dashboard quản trị người dùng cho Admin.
 
 ### 💡 Decisions Made
 - [DEV-2026W19-D01] Abandoned local JSON storage in favor of PostgreSQL.

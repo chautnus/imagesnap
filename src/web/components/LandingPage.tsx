@@ -173,7 +173,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
               <a href="/" className="text-xl font-extrabold tracking-tight text-gray-900">Image<span className="text-blue-600">Snap</span></a>
               <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
                   <a href="#how-it-works" className="hover:text-gray-900 transition">How it works</a>
-                  <a href="#comparison" className="hover:text-gray-900 transition">Compare</a>
+                  <a href="/blog" className="hover:text-gray-900 transition">Blog</a>
                   <a href="#use-cases" className="hover:text-gray-900 transition">Use cases</a>
                   <a href="#pricing" className="hover:text-gray-900 transition">Pricing</a>
                   <a href="#faq" className="hover:text-gray-900 transition">FAQ</a>
@@ -437,12 +437,10 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
       <footer className="bg-gray-900 text-gray-400 py-12">
           <div className="max-w-6xl mx-auto px-6">
               <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm">
-                  <a href="#" className="hover:text-white transition">Blog</a>
-                  <a href="#pricing" className="hover:text-white transition">Pricing</a>
-                  <a href="#how-it-works" className="hover:text-white transition">How it works</a>
-                  <a href="#" className="hover:text-white transition">About</a>
-                  <a href="#" className="hover:text-white transition">Help</a>
-                  <a href="#" className="hover:text-white transition">Contact</a>
+                  <a href="/blog" className="hover:text-white transition">Blog</a>
+                  <a href="/pricing" className="hover:text-white transition">Pricing</a>
+                  <a href="/#how-it-works" className="hover:text-white transition">How it works</a>
+                  <a href="/#use-cases" className="hover:text-white transition">Use Cases</a>
                   <a href="/privacy" className="hover:text-white transition">Privacy</a>
               </div>
               <div className="flex justify-center gap-6 mb-8 text-sm">

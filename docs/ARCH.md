@@ -35,7 +35,7 @@ Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based
 ## ARCH-3. Technology Decisions
 - **Vite**: Làm build tool cho cả Web và Extension để đồng nhất workflow.
 - **Lemon Squeezy**: Lựa chọn cho payment vì tính đơn giản trong setup global tax/billing [→ BR-2.2.1].
-- **ActiveTab Permission**: Lựa chọn tối ưu để pass Chrome Store review nhanh hơn [→ BR-3.1.2].
+- **Broad Host Permission (`*://*/*`)**: Đã khôi phục quyền truy cập rộng để đảm bảo tính năng Scraping hoạt động ổn định trên mọi tab mà không cần click icon liên tục (khắc phục giới hạn của activeTab) [→ BR-3.1].
 
 ## ARCH-4. Dependencies
 - `@google/genai`: Hỗ trợ các tính năng AI trong tương lai.

@@ -19,10 +19,18 @@ export const PublicFooter: React.FC = () => {
       
       <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 font-bold uppercase tracking-widest text-[10px]">
         <div className="flex flex-col gap-4">
-          <div className="text-white mb-2">Alternatives</div>
-          <Link to="/alternatives/companycam-alternative" className="hover:text-accent transition-colors">CompanyCam</Link>
-          <Link to="/alternatives/pics-io-alternative" className="hover:text-accent transition-colors">Pics.io</Link>
-          <Link to="/alternatives/google-photos-vs-imagesnap" className="hover:text-accent transition-colors">Google Photos</Link>
+          <div className="text-white mb-2">Comparison</div>
+          <Link to="/compare/imagesnap-vs-manual-spreadsheet" className="hover:text-accent transition-colors">vs Spreadsheet</Link>
+          <Link to="/compare/imagesnap-vs-custom-scraper" className="hover:text-accent transition-colors">vs Scraper</Link>
+          <Link to="/compare/imagesnap-vs-web-clipper" className="hover:text-accent transition-colors">vs Clippers</Link>
+          <Link to="/compare/imagesnap-vs-scraping-api" className="hover:text-accent transition-colors">vs APIs</Link>
+        </div>
+        <div className="flex flex-col gap-4">
+          <div className="text-white mb-2">Use Cases</div>
+          <Link to="/use-cases/competitor-tracking-beyond-keyword-tools" className="hover:text-accent transition-colors">Competitor Tracking</Link>
+          <Link to="/use-cases/swipe-file-tool" className="hover:text-accent transition-colors">Swipe File Tool</Link>
+          <Link to="/use-cases/construction-teams" className="hover:text-accent transition-colors">Construction</Link>
+          <Link to="/blog" className="hover:text-accent transition-colors">Blog</Link>
         </div>
         <div className="flex flex-col gap-4">
           <div className="text-white mb-2">Tools</div>
