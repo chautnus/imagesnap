@@ -13,7 +13,7 @@
     "build:ext": "vite build --config vite.ext.config.ts",
     "build": "npm run build:web && npm run build:ext",
     "preview": "next start",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "test": "playwright test"
   },
   "dependencies": {
