@@ -189,7 +189,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   };
 
   return (
-    <div className="pb-24 p-6 flex flex-col gap-6">
+    <div className="pb-24 p-4 flex flex-col gap-5">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-black tracking-tighter uppercase">{t('capture')}</h2>
         <button onClick={onSwitchToHelp} className="text-[10px] bg-accent/10 text-accent font-black px-2.5 py-1 rounded-lg border border-accent/20 hover:bg-accent/20 transition-all tracking-widest uppercase">
@@ -208,10 +208,10 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       <div className="grid grid-cols-4 gap-2">
         {typeof chrome !== 'undefined' && chrome.tabs && (
           <button onClick={handleExtensionSnap} disabled={isExtracting || isAtLimit}
-            className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)]'} active:scale-95`}
+            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)]'} active:scale-95`}
           >
-            {isExtracting ? <RefreshCw size={24} className="animate-spin" /> : <GlobeIcon size={24} />}
-            <span className="text-[12px] font-black tracking-tighter uppercase whitespace-pre-wrap text-center">{t('snapFromBrowser')}</span>
+            {isExtracting ? <RefreshCw size={20} className="animate-spin" /> : <GlobeIcon size={20} />}
+            <span className="text-[10px] font-black tracking-tight uppercase leading-tight text-center">{t('snapFromBrowser')}</span>
           </button>
         )}
 
@@ -231,7 +231,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
         <label htmlFor="file-native" className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent hover:text-accent transition-all cursor-pointer">
           <Camera size={20} className="stroke-[3]" />
-          <span className="text-[11px] font-black tracking-tighter uppercase whitespace-nowrap">APP CAMERA</span>
+          <span className="text-[11px] font-black tracking-tighter uppercase text-center leading-tight">APP CAMERA</span>
           <input type="file" accept="image/*" capture="environment" multiple className="hidden" id="file-native"
             onChange={e => Array.from(e.target.files ?? new FileList()).forEach((file: File) => {
               const reader = new FileReader();

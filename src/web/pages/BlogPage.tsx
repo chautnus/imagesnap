@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Clock, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 
 const posts = [
@@ -48,14 +49,16 @@ export const BlogPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {posts.map((post, i) => (
-          <motion.a
+          <motion.div
             key={post.slug}
-            href={`/blog/${post.slug}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="group glass p-8 rounded-[2.5rem] border-white/5 hover:border-accent/20 transition-all hover:-translate-y-1 block"
           >
+            <Link
+              to={`/blog/${post.slug}`}
+              className="group glass p-8 rounded-[2.5rem] border-white/5 hover:border-accent/20 transition-all hover:-translate-y-1 block h-full"
+            >
             <div className="flex items-center gap-4 text-xs font-black text-muted uppercase tracking-widest mb-6">
               <span className="flex items-center gap-1"><Clock size={14} /> {post.readTime}</span>
               <span className="w-1 h-1 rounded-full bg-white/20" />
@@ -72,8 +75,9 @@ export const BlogPage = () => {
             <div className="flex items-center gap-2 text-accent font-black uppercase tracking-widest text-sm">
               Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </div>
-          </motion.a>
-        ))}
+          </Link>
+        </motion.div>
+      ))}
       </div>
     </div>
   );

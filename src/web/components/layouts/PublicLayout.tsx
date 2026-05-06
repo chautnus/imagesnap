@@ -9,7 +9,7 @@ interface PublicLayoutProps {
 
 export const PublicLayout: React.FC<PublicLayoutProps> = ({ onLogin }) => {
   return (
-    <div className="min-h-screen bg-[#0A0A0B] text-white selection:bg-accent/30 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-bg text-white selection:bg-accent/30 font-sans overflow-x-hidden">
       <PublicHeader onLogin={onLogin} />
       <main>
         <Outlet />

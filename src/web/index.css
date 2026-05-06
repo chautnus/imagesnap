@@ -35,6 +35,9 @@
   .glass {
     @apply bg-white/5 backdrop-blur-xl border border-white/10;
   }
+  .glass-dark {
+    @apply bg-black/80 backdrop-blur-2xl border border-white/10;
+  }
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }

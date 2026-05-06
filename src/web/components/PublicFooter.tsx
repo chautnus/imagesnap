@@ -1,55 +1,47 @@
 import React from 'react';
-import { Image as ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const PublicFooter: React.FC = () => {
   return (
-    <footer className="mt-32 pt-12 pb-20 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8 text-sm text-muted max-w-7xl mx-auto px-6">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-white/10 rounded-md flex items-center justify-center">
-            <ImageIcon size={14} className="text-white" />
+    <footer className="mt-32 border-t border-white/5 bg-bg">
+      <div className="max-w-7xl mx-auto px-6 py-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 font-bold uppercase tracking-widest text-[10px]">
+          <div className="flex flex-col gap-4">
+            <div className="text-white mb-2">Comparison</div>
+            <Link to="/compare/imagesnap-vs-manual-spreadsheet" className="hover:text-accent transition-colors text-muted">vs Spreadsheet</Link>
+            <Link to="/compare/imagesnap-vs-custom-scraper" className="hover:text-accent transition-colors text-muted">vs Scraper</Link>
+            <Link to="/compare/imagesnap-vs-web-clipper" className="hover:text-accent transition-colors text-muted">vs Clippers</Link>
+            <Link to="/compare/imagesnap-vs-scraping-api" className="hover:text-accent transition-colors text-muted">vs APIs</Link>
           </div>
-          <span className="font-black italic text-white">ImageSnap_</span>
+          
+          <div className="flex flex-col gap-4">
+            <div className="text-white mb-2">Use Cases</div>
+            <Link to="/use-cases/competitor-tracking-beyond-keyword-tools" className="hover:text-accent transition-colors text-muted">Competitor Tracking</Link>
+            <Link to="/use-cases/swipe-file-tool" className="hover:text-accent transition-colors text-muted">Swipe File Tool</Link>
+            <Link to="/use-cases/construction-teams" className="hover:text-accent transition-colors text-muted">Construction</Link>
+            <Link to="/blog" className="hover:text-accent transition-colors text-muted">Blog</Link>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div className="text-white mb-2">Tools</div>
+            <Link to="/tools/exif-viewer" className="hover:text-accent transition-colors text-muted">EXIF Viewer</Link>
+            <Link to="/tools/bulk-photo-renamer" className="hover:text-accent transition-colors text-muted">Bulk Renamer</Link>
+            <Link to="/tools/drive-folder-generator" className="hover:text-accent transition-colors text-muted">Folder Generator</Link>
+            <a href="mailto:loch7444@gmail.com" className="hover:text-accent transition-colors text-muted">Contact Support</a>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div className="text-white mb-2">Legal</div>
+            <Link to="/privacy" className="hover:text-accent transition-colors text-muted">Privacy Policy</Link>
+            <a href="#" className="hover:text-accent transition-colors text-muted">Terms of Service</a>
+            <a href="#" className="hover:text-accent transition-colors text-muted">Cookie Policy</a>
+          </div>
         </div>
-        <div className="text-[10px] text-muted max-w-xs leading-relaxed uppercase tracking-widest font-bold">
-          Auto-organize team photos and web assets directly in Google Drive.
-        </div>
-      </div>
-      
-      <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 font-bold uppercase tracking-widest text-[10px]">
-        <div className="flex flex-col gap-4">
-          <div className="text-white mb-2">Comparison</div>
-          <Link to="/compare/imagesnap-vs-manual-spreadsheet" className="hover:text-accent transition-colors">vs Spreadsheet</Link>
-          <Link to="/compare/imagesnap-vs-custom-scraper" className="hover:text-accent transition-colors">vs Scraper</Link>
-          <Link to="/compare/imagesnap-vs-web-clipper" className="hover:text-accent transition-colors">vs Clippers</Link>
-          <Link to="/compare/imagesnap-vs-scraping-api" className="hover:text-accent transition-colors">vs APIs</Link>
-        </div>
-        <div className="flex flex-col gap-4">
-          <div className="text-white mb-2">Use Cases</div>
-          <Link to="/use-cases/competitor-tracking-beyond-keyword-tools" className="hover:text-accent transition-colors">Competitor Tracking</Link>
-          <Link to="/use-cases/swipe-file-tool" className="hover:text-accent transition-colors">Swipe File Tool</Link>
-          <Link to="/use-cases/construction-teams" className="hover:text-accent transition-colors">Construction</Link>
-          <Link to="/blog" className="hover:text-accent transition-colors">Blog</Link>
-        </div>
-        <div className="flex flex-col gap-4">
-          <div className="text-white mb-2">Tools</div>
-          <Link to="/tools/exif-viewer" className="hover:text-accent transition-colors">EXIF Viewer</Link>
-          <Link to="/tools/bulk-photo-renamer" className="hover:text-accent transition-colors">Photo Renamer</Link>
-          <Link to="/tools/drive-folder-generator" className="hover:text-accent transition-colors">Folder Generator</Link>
-        </div>
-        <div className="flex flex-col gap-4">
-          <div className="text-white mb-2">Legal</div>
-          <Link to="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link>
-          <a href="#" className="hover:text-accent transition-colors">Terms of Service</a>
-          <a href="mailto:loch7444@gmail.com" className="hover:text-accent transition-colors">Contact</a>
-        </div>
-      </div>
-      
-      <div className="flex flex-col items-end gap-2">
-        <div className="font-mono text-[10px] opacity-30">© 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED.</div>
-        <div className="flex gap-4">
-           {/* Social links placeholder */}
+
+        <div className="mt-20 pt-8 border-t border-white/5 flex flex-col items-center">
+          <div className="text-white font-mono text-[10px] tracking-[0.3em] font-black">
+            © 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED.
+          </div>
         </div>
       </div>
     </footer>

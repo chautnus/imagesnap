@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'motion/react';
-import { Chrome, Zap, X } from 'lucide-react';
+import { Chrome, Zap, X, ArrowRight, Share2, Database, ShieldCheck } from 'lucide-react';
 
 export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, t: any, variant?: number }) => {
   const [showLoginOptions, setShowLoginOptions] = useState(false);
@@ -69,36 +69,12 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
           "@type": "Answer",
           "text": "Screenshots sit in a folder with no context. A month later, you can't remember the price, the source, or why you saved it. ImageSnap attaches context to every image so it stays useful."
         }
-      },
-      {
-        "@type": "Question",
-        "name": "Is my data private?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Images go to your Google Drive. Context goes to your Google Sheet. We don't store your research data on our servers."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What happens if I cancel?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Everything stays. Your Drive images and Sheet records are yours. ImageSnap simply stops adding new captures."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is this a scraper?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No. ImageSnap works inside your browser while you browse normally. You choose what to capture. It's human-guided, not automated."
-        }
       }
     ]
   };
 
   return (
-    <div className="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen">
+    <div className="bg-bg text-white font-sans antialiased min-h-screen">
       <Helmet>
         <script type="application/ld+json">{JSON.stringify(softwareSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>
@@ -120,339 +96,191 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-10 shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg glass rounded-[2.5rem] p-10 border-white/10 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-6">
-                <button onClick={() => setShowLoginOptions(false)} className="text-gray-400 hover:text-gray-900"><X size={24} /></button>
+                <button onClick={() => setShowLoginOptions(false)} className="text-muted hover:text-white"><X size={24} /></button>
               </div>
 
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-black text-gray-900 mb-2">Welcome to ImageSnap</h2>
-                <p className="text-gray-500 font-medium text-sm">Choose your login type to continue</p>
+                <h2 className="text-3xl font-black mb-2">Welcome to ImageSnap</h2>
+                <p className="text-muted font-medium text-sm">Choose your login type to continue</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button 
                   onClick={() => { setShowLoginOptions(false); onLogin(); }}
-                  className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-gray-50 border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                  className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-accent hover:bg-accent/10 transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200 flex items-center justify-center group-hover:scale-110 transition-transform">
-                     <Chrome size={24} className="text-gray-700 group-hover:text-blue-600" />
+                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                     <Chrome size={24} className="text-white group-hover:text-accent" />
                   </div>
                   <div className="text-center">
-                    <div className="font-black text-gray-900 text-sm uppercase tracking-widest mb-1">ADMIN_ACCESS</div>
-                    <div className="text-[10px] text-gray-500 font-bold">Log in with Google</div>
+                    <div className="font-black text-sm uppercase tracking-widest mb-1">ADMIN_ACCESS</div>
+                    <div className="text-[10px] text-muted font-bold">Log in with Google</div>
                   </div>
                 </button>
 
                 <button 
                   onClick={() => { setShowLoginOptions(false); window.location.hash = '#staff'; }}
-                  className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-gray-50 border border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
+                  className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200 flex items-center justify-center group-hover:scale-110 transition-transform">
-                     <Zap size={24} className="text-gray-700 group-hover:text-indigo-600" />
+                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                     <Zap size={24} className="text-white group-hover:text-blue-500" />
                   </div>
                   <div className="text-center">
-                    <div className="font-black text-gray-900 text-sm uppercase tracking-widest mb-1">STAFF_ACCESS</div>
-                    <div className="text-[10px] text-gray-500 font-bold">Username / Password</div>
+                    <div className="font-black text-sm uppercase tracking-widest mb-1">STAFF_ACCESS</div>
+                    <div className="text-[10px] text-muted font-bold">Username / Password</div>
                   </div>
                 </button>
-              </div>
-
-              <div className="mt-8 p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300 text-[11px] text-center text-gray-500 font-medium">
-                Note: Staff accounts must be created by an Admin in the Settings tab.
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* NAVIGATION */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-200">
-          <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-              <a href="/" className="text-xl font-extrabold tracking-tight text-gray-900">Image<span className="text-blue-600">Snap</span></a>
-              <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-                  <a href="#how-it-works" className="hover:text-gray-900 transition">How it works</a>
-                  <a href="/blog" className="hover:text-gray-900 transition">Blog</a>
-                  <a href="#use-cases" className="hover:text-gray-900 transition">Use cases</a>
-                  <a href="#pricing" className="hover:text-gray-900 transition">Pricing</a>
-                  <a href="#faq" className="hover:text-gray-900 transition">FAQ</a>
-              </div>
-              <div className="flex items-center gap-3">
-                  <a href="#" onClick={handleLoginClick} className="hidden sm:inline-block text-sm font-medium text-gray-600 hover:text-gray-900 transition">Log in</a>
-                  <a href="#" onClick={handleLoginClick} className="bg-blue-600 text-white text-sm px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Try free</a>
-              </div>
-          </div>
-      </nav>
-
-      {/* HERO SECTION */}
-      <header className="max-w-6xl mx-auto px-6 py-20 text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
-              Your pictures are worthless without context.
+      <header className="max-w-6xl mx-auto px-6 pt-32 pb-20 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-block px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-accent text-xs font-black uppercase tracking-widest mb-8"
+          >
+            v4.1 Positioning Live
+          </motion.div>
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9]">
+              Your pictures are <span className="text-accent italic">worthless</span> without context.
           </h1>
-          <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-              ImageSnap captures any image with your designed context — the fields you choose, the categories you define, the details that make each picture useful forever. One capture, use it in any later work.
+          <p className="text-xl text-muted mb-12 max-w-3xl mx-auto font-medium leading-relaxed">
+              ImageSnap captures any image with your <span className="text-white">designed context</span> — the fields you choose, the categories you define, the details that make each picture useful forever.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-              <a href="#" onClick={handleLoginClick} className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Try free — 30 captures/month</a>
-              <a href="#how-it-works" className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">See how it works ↓</a>
+          <div className="flex flex-col sm:flex-row justify-center gap-6 mb-20">
+              <button onClick={handleLoginClick} className="bg-accent text-bg px-10 py-4 rounded-2xl font-black text-lg hover:glow-accent transition-all hover:scale-105">
+                Try free — 30 captures/month
+              </button>
+              <a href="#how-it-works" className="glass px-10 py-4 rounded-2xl font-black text-lg hover:bg-white/10 transition-all">
+                See how it works ↓
+              </a>
           </div>
-          <div className="bg-gray-200 border border-gray-300 rounded-xl aspect-video max-w-4xl mx-auto flex items-center justify-center overflow-hidden relative">
-              <img src="/imagesnap_extension_form_preview.png" alt="ImageSnap Preview" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" />
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent flex items-end justify-center pb-6 opacity-0 hover:opacity-100 transition-opacity">
-                 <span className="text-white font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">ImageSnap Context Form</span>
-              </div>
+          
+          <div className="relative group max-w-5xl mx-auto">
+            <div className="absolute -inset-1 bg-gradient-to-r from-accent to-blue-500 rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+            <div className="relative glass rounded-[3rem] aspect-video flex items-center justify-center overflow-hidden border-white/10">
+                <img src="/imagesnap_extension_form_preview.png" alt="ImageSnap Preview" className="w-full h-full object-cover opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent opacity-60"></div>
+            </div>
           </div>
       </header>
 
       {/* PROBLEM SECTION */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Sound familiar?</h2>
+      <section className="max-w-6xl mx-auto px-6 py-20">
+          <h2 className="text-4xl font-black text-center mb-16 tracking-tight">Sound familiar?</h2>
           <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
-                  <div className="text-4xl mb-4">📁</div>
-                  <p className="text-gray-700 text-lg italic">"I saved 200 product screenshots but can't remember why I saved half of them."</p>
-              </div>
-              <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
-                  <div className="text-4xl mb-4">🗂️</div>
-                  <p className="text-gray-700 text-lg italic">"My research folder is full of images with no price, no source, no notes. Just dead files."</p>
-              </div>
-              <div className="bg-white p-8 rounded-xl border border-gray-200 text-center">
-                  <div className="text-4xl mb-4">🔍</div>
-                  <p className="text-gray-700 text-lg italic">"I did great research last month. Now I need it again and can't find anything useful."</p>
-              </div>
+              {[
+                { icon: "📁", text: "I saved 200 product screenshots but can't remember why I saved half of them." },
+                { icon: "🗂️", text: "My research folder is full of images with no price, no source, no notes. Just dead files." },
+                { icon: "🔍", text: "I did great research last month. Now I need it again and can't find anything useful." }
+              ].map((item, i) => (
+                <div key={i} className="glass p-10 rounded-[2.5rem] border-white/5 text-center flex flex-col items-center">
+                    <div className="text-5xl mb-6">{item.icon}</div>
+                    <p className="text-muted text-lg italic font-medium leading-relaxed">"{item.text}"</p>
+                </div>
+              ))}
           </div>
       </section>
 
       {/* SOLUTION SECTION */}
-      <section className="bg-white py-20 border-y border-gray-200">
+      <section id="how-it-works" className="py-32 border-y border-white/5 bg-white/[0.01]">
           <div className="max-w-6xl mx-auto px-6">
-              <h2 className="text-3xl font-bold text-center mb-16">Save the image. Keep the meaning.</h2>
-              <div className="grid md:grid-cols-3 gap-12">
-                  <div>
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                          <span className="text-2xl">📸</span>
+              <h2 className="text-4xl md:text-6xl font-black text-center mb-24 tracking-tighter italic">Save the image. <br/><span className="text-accent">Keep the meaning.</span></h2>
+              <div className="grid md:grid-cols-3 gap-16">
+                  <div className="space-y-6">
+                      <div className="w-16 h-16 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center">
+                          <Share2 className="text-accent" size={32} />
                       </div>
-                      <h3 className="text-xl font-bold mb-4">Capture any image with context</h3>
-                      <p className="text-gray-600">Click the extension on any supported page. ImageSnap saves the image to your Google Drive and captures the context around it — title, price, description, source URL. Auto-filled when possible, customizable always.</p>
+                      <h3 className="text-2xl font-bold">Capture any image with context</h3>
+                      <p className="text-muted font-medium leading-relaxed">Click the extension on any page. ImageSnap saves the image to your Google Drive and captures the context — title, price, description, source. Auto-filled when possible, customizable always.</p>
                   </div>
-                  <div>
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                          <span className="text-2xl">🏷️</span>
+                  <div className="space-y-6">
+                      <div className="w-16 h-16 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center">
+                          <Database className="text-accent" size={32} />
                       </div>
-                      <h3 className="text-xl font-bold mb-4">You design the context</h3>
-                      <p className="text-gray-600">Add any fields your workflow needs: supplier name, rating, project code, season, status — whatever matters to you. Every category can have its own schema. Your context, your rules.</p>
+                      <h3 className="text-2xl font-bold">You design the context</h3>
+                      <p className="text-muted font-medium leading-relaxed">Add any fields your workflow needs: supplier name, rating, project code, season, status. Every category can have its own schema. Your context, your rules.</p>
                   </div>
-                  <div>
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                          <span className="text-2xl">♾️</span>
+                  <div className="space-y-6">
+                      <div className="w-16 h-16 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center">
+                          <ShieldCheck className="text-accent" size={32} />
                       </div>
-                      <h3 className="text-xl font-bold mb-4">Spend one time, use forever</h3>
-                      <p className="text-gray-600">Six months from now, find that image and know exactly why you saved it, where it came from, and what it means. Images live in your Google Drive. Context lives in your Google Sheet. Both stay yours forever.</p>
+                      <h3 className="text-2xl font-bold">Spend one time, use forever</h3>
+                      <p className="text-muted font-medium leading-relaxed">6 months later, you still know why you saved that image, where it came from, and what it means. Your data stays in your Drive and Sheets. Yours forever.</p>
                   </div>
-              </div>
-          </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-20">
-          <h2 className="text-3xl font-bold text-center mb-16">Three steps. No setup required.</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">1</div>
-                  <h3 className="text-xl font-bold mb-3">Design your context</h3>
-                  <p className="text-gray-600">Define the fields that matter for your research — or use defaults. Each category can have its own schema.</p>
-              </div>
-              <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">2</div>
-                  <h3 className="text-xl font-bold mb-3">Browse and capture</h3>
-                  <p className="text-gray-600">Click the extension on any image worth saving. Context fills automatically. Choose what matters, skip the rest.</p>
-              </div>
-              <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">3</div>
-                  <h3 className="text-xl font-bold mb-3">Search and reuse</h3>
-                  <p className="text-gray-600">Find any image by its context in the web app, or open your Google Sheet directly. Your research, ready for any later work.</p>
-              </div>
-          </div>
-      </section>
-
-      {/* MID-PAGE CTA */}
-      <section className="bg-blue-50 border-y border-blue-100 py-12">
-          <div className="max-w-3xl mx-auto px-6 text-center">
-              <p className="text-xl font-semibold text-gray-800 mb-4">Research once. Use it in any later work.</p>
-              <a href="#" onClick={handleLoginClick} className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Try free — 30 captures/month</a>
-          </div>
-      </section>
-
-      {/* HOW IT'S DIFFERENT */}
-      <section id="comparison" className="bg-gray-900 text-white py-20">
-          <div className="max-w-6xl mx-auto px-6">
-              <h2 className="text-3xl font-bold text-center mb-12">Not a scraper. Not a bookmark. Images with meaning.</h2>
-              <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                      <thead>
-                          <tr className="border-b border-gray-700">
-                              <th className="py-4 px-4 font-semibold text-gray-400"></th>
-                              <th className="py-4 px-4 font-semibold">Screenshot folder</th>
-                              <th className="py-4 px-4 font-semibold">DIY scraper</th>
-                              <th className="py-4 px-4 font-semibold text-blue-400">ImageSnap</th>
-                          </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-800">
-                          <tr>
-                              <td className="py-4 px-4 font-medium">Images saved</td>
-                              <td className="py-4 px-4">Yes, but no context</td>
-                              <td className="py-4 px-4">Bulk, no curation</td>
-                              <td className="py-4 px-4 text-blue-300 font-medium">Yes, with your context</td>
-                          </tr>
-                          <tr>
-                              <td className="py-4 px-4 font-medium">Context attached</td>
-                              <td className="py-4 px-4">None</td>
-                              <td className="py-4 px-4">Fixed schema only</td>
-                              <td className="py-4 px-4 text-blue-300 font-medium">Your designed context</td>
-                          </tr>
-                          <tr>
-                              <td className="py-4 px-4 font-medium">Findable later</td>
-                              <td className="py-4 px-4">Hard</td>
-                              <td className="py-4 px-4">Requires DB query</td>
-                              <td className="py-4 px-4 text-blue-300 font-medium">Search by any field</td>
-                          </tr>
-                          <tr>
-                              <td className="py-4 px-4 font-medium">Maintenance</td>
-                              <td className="py-4 px-4">None</td>
-                              <td className="py-4 px-4">Ongoing</td>
-                              <td className="py-4 px-4 text-blue-300 font-medium">Low</td>
-                          </tr>
-                          <tr>
-                              <td className="py-4 px-4 font-medium">Policy risk</td>
-                              <td className="py-4 px-4">None</td>
-                              <td className="py-4 px-4">High</td>
-                              <td className="py-4 px-4 text-blue-300 font-medium">Lower</td>
-                          </tr>
-                          <tr>
-                              <td className="py-4 px-4 font-medium">Data ownership</td>
-                              <td className="py-4 px-4">Yours (unstructured)</td>
-                              <td className="py-4 px-4">Yours (custom DB)</td>
-                              <td className="py-4 px-4 text-blue-300 font-medium">Yours (Drive + Sheet)</td>
-                          </tr>
-                      </tbody>
-                  </table>
               </div>
           </div>
       </section>
 
       {/* USE CASES */}
-      <section id="use-cases" className="max-w-6xl mx-auto px-6 py-20">
-          <h2 className="text-3xl font-bold text-center mb-16">Every image tells a story. ImageSnap remembers it.</h2>
+      <section id="use-cases" className="max-w-6xl mx-auto px-6 py-32">
+          <div className="text-center mb-20">
+              <h2 className="text-4xl font-black mb-4">Every image tells a story.</h2>
+              <p className="text-xl text-muted font-medium">ImageSnap remembers it for you.</p>
+          </div>
           <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                  <h3 className="text-xl font-bold mb-3">Competitor tracking</h3>
-                  <p className="text-gray-600">Save competitor product images with price, positioning and source. Build a visual database that shows how competitors change over time.</p>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                  <h3 className="text-xl font-bold mb-3">Market research</h3>
-                  <p className="text-gray-600">Capture product trends with images and context. Review visually, compare by fields, share with your team.</p>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                  <h3 className="text-xl font-bold mb-3">Sourcing and procurement</h3>
-                  <p className="text-gray-600">Save supplier products with photos, specs and pricing. Compare visually across sources — no more juggling tabs and screenshots.</p>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                  <h3 className="text-xl font-bold mb-3">Personal knowledge base</h3>
-                  <p className="text-gray-600">Save anything visual from the web with the context that makes it findable later. Recipes, designs, references, inspiration — with your own fields attached.</p>
-              </div>
-          </div>
-      </section>
-
-      {/* CTA after use cases */}
-      <section className="bg-blue-50 border-y border-blue-100 py-12">
-          <div className="max-w-3xl mx-auto px-6 text-center">
-              <p className="text-xl font-semibold text-gray-800 mb-2">Stop losing your valuable research.</p>
-              <p className="text-gray-600 mb-6">30 captures/month free. No credit card required.</p>
-              <a href="#" onClick={handleLoginClick} className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Start capturing with context</a>
-          </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="bg-gray-100 py-20">
-          <div className="max-w-6xl mx-auto px-6">
-              <div className="text-center mb-16">
-                  <h2 className="text-3xl font-bold mb-4">Start free. Pay when your research grows.</h2>
-              </div>
-              <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                  <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-bold mb-2">Free</h3>
-                      <div className="text-3xl font-extrabold mb-6">$0<span className="text-base font-normal text-gray-500">/month</span></div>
-                      <ul className="space-y-3 text-gray-600 mb-8">
-                          <li>• 30 captures/month</li>
-                          <li>• 1 user</li>
-                          <li>• 3 categories</li>
-                          <li>• See if it fits your workflow</li>
-                      </ul>
-                      <a href="#" onClick={handleLoginClick} className="block w-full text-center bg-gray-100 text-gray-900 py-2 rounded-lg font-semibold hover:bg-gray-200">Start Free</a>
-                  </div>
-                  <div className="bg-blue-600 text-white p-8 rounded-xl shadow-lg border border-blue-700 transform scale-105">
-                      <h3 className="text-xl font-bold mb-2">Solo</h3>
-                      <div className="text-3xl font-extrabold mb-6">$19<span className="text-base font-normal text-blue-200">/month</span></div>
-                      <ul className="space-y-3 mb-8">
-                          <li>• Unlimited captures</li>
-                          <li>• 1 user</li>
-                          <li>• Unlimited categories</li>
-                          <li>• For serious researchers</li>
-                      </ul>
-                      <a href="#" onClick={handleLoginClick} className="block w-full text-center bg-white text-blue-600 py-2 rounded-lg font-semibold hover:bg-gray-50">Get Solo</a>
-                  </div>
-                  <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-                      <h3 className="text-xl font-bold mb-2">Team</h3>
-                      <div className="text-3xl font-extrabold mb-6">$49<span className="text-base font-normal text-gray-500">/month</span></div>
-                      <ul className="space-y-3 text-gray-600 mb-8">
-                          <li>• Unlimited captures</li>
-                          <li>• 3 users</li>
-                          <li>• Unlimited categories</li>
-                          <li>• Priority support</li>
-                      </ul>
-                      <a href="#" onClick={handleLoginClick} className="block w-full text-center bg-gray-100 text-gray-900 py-2 rounded-lg font-semibold hover:bg-gray-200">Get Team</a>
-                  </div>
-              </div>
-          </div>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" className="max-w-4xl mx-auto px-6 py-20">
-          <h2 className="text-3xl font-bold text-center mb-12">FAQ</h2>
-          <div className="space-y-4">
-              {faqSchema.mainEntity.map((q, i) => (
-                  <details key={i} className="bg-white border border-gray-200 rounded-lg p-4 group">
-                      <summary className="font-semibold cursor-pointer list-none flex justify-between items-center">
-                          {q.name}
-                          <span className="transition group-open:rotate-180">▾</span>
-                      </summary>
-                      <p className="text-gray-600 mt-4 leading-relaxed">{q.acceptedAnswer.text}</p>
-                  </details>
+              {[
+                { t: "Competitor Tracking", d: "Save competitor product images with price, positioning and source. Build a visual database that shows how competitors change over time.", link: "/use-cases/competitor-tracking-beyond-keyword-tools" },
+                { t: "Market Research", d: "Capture product trends with images and context. Review visually, compare by fields, share with your team.", link: "/use-cases/ecommerce-studios" },
+                { t: "Sourcing & Procurement", d: "Save supplier products with photos, specs and pricing. Compare visually across sources — no more juggling tabs.", link: "/use-cases/construction-teams" },
+                { t: "Swipe File Tool", d: "Save anything visual from the web with the context that makes it findable later. Recipes, designs, references, inspiration.", link: "/use-cases/swipe-file-tool" }
+              ].map((item, i) => (
+                <div key={i} className="glass p-10 rounded-[3rem] border-white/5 hover:border-accent/20 transition-all group">
+                    <h3 className="text-2xl font-black mb-4 group-hover:text-accent transition-colors">{item.t}</h3>
+                    <p className="text-muted font-medium mb-8 leading-relaxed">{item.d}</p>
+                    <a href={item.link} className="flex items-center gap-2 text-accent font-black uppercase tracking-widest text-xs">
+                      See Workflow <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </a>
+                </div>
               ))}
           </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-gray-900 text-gray-400 py-12">
-          <div className="max-w-6xl mx-auto px-6">
-              <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm">
-                  <a href="/blog" className="hover:text-white transition">Blog</a>
-                  <a href="/pricing" className="hover:text-white transition">Pricing</a>
-                  <a href="/#how-it-works" className="hover:text-white transition">How it works</a>
-                  <a href="/#use-cases" className="hover:text-white transition">Use Cases</a>
-                  <a href="/privacy" className="hover:text-white transition">Privacy</a>
-              </div>
-              <div className="flex justify-center gap-6 mb-8 text-sm">
-                  <a href="#" className="hover:text-white transition">Twitter/X</a>
-                  <a href="#" className="hover:text-white transition">IndieHackers</a>
-                  <a href="#" className="hover:text-white transition">Product Hunt</a>
-              </div>
-              <p className="text-center text-gray-500 italic mb-4">"Save the image. Keep the meaning. Use it forever."</p>
-              <p className="text-center text-gray-600 text-sm">© 2026 ImageSnap. All rights reserved.</p>
-          </div>
-      </footer>
+      {/* PRICING PREVIEW */}
+      <section id="pricing" className="bg-accent/5 py-32 border-y border-white/5">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-4xl font-black mb-12">Simple, predictable pricing.</h2>
+            <div className="glass p-12 rounded-[3rem] border-accent/20 bg-accent/5">
+                <div className="text-accent text-sm font-black uppercase tracking-[0.2em] mb-4">Solo Plan</div>
+                <div className="text-6xl font-black mb-6">$19<span className="text-xl text-muted">/mo</span></div>
+                <ul className="space-y-4 mb-10 text-muted font-bold text-sm">
+                  <li className="flex items-center justify-center gap-2">✓ Unlimited captures</li>
+                  <li className="flex items-center justify-center gap-2">✓ Unlimited categories</li>
+                  <li className="flex items-center justify-center gap-2">✓ Google Drive & Sheets Sync</li>
+                </ul>
+                <button onClick={handleLoginClick} className="btn btn-primary w-full py-5 rounded-2xl text-lg">
+                  Start Researching Now
+                </button>
+            </div>
+            <p className="mt-8 text-muted font-medium">Free plan available: 30 captures/month forever.</p>
+        </div>
+      </section>
 
+      {/* FAQ */}
+      <section id="faq" className="max-w-4xl mx-auto px-6 py-32">
+          <h2 className="text-4xl font-black mb-16 text-center italic">Questions?</h2>
+          <div className="space-y-4">
+              {[
+                { q: "What is \"designed context\"?", a: "It means you decide what information gets attached to each image. ImageSnap auto-fills what it can from the page, but you can add any custom fields — project name, rating, supplier, status, notes — whatever makes the image useful for your work." },
+                { q: "Is this a scraper?", a: "No. ImageSnap works inside your browser while you browse normally. You choose what to capture. It's human-guided, not automated." },
+                { q: "Where does my data go?", a: "Images go to your Google Drive. Context goes to your Google Sheet. We don't store your research data on our servers." }
+              ].map((item, i) => (
+                <details key={i} className="glass p-8 rounded-3xl border-white/5 group">
+                  <summary className="font-black text-xl cursor-pointer list-none flex justify-between items-center">
+                    {item.q}
+                    <span className="transition group-open:rotate-180 text-accent">▼</span>
+                  </summary>
+                  <p className="text-muted mt-6 font-medium leading-relaxed">{item.a}</p>
+                </details>
+              ))}
+          </div>
+      </section>
     </div>
   );
 };

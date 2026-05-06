@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   version 
 }) => {
   return (
-    <header className="px-6 py-6 flex bg-bg items-center justify-between border-b border-white/5 shadow-xl">
+    <header className="px-4 py-5 flex bg-bg items-center justify-between border-b border-white/5 shadow-xl">
       <div className="flex flex-col">
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 bg-accent rounded flex items-center justify-center">
