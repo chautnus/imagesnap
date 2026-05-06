@@ -10,7 +10,15 @@ import fetch from "node-fetch";
 import crypto from "crypto";
 import fs from "fs";
 import { lemonSqueezySetup, createCheckout } from "@lemonsqueezy/lemonsqueezy.js";
-import { mockUserDb, saveDb, getSubscription } from "./src/db.js";
+import { initDb } from "./src/db-postgres.js";
+import { 
+  getSubscription, 
+  getAllUsers, 
+  updateUser, 
+  deleteUser, 
+  getConfig, 
+  setConfig 
+} from "./src/db.js";
 
 console.log(">>> ImageSnap Production Server starting...");
 
@@ -18,6 +26,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
+  await initDb();
   const app = express();
   const PORT = Number(process.env.PORT) || 8080;
 
@@ -56,9 +65,8 @@ async function startServer() {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email required" });
     const status = await getSubscription(email);
-    status.usage = (status.usage || 0) + 1;
-    saveDb();
-    res.json(status);
+    const updated = await updateUser(email, { usage: (status.usage || 0) + 1 });
+    res.json(updated);
   });
 
   // --- ADMIN ROUTES ---
@@ -67,27 +75,23 @@ async function startServer() {
     const adminEmail = req.query.adminEmail as string;
     const status = await getSubscription(adminEmail || "");
     if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
-    res.json(mockUserDb.users);
+    const users = await getAllUsers();
+    res.json(users);
   });
 
   app.post("/api/admin/update-user", async (req, res) => {
     const { adminEmail, targetEmail, updates } = req.body;
     const status = await getSubscription(adminEmail || "");
     if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
-    if (!mockUserDb.users[targetEmail]) {
-      mockUserDb.users[targetEmail] = { isPro: false, limit: 30, usage: 0, role: 'user', appId: crypto.randomUUID(), registeredAt: new Date().toISOString() };
-    }
-    mockUserDb.users[targetEmail] = { ...mockUserDb.users[targetEmail], ...updates };
-    saveDb();
-    res.json(mockUserDb.users[targetEmail]);
+    const updated = await updateUser(targetEmail, updates);
+    res.json(updated);
   });
 
   app.post("/api/admin/delete-user", async (req, res) => {
     const { adminEmail, targetEmail } = req.body;
     const status = await getSubscription(adminEmail || "");
     if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
-    delete mockUserDb.users[targetEmail];
-    saveDb();
+    await deleteUser(targetEmail);
     res.json({ success: true });
   });
 
@@ -97,22 +101,24 @@ async function startServer() {
     const { adminEmail, spreadsheetId, accessToken } = req.body;
     const status = await getSubscription(adminEmail || "");
     if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
-    mockUserDb.config.masterSpreadsheetId = spreadsheetId;
-    mockUserDb.config.adminAccessToken = accessToken;
-    saveDb();
+    await setConfig('masterSpreadsheetId', spreadsheetId);
+    await setConfig('adminAccessToken', accessToken);
     res.json({ success: true });
   });
 
   app.post("/api/auth/staff-login", async (req, res) => {
     const { username, password } = req.body;
-    const userEntry = Object.values(mockUserDb.users).find((u: any) => u.username === username && u.password === password);
+    const users = await getAllUsers();
+    const userEntry = Object.values(users).find((u: any) => u.username === username && u.password === password);
     if (!userEntry) return res.status(401).json({ error: "Invalid credentials" });
-    res.json({ success: true, user: userEntry, masterSpreadsheetId: mockUserDb.config.masterSpreadsheetId });
+    const masterSpreadsheetId = await getConfig('masterSpreadsheetId');
+    res.json({ success: true, user: userEntry, masterSpreadsheetId });
   });
 
   app.post("/api/proxy/save-product", async (req, res) => {
     const { spreadsheetId, product, adminAccessToken } = req.body;
-    const token = adminAccessToken || mockUserDb.config.adminAccessToken;
+    const masterToken = await getConfig('adminAccessToken');
+    const token = adminAccessToken || masterToken;
     if (!token) return res.status(401).json({ error: "Admin must be active to proxy saves" });
     try {
       const range = `${product.categoryName || 'Data'}!A2`;
@@ -155,8 +161,7 @@ async function startServer() {
     if (digest !== req.headers["x-signature"]) return res.status(401).send("Invalid signature");
     const { meta: { event_name }, data: { attributes: { user_email: email } } } = req.body;
     if (event_name === "order_created" || event_name === "subscription_created") {
-      mockUserDb.users[email] = { ...mockUserDb.users[email], isPro: true, limit: 999999, updatedAt: new Date().toISOString() };
-      saveDb();
+      await updateUser(email, { isPro: true, limit: 999999 });
       console.log(`User ${email} upgraded to PRO`);
     }
     res.status(200).send("OK");
