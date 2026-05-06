@@ -1,0 +1,14 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/alternatives/companycam-alternative/page": "app/alternatives/companycam-alternative/page.js",
+  "/api/create-checkout-session/route": "app/api/create-checkout-session/route.js",
+  "/api/increment-usage/route": "app/api/increment-usage/route.js",
+  "/api/user-status/route": "app/api/user-status/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/page": "app/page.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js"
+}

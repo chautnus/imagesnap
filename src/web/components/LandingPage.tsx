@@ -165,7 +165,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
           <div className="relative group max-w-5xl mx-auto">
             <div className="absolute -inset-1 bg-gradient-to-r from-accent to-blue-500 rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
             <div className="relative glass rounded-[3rem] aspect-video flex items-center justify-center overflow-hidden border-white/10">
-                <img src="/imagesnap_extension_form_preview.png" alt="ImageSnap Preview" className="w-full h-full object-cover opacity-80" />
+                <img src="/imagesnap_extension_form_preview.png" alt="ImageSnap Chrome Extension interface: saving product images and structured context to Google Drive" className="w-full h-full object-cover opacity-80" />
                 <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent opacity-60"></div>
             </div>
           </div>

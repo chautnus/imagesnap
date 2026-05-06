@@ -1,8 +1,15 @@
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '271749541534-3cqn2t7c28drc79sno6tm9nssc7arbjl.apps.googleusercontent.com';
+const getGoogleClientId = () => {
+  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) return process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  // @ts-ignore
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_CLIENT_ID) return import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  return '271749541534-3cqn2t7c28drc79sno6tm9nssc7arbjl.apps.googleusercontent.com';
+};
+
+export const GOOGLE_CLIENT_ID = getGoogleClientId();
 export const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
 let tokenClient: any = null;
-let accessToken: string | null = localStorage.getItem('ps_access_token');
+let accessToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('ps_access_token') : null;
 
 export const initGis = (onSuccess: (token: string) => void) => {
   if (typeof window === 'undefined') return;

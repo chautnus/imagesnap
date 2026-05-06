@@ -37,6 +37,21 @@ export const BlogPost_HumanGuided = ({ onLogin }: { onLogin: () => void }) => {
             </div>
           </section>
 
+          <section className="glass rounded-[3rem] overflow-hidden border border-white/5">
+            <div className="aspect-video w-full bg-accent/5 flex items-center justify-center">
+               <img 
+                 src="/human-guided-capture-workflow.png" 
+                 alt="ImageSnap Human-Guided Capture Workflow: Browsing and capturing product data with structured context" 
+                 className="w-full h-full object-cover"
+               />
+            </div>
+            <div className="p-8 text-center bg-black/40 border-t border-white/5">
+               <p className="text-sm text-muted font-medium italic">
+                 Capture what matters, automate the rest. Human judgment is the "last mile" of data quality.
+               </p>
+            </div>
+          </section>
+
           <section className="glass-light p-10 rounded-[3rem] border border-white/5">
             <h2 className="text-3xl font-black mb-8 text-center">Quality vs Quantity Tradeoff</h2>
             <div className="overflow-x-auto">

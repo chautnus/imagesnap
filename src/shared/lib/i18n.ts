@@ -150,7 +150,12 @@ const translations: Record<string, Record<Lang, string>> = {
 };
 
 export const useI18n = () => {
-  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('ps_lang') as Lang) || 'en');
+  const [lang, setLang] = useState<Lang>('en');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('ps_lang') as Lang;
+    if (stored) setLang(stored);
+  }, []);
 
   const t = (key: string) => {
     return translations[key]?.[lang] || key;

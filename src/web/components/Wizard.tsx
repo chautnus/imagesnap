@@ -17,7 +17,7 @@ export const Wizard: React.FC<WizardProps> = ({ t }) => {
       <p className="text-muted mb-12 max-w-xs">{t('setupWizardDesc')}</p>
       
       <button 
-        onClick={requestToken}
+        onClick={() => requestToken()}
         className="btn btn-primary w-full max-w-xs py-4 flex items-center justify-center gap-3 text-lg"
       >
         <LogIn size={20} />

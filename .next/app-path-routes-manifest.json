@@ -1,0 +1,14 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/alternatives/companycam-alternative/page": "/alternatives/companycam-alternative",
+  "/api/create-checkout-session/route": "/api/create-checkout-session",
+  "/api/increment-usage/route": "/api/increment-usage",
+  "/api/user-status/route": "/api/user-status",
+  "/dashboard/page": "/dashboard",
+  "/page": "/",
+  "/pricing/page": "/pricing",
+  "/privacy/page": "/privacy",
+  "/robots.txt/route": "/robots.txt",
+  "/sitemap.xml/route": "/sitemap.xml"
+}

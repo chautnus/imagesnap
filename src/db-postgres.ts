@@ -55,3 +55,5 @@ export async function initDb() {
     client.release();
   }
 }
+
+initDb().catch(err => console.error('Immediate initDb failed:', err));

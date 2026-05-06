@@ -6,8 +6,8 @@ import { SEO } from '../components/SEO';
 interface SEOPageProps {
   title: string;
   description: string;
-  headline: string;
-  subheadline: string;
+  headline: React.ReactNode;
+  subheadline: React.ReactNode;
   content: React.ReactNode;
   ctaText?: string;
   onCtaClick?: () => void;

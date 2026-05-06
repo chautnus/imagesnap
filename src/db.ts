@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { pool } from "./db-postgres.js";
+import { pool } from "./db-postgres";
 
 const ADMIN_EMAILS = ["chautnus@gmail.com", "support@imagesnap.cloud"];
 

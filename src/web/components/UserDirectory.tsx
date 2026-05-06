@@ -98,7 +98,7 @@ export const UserDirectory: React.FC<UserDirectoryProps> = ({ user, subStatus, c
         </div>
 
         <div className="p-3 bg-accent/5 border border-accent/20 rounded-lg text-[10px] font-mono text-accent">
-          STAFF_PORTAL: {window.location.origin}/#staff
+          STAFF_PORTAL: {typeof window !== 'undefined' ? window.location.origin : ''}/#staff
         </div>
 
         {showStaffForm && (

@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/alternatives/layout,_N_T_/alternatives/companycam-alternative/layout,_N_T_/alternatives/companycam-alternative/page,_N_T_/alternatives/companycam-alternative"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/alternatives/companycam-alternative/__PAGE__",
+    "/alternatives/companycam-alternative",
+    "/alternatives",
+    "/_index",
+    "/_head"
+  ]
+}

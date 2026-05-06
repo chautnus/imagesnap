@@ -5,7 +5,10 @@ import { saveProduct, deleteProduct } from '../services/productService';
 import { saveCategory, deleteCategory } from '../services/categoryService';
 import { appendRow } from '../lib/sheets';
 
-const API_BASE_URL = (typeof window !== 'undefined' && (window.location.protocol === 'extension:' || window.location.protocol === 'chrome-extension:' || window.location.protocol === 'ms-browser-extension:')) 
+const API_BASE_URL = (typeof window !== 'undefined' && 
+  (window.location.protocol === 'extension:' || 
+   window.location.protocol === 'chrome-extension:' || 
+   window.location.protocol === 'ms-browser-extension:')) 
   ? 'https://www.imagesnap.cloud' 
   : '';
 
