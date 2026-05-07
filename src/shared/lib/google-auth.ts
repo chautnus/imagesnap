@@ -11,7 +11,7 @@ export const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.
 let tokenClient: any = null;
 let accessToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('ps_access_token') : null;
 
-export const initGis = (onSuccess: (token: string) => void) => {
+export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
   if (typeof window === 'undefined') return;
 
   // Extension Check: Use chrome.identity if available
@@ -20,21 +20,18 @@ export const initGis = (onSuccess: (token: string) => void) => {
 
   if (isExtension) {
     console.log('Detected Chrome Extension environment.');
-    // Check if we're on Edge
-    const isEdge = /Edg/.test(navigator.userAgent);
-    
-    // Skip silent getAuthToken because we are using a Web App Client ID
-    // which causes 'bad client id' warnings in the console.
     if (accessToken) onSuccess(accessToken);
+    return; // Extensions don't need GSI for background auth usually
   }
 
   const google = (window as any).google;
   if (!google) {
-    if (isExtension) {
-      console.log('Google GSI script blocked by CSP, relying on chrome.identity only');
-      return;
+    if (retries < 10) {
+      console.log(`Google GSI script not loaded yet. Retrying in 500ms... (attempt ${retries + 1})`);
+      setTimeout(() => initGis(onSuccess, retries + 1), 500);
+    } else {
+      console.warn('Google GSI script failed to load after 10 attempts.');
     }
-    console.warn('Google GSI script not loaded yet. Waiting...');
     return;
   }
 

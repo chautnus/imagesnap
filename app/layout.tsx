@@ -34,6 +34,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.imagesnap.cloud/",
   },
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon192.png",
+    apple: "/icon512.png",
+  },
 };
 
 export default function RootLayout({

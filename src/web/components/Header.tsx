@@ -34,8 +34,12 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-4">
         <div className="flex flex-col items-end">
           <div className="flex items-center gap-1.5">
-            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${subStatus.isAdmin ? 'bg-accent text-bg' : 'bg-blue-500 text-white'}`}>
-              {subStatus.isAdmin ? 'ADMIN' : 'STAFF'}
+            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${
+              subStatus.isAdmin ? 'bg-accent text-bg' : 
+              subStatus.role === 'staff' ? 'bg-blue-500 text-white' : 
+              'bg-card text-muted border border-line'
+            }`}>
+              {subStatus.isAdmin ? 'ADMIN' : subStatus.role === 'staff' ? 'STAFF' : 'USER'}
             </span>
             <span className="text-[11px] font-bold text-white max-w-[120px] truncate">
               {user?.email || user?.username || 'OFFLINE'}

@@ -7,22 +7,23 @@ import { DataTab } from '@web/components/DataTab';
 import { SettingsTab } from '@web/components/SettingsTab';
 import { HelpTab } from '@web/components/HelpTab';
 import { Header } from '@web/components/Header';
-import { initGis, getAccessToken, setAccessToken, getUserInfo, revokeToken, requestToken } from '@shared/lib/google-auth';
+import { initGis, getAccessToken, setAccessToken, getUserInfo, revokeToken } from '@shared/lib/google-auth';
 import { findOrCreateWorkspace } from '@shared/lib/sheets';
 import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
 import { SubscriptionStatus } from '@shared/lib/types';
 
-const API_BASE_URL = ''; // Next.js API routes are relative
-
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings' | 'help'>('capture');
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [isStaff, setIsStaff] = useState(false);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
   
+  const [importedImages, setImportedImages] = useState<string[]>([]);
+  const [importedUrl, setImportedUrl] = useState<string>('');
+  const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
+
   const { lang, t, toggleLang } = useI18n();
   const { 
     appData, 
@@ -35,35 +36,97 @@ export default function Dashboard() {
   } = useAppData(spreadsheetId, user);
 
   useEffect(() => {
-    const storedId = localStorage.getItem('ps_sheet_id');
-    if (storedId) setSpreadsheetId(storedId);
-
-    initGis(async (token) => {
-      setAccessToken(token);
-      try {
-        const profile = await getUserInfo(token);
-        if (profile) {
-          setUser(profile);
+    const handleInit = async () => {
+      // Check for staff session first
+      const isStaff = localStorage.getItem('ps_is_staff') === 'true';
+      if (isStaff) {
+        const staffEmail = localStorage.getItem('ps_staff_email');
+        const storedId = localStorage.getItem('ps_sheet_id');
+        if (staffEmail && storedId) {
+          setUser({ email: staffEmail, role: 'staff' });
+          setSpreadsheetId(storedId);
           setIsAuthReady(true);
-          fetchSubStatus(profile.email);
-          if (storedId) {
-            refreshData(storedId);
+          setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
+          refreshData(storedId);
+          return;
+        }
+      }
+
+      // Google Auth Initialization
+      initGis(async (token) => {
+        console.log("Auth token ready, fetching user profile...");
+        setAccessToken(token);
+        try {
+          const profile = await getUserInfo(token);
+          if (profile) {
+            setUser(profile);
+            setIsAuthReady(true);
+            fetchSubStatus(profile.email);
+            
+            const storedId = localStorage.getItem('ps_sheet_id');
+            if (storedId) {
+              setSpreadsheetId(storedId);
+              refreshData(storedId);
+            } else {
+              initializeWorkspace();
+            }
           } else {
-            initializeWorkspace();
+            console.error("No profile found for token");
+            setIsAuthReady(false);
+            window.location.href = '/';
           }
-        } else {
+        } catch (e) {
+          console.error("Dashboard auth error:", e);
           setIsAuthReady(false);
           window.location.href = '/';
         }
-      } catch (e) {
-        setIsAuthReady(false);
-        window.location.href = '/';
-      }
-    });
+      });
+    };
+
+    handleInit();
+    handleShareTarget();
   }, []);
+
+  const handleShareTarget = async () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('share-target') === 'true') {
+      try {
+        const cache = await caches.open('shared-data');
+        const metaRes = await cache.match('/shared-metadata');
+        
+        if (metaRes) {
+          const metadata = await metaRes.json();
+          const images: string[] = [];
+          
+          for (let i = 0; i < metadata.imageCount; i++) {
+            const imgRes = await cache.match(`/shared-image-${i}`);
+            if (imgRes) {
+              const blob = await imgRes.blob();
+              const reader = new FileReader();
+              const dataUrl = await new Promise<string>((resolve) => {
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+              });
+              images.push(dataUrl);
+            }
+          }
+
+          if (images.length > 0) setImportedImages(images);
+          if (metadata.url || metadata.text) setImportedUrl(metadata.url || metadata.text);
+          if (metadata.title) setImportedMetadata({ t: metadata.title });
+
+          await caches.delete('shared-data');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (e) {
+        console.error("Failed to load shared data", e);
+      }
+    }
+  };
 
   const initializeWorkspace = async () => {
     try {
+      console.log("Initializing new workspace...");
       const id = await findOrCreateWorkspace();
       setSpreadsheetId(id);
       localStorage.setItem('ps_sheet_id', id);
@@ -102,7 +165,10 @@ export default function Dashboard() {
   if (!user || !isAuthReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg text-white">
-        <div className="animate-pulse">Loading dashboard...</div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+          <div className="text-xs font-black tracking-widest uppercase opacity-60">Authenticating ImageSnap...</div>
+        </div>
       </div>
     );
   }
@@ -135,18 +201,18 @@ export default function Dashboard() {
                 return;
               }
               await handleSaveProduct(product, imgs);
-              if (user?.email) fetchSubStatus(user.email);
+              if (user?.email && !localStorage.getItem('ps_is_staff')) fetchSubStatus(user.email);
             }} 
             t={t} 
             lang={lang}
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
-            initialImages={[]} // Handle imports later if needed
-            importedUrl={""}
-            importedMetadata={{}}
-            onClearInitialImages={() => {}}
-            onClearImportedUrl={() => {}}
-            onClearImportedMetadata={() => {}}
+            initialImages={importedImages}
+            importedUrl={importedUrl}
+            importedMetadata={importedMetadata}
+            onClearInitialImages={() => setImportedImages([])}
+            onClearImportedUrl={() => setImportedUrl('')}
+            onClearImportedMetadata={() => setImportedMetadata({})}
             onSaveCategory={handleSaveCategory}
             onSwitchToHelp={() => setActiveTab('help')}
           />
@@ -174,6 +240,7 @@ export default function Dashboard() {
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
             onLogout={() => {
+              localStorage.clear();
               revokeToken();
               window.location.href = '/';
             }}

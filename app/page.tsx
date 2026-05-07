@@ -14,9 +14,18 @@ export default function Home() {
     // In Next.js, we need to initialize GIS on the client
     initGis((token) => {
       setAccessToken(token);
-      // If we have a token, we might want to redirect to dashboard
-      // But for the landing page, we just want to be ready for the login button
+      // If we have a token and we are on the landing page root, auto-redirect to dashboard
+      if (window.location.pathname === '/') {
+        window.location.href = '/dashboard';
+      }
     });
+    
+    // Also check for staff session
+    const isStaff = localStorage.getItem('ps_is_staff') === 'true';
+    if (isStaff && window.location.pathname === '/') {
+      window.location.href = '/dashboard';
+    }
+
     setIsReady(true);
   }, []);
 

@@ -182,7 +182,17 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     try {
       await onSave({ categoryId: selectedCategoryId, name: formData[keyFieldId], tags: [], data: { ...formData } }, images);
       setImages([]);
-      setFormData({});
+      
+      // Retain select and date values for convenience
+      const keptData: Record<string, any> = {};
+      if (activeCategory) {
+        activeCategory.fields.forEach(f => {
+          if ((f.type === 'select' || f.type === 'date') && formData[f.id]) {
+            keptData[f.id] = formData[f.id];
+          }
+        });
+      }
+      setFormData(keptData);
     } finally {
       setIsSaving(false);
     }
