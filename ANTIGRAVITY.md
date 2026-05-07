@@ -9,9 +9,10 @@
 - **Project Name**: ImageSnap
 - **Official Domain**: [www.imagesnap.cloud](https://www.imagesnap.cloud)
 - **Status**: Active / Production Ready
-- **Core Architecture**: Centralized Storage (Staff-to-Admin Proxy)
+- **Core Architecture**: Centralized Storage (Staff-to-Admin Proxy) / Next.js SSR
 
 ## 🚀 Key Features
+- **Next.js App Router**: Full SSR/SSG support for SEO optimization.
 - **Centralized Storage**: Staff saves directly to Admin's Drive/Sheets.
 - **Admin Dashboard**: Manage users, categories, and master workspace.
 - **Automated Testing**: Playwright suite for E2E reliability.
@@ -20,39 +21,39 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-06 04:30
+**Last updated**: 2026-05-07 10:05
 **Last session by**: Antigravity
-**Current sprint focus**: Hoàn thiện hệ thống xác thực v1.3.5 và bắt đầu Admin Dashboard.
+**Current sprint focus**: Next.js Migration, SEO Optimization & Chrome Store Preparation.
 
 ---
 
 ## Context tóm tắt
 
 ### Đang làm gì?
-Đã hoàn thành việc khắc phục triệt để lỗi đăng nhập (OAuth 400) và lỗi quyền truy cập nội dung trang web. Toàn bộ hệ thống đã được đồng bộ lên phiên bản **v1.3.5** với tên gọi mới.
+Đã hoàn thành việc chuyển đổi toàn bộ ứng dụng sang **Next.js (App Router)** để tối ưu hóa SEO. Toàn bộ hệ thống đã được nâng cấp lên phiên bản **v1.4.0**.
 
 ### Đã làm gì trong phiên trước?
-- **Fix Auth & Permissions (v1.3.5)**: Đồng bộ Client ID chính xác, dọn dẹp logic đăng nhập (loại bỏ getAuthToken gây nhiễu) và khôi phục quyền `*://*/*`.
-- **Rebranding**: Đổi tên Extension thành "ImageSnap — Save Images & Context to Google Sheets".
-- **PostgreSQL Migration**: Chuyển đổi storage từ `user_db.json` sang PostgreSQL. Cập nhật `server.ts` và `db.ts` sang mô hình async.
-- **Fix Bug [BUG-012]**: Sửa lỗi không gõ được dấu phẩy khi tạo Options cho trường 'select'.
-- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống (Package, Manifest, UI) lên bản **v1.3.5**.
+- **Next.js Migration (v1.4.0)**: Chuyển đổi từ Vite SPA sang Next.js App Router. Port thành công các trang Landing, Pricing, Dashboard và API routes.
+- **SEO Optimization**: Tự động hóa `sitemap.xml` và `robots.txt`. Thêm Google Analytics và thẻ meta Open Graph branded.
+- **Accessibility**: Bật lại tính năng zoom cho người dùng di động (`user-scalable=yes`).
+- **Railway Compatibility**: Sửa lỗi Healthcheck bằng cách bind host `0.0.0.0` và thêm endpoint `/api/health`.
+- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.4.0**.
+- **Store Preparation**: Chuẩn bị tài liệu giải trình quyền (`PRIVACY_JUSTIFICATION.md`) cho Chrome Web Store.
 
 ### Dừng ở đâu?
-- Đăng nhập Google đã hoạt động hoàn hảo trên mọi môi trường.
-- Tính năng Snap đã truy cập được nội dung trên mọi website.
-- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.3.5.
+- Ứng dụng Next.js đã build thành công và hoạt động tốt trên Railway.
+- Extension đã được đồng bộ hóa logic với Web App.
+- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.4.0.
 
 ---
 
 ## Open Items cần attention
 
 ```
-[x] [DEV-2026W19-01] PostgreSQL Migration → COMPLETED.
-[x] [DEV-2026W19-02] Fix Select Comma Bug → COMPLETED.
-[x] [DEV-2026W19-06] Fix Auth & Permissions v1.3.5 → COMPLETED.
-[ ] [DEV-2026W19-04] Auto-Silent Login implementation.
-[ ] [DEV-2026W19-08] Xây dựng Dashboard quản trị người dùng cho Admin.
+[x] [DEV-2026W19-07] Next.js Migration (SSR/SEO) → COMPLETED.
+[x] [DEV-2026W19-08] Railway Healthcheck Fix → COMPLETED.
+[x] [DEV-2026W19-09] Chrome Store Permission Justification → COMPLETED.
+[ ] [DEV-2026W19-10] Final QA & Extension Submission.
 ```
 
 ---
@@ -62,30 +63,18 @@
 ### Dependency versions (critical)
 ```
 node:     >=18.0.0
-vite:     ^6.2.0
+next:     ^16.2.4
 react:    ^19.0.0
-express:  ^4.21.2
-pg:       ^8.11.0 (PostgreSQL client)
+pg:       ^8.20.0
 ```
 
 ### Environment notes
-- Dự án là một Browser Extension kết hợp React PWA.
-- Server chạy Express, tích hợp Lemon Squeezy cho payment.
-
-### Recent ARCH decisions (7 ngày)
-- [DEV-2026W18-17] Thống nhất branding: `ImageSnap: Ecommerce Asset Collector`.
-- [DEV-2026W18-16] Chuẩn hóa Lesson Learned format trong BUGLOG.
-
----
-
-## Known gotchas / Cảnh báo
-
-- ⚠ [PAT-IMPORT-001]: Luôn xuất lại import block đầy đủ khi thêm symbol mới vào file hiện có. Chạy `tsc --noEmit` để xác minh.
-- ⚠ [BUG-007]: Tránh dùng `h-screen` cho mobile UI, ưu tiên `fixed inset-0` và `min-h-0`.
+- Dự án hiện đã chuyển sang Next.js App Router hoàn toàn.
+- Server API được tích hợp trực tiếp vào Next.js API Routes.
 
 ---
 
 ## Agent notes (phiên này để lại cho phiên sau)
 
-- Metadata đã nhất quán, nhưng cần kiểm tra xem Store Assets (screenshots, v.v.) có cần cập nhật theo tên mới không.
-- Bắt đầu phiên sau bằng việc `/plan` cho Admin Dashboard UI (BR-2.3).
+- Metadata đã nhất quán và chuẩn SEO.
+- Phiên sau nên tập trung vào việc đóng gói extension và chuẩn bị ảnh chụp màn hình mới cho Store (do UI Next.js có thay đổi nhẹ).
