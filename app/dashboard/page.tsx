@@ -186,7 +186,7 @@ export default function Dashboard() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.4.0"
+        version="v1.4.1"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
