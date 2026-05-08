@@ -73,11 +73,13 @@ export default function Dashboard() {
           } else {
             console.error("No profile found for token");
             setIsAuthReady(false);
+            revokeToken();
             window.location.href = '/';
           }
         } catch (e) {
           console.error("Dashboard auth error:", e);
           setIsAuthReady(false);
+          revokeToken();
           window.location.href = '/';
         }
       });

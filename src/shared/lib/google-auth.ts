@@ -65,11 +65,20 @@ export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
 };
 
 export async function getUserInfo(token: string) {
-  const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  if (!response.ok) return null;
-  return response.json();
+  try {
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('ps_access_token');
+      }
+      return null;
+    }
+    return response.json();
+  } catch (e) {
+    return null;
+  }
 }
 
 export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { LandingPage } from '@web/components/LandingPage';
 import { useI18n } from '@shared/lib/i18n';
-import { requestToken, initGis, setAccessToken } from '@shared/lib/google-auth';
+import { requestToken, initGis, setAccessToken, getUserInfo } from '@shared/lib/google-auth';
 import { NextPublicLayout } from './components/NextPublicLayout';
 
 export default function Home() {
@@ -12,10 +12,11 @@ export default function Home() {
 
   useEffect(() => {
     // In Next.js, we need to initialize GIS on the client
-    initGis((token) => {
+    initGis(async (token) => {
       setAccessToken(token);
-      // If we have a token and we are on the landing page root, auto-redirect to dashboard
-      if (window.location.pathname === '/') {
+      // Verify token before redirecting to dashboard
+      const profile = await getUserInfo(token);
+      if (profile && window.location.pathname === '/') {
         window.location.href = '/dashboard';
       }
     });
