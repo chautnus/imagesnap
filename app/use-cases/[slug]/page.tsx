@@ -11,27 +11,27 @@ const USE_CASE_PAGES: Record<string, { component: any, props?: any, title: strin
   'competitor-tracking-beyond-keyword-tools': {
     component: CompetitorTracking,
     title: "Competitor Tracking Beyond Keyword Tools | ImageSnap",
-    description: "Build a visual database of competitor moves, pricing, and positioning."
+    description: "Build a visual database of competitor moves, pricing, and positioning. Learn how to track market changes visually and stay ahead without expensive keyword tools."
   },
   'swipe-file-tool': {
     component: SwipeFileTool,
     title: "The Ultimate Swipe File Tool for Researchers | ImageSnap",
-    description: "Organize your inspiration with context. The best swipe file tool for Google Drive."
+    description: "Organize your inspiration with context. The best swipe file tool for Google Drive that captures images and structured metadata from any website in one click."
   },
   'construction-teams': {
     component: ConstructionTeams,
     title: "ImageSnap for Construction Teams: Visual Documentation Sync",
-    description: "Sync site photos directly to Google Drive folders with automatic classification."
+    description: "Sync site photos directly to Google Drive folders with automatic classification. Perfect for construction teams needing reliable visual records and site logs."
   },
   'ecommerce-studios': {
     component: GenericSEOPage,
     props: {
       title: "E-commerce Asset Management for Studios — ImageSnap",
       headline: "Streamline your E-commerce Visual Workflow",
-      description: "Automatically organize product shots and marketing assets in Google Drive with structured metadata for your e-commerce studio."
+      description: "Automatically organize product shots and marketing assets in Google Drive with structured metadata for your e-commerce studio. Professional asset management."
     },
     title: "E-commerce Asset Management for Studios — ImageSnap",
-    description: "Streamline your E-commerce Visual Workflow with ImageSnap."
+    description: "Streamline your E-commerce Visual Workflow with ImageSnap. Automatically organize product shots and marketing assets in Google Drive with structured metadata."
   }
 };
 

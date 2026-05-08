@@ -11,22 +11,22 @@ const COMPARISON_PAGES: Record<string, { component: React.FC<any>, title: string
   'imagesnap-vs-manual-spreadsheet': {
     component: ComparisonManualSheet,
     title: "ImageSnap vs Manual Spreadsheets: Stop the Copy-Paste Madness",
-    description: "Compare manual data entry with ImageSnap's one-click capture and context system."
+    description: "Compare manual data entry with ImageSnap's one-click capture. Learn how to save hours of research by automating product image and metadata collection to Sheets."
   },
   'imagesnap-vs-custom-scraper': {
     component: ComparisonCustomScraper,
     title: "ImageSnap vs Custom Scrapers: Human Intelligence vs Bot Brute Force",
-    description: "Why human-guided capture is more reliable than custom scraping scripts for research."
+    description: "Why human-guided capture is more reliable than custom scraping scripts for research. Stop dealing with IP blocks and site changes with ImageSnap's robust tool."
   },
   'imagesnap-vs-web-clipper': {
     component: ComparisonWebClipper,
     title: "ImageSnap vs Generic Web Clippers: Captured Context vs Dead Snaps",
-    description: "Generic clippers save pixels. ImageSnap saves meaning."
+    description: "Generic clippers save pixels. ImageSnap saves meaning. Compare structured data capture with basic screenshots and see how to build a searchable asset library."
   },
   'imagesnap-vs-scraping-api': {
     component: ComparisonScrapingAPI,
     title: "ImageSnap vs Scraping APIs: Research Workflow vs Data Dumping",
-    description: "Why APIs are great for bots but bad for research workflows."
+    description: "Why APIs are great for bots but bad for research workflows. Discover how ImageSnap provides a human-centric research experience for designers and buyers."
   }
 };
 

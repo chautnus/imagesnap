@@ -12,22 +12,22 @@ const BLOG_POSTS: Record<string, { component: React.FC<any>, title: string, desc
   'why-copy-paste-research-breaks-at-scale': {
     component: BlogPost_WhyCopyPasteBreaks,
     title: "Why Copy-Paste Research Breaks at Scale | ImageSnap",
-    description: "Learn why manual copy-pasting is the silent killer of ecommerce research and how to fix it."
+    description: "Learn why manual copy-pasting is the silent killer of ecommerce research. Discover how to automate your product data capture into Google Drive and Sheets at scale."
   },
   'building-competitor-database-without-scraper': {
     component: BlogPost_BuildingDatabase,
     title: "Building a Competitor Database Without a Scraper | ImageSnap",
-    description: "How to build a visual competitor database using human-guided capture."
+    description: "Learn how to build a visual competitor database using human-guided capture. Stop fighting with fragile scraping scripts and start collecting high-quality research data."
   },
   'human-guided-capture-vs-full-automation': {
     component: BlogPost_HumanGuided,
     title: "Human-Guided Capture vs. Full Automation | ImageSnap",
-    description: "Why the best data comes from humans, not bots."
+    description: "Why the best research data comes from humans, not bots. Compare human-guided capture with full automation and see why context matters for your ecommerce strategy."
   },
   'why-i-built-imagesnap': {
     component: BlogPost_WhyIBuild,
     title: "Why I Built ImageSnap | Founder's Story",
-    description: "The story behind the tool that helps you capture context, not just pixels."
+    description: "The story behind ImageSnap: the tool that helps you capture context, not just pixels. Learn why I built a solution for ecommerce researchers to own their data."
   }
 };
 
