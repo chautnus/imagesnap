@@ -44,8 +44,10 @@
 - **SEO Audit & Fixes**: 
   - Thực hiện audit SEO toàn diện và phát hiện 12+ route quan trọng (Blog, Compare, Use Cases) bị lỗi 404 sau khi chuyển sang Next.js.
   - Port thành công toàn bộ các trang nội dung sang dynamic routes (`app/blog/[slug]`, `app/compare/[slug]`, `app/use-cases/[slug]`).
+  - Tối ưu hóa SSG: Thêm `generateStaticParams` để pre-render toàn bộ các trang nội dung, đảm bảo tốc độ load nhanh và SEO tốt nhất.
+  - Fix lỗi build Next.js 15+: Xử lý triệt để lỗi "Event handlers cannot be passed to Client Component" và "useContext is null" bằng cách chuẩn hóa ranh giới Server/Client và chuyển sang `next/link`.
   - Cập nhật `robots.txt` để bảo mật trang dashboard và tối ưu crawl budget.
-  - Tích hợp `generateMetadata` để tối ưu SEO cho từng bài viết và trang so sánh.
+  - Tích hợp `generateMetadata` và `next/image` cho toàn bộ landing page.
 
 ### Dừng ở đâu?
 - Ứng dụng Next.js đã build thành công và hoạt động tốt trên Railway.
