@@ -95,9 +95,20 @@
   - Features: Renamed extension to "ImageSnap — Save Images & Context to Google Sheets" in `manifest.json`.
   - Results: Better product positioning for the Chrome Web Store.
 
-### 🔄 In Progress
 - [DEV-2026W19-04] Auto-Silent Login implementation for improved UX.
+  - Fixes: Resolved infinite redirect loop by clearing tokens on failure and adding verification checks.
 - [DEV-2026W19-08] Xây dựng Dashboard quản trị người dùng cho Admin.
+- [DEV-2026W19-09] UI/UX Standardization & Typography Audit → [BR-3.2]
+  - Features: Increased label-meta font size to 18px for better accessibility.
+  - UI: Standardized all capture buttons to 20px height/font-consistency.
+  - UI: Replaced garbled characters with Lucide icons (ChevronDown, etc.) across all components.
+  - UI: Removed duplicate tab titles and fixed search focus in DataTab.
+- [DEV-2026W19-10] SEO Hub & Meta Optimization → [BR-4.1]
+  - Fixes: Resolved OG Image localhost error. Updated production URLs for social sharing.
+  - Features: Completed technical SEO audit, verified sitemap.xml and robots.txt.
+- [DEV-2026W19-11] Cross-Platform Version Synchronization (v1.4.2)
+  - Fixes: Synchronized version numbers across Web (App, Dashboard) and Extension (manifest.json).
+  - UI: Increased extension width to 500px to prevent layout truncation.
 
 ### 💡 Decisions Made
 - [DEV-2026W19-D01] Abandoned local JSON storage in favor of PostgreSQL.

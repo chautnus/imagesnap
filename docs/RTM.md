@@ -19,4 +19,5 @@
 | BR-3.4 | Quick Category Creation | ARCH-2.4 | `CaptureTab.tsx`, `App.tsx` | N/A | Low | 2026-04-27 | Passed | Active |
 | BR-5.1 | Chrome Store Compliance | ARCH-5 | `manifest.json`, `index.html` | N/A | High | 2026-04-28 | Passed | Active |
 | BR-5.2 | Automated Testing | ARCH-5 | `playwright.config.ts`, `tests/*` | `npm test` | Low | 2026-04-27 | Passed | Active |
+| BR-6.1 | SEO Optimization | ARCH-4 | `app/layout.tsx`, `robots.ts`, `sitemap.ts` | N/A | Med | 2026-05-08 | Passed | Active |
 

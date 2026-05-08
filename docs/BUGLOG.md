@@ -8,7 +8,106 @@
 
 ---
 
-### [BUG-016] — Scrape Permission Error on Navigated Tabs
+**Discovered**: [2026-05-06] | **Fixed**: [2026-05-06]
+
+---
+
+### [BUG-021] — DataTab Search Focus Loss
+**Status**: CLOSED
+**Severity**: MEDIUM
+**Discovered**: [2026-05-08] | **Fixed**: [2026-05-08]
+
+#### Symptom
+Users could only type one character in the search bar of the Data Tab before the input lost focus, requiring a re-click for every character.
+
+#### Root Cause
+The search header was being rendered via a helper function (`renderSearchHeader`) called during each render. Because the function was redefined on every render and called as a sub-render, React's reconciliation process treated the input as a new element, destroying its focus.
+
+#### Fix Applied
+Inlined the search header JSX directly into the `DataTab` render method. This preserves the component identity across re-renders triggered by state changes.
+
+#### Lesson Learned
+⚠ BÀI HỌC #021: Avoid using helper functions to render inputs that hold their own focus state within a component. Always inline or use stable sub-components with proper keys to maintain element identity.
+
+---
+
+### [BUG-020] — Infinite Authentication Redirect Loop on Mobile
+**Status**: CLOSED
+**Severity**: CRITICAL
+**Discovered**: [2026-05-08] | **Fixed**: [2026-05-08]
+
+#### Symptom
+Mobile users encountered an infinite loop where the app would redirect from the Home page to the Dashboard and back to Home continuously.
+
+#### Root Cause
+A race condition and state mismatch:
+1. `HomeClient` saw a token in `localStorage` and redirected to `/dashboard`.
+2. `dashboard/page.tsx` failed to verify the token (e.g., due to expiration or mobile browser restrictions) and redirected back to `/`.
+3. The invalid token was never cleared, triggering the cycle again.
+
+#### Fix Applied
+1. Added explicit `localStorage.removeItem('ps_access_token')` on any auth failure in both Dashboard and Home components.
+2. Improved verification logic to ensure the profile is valid BEFORE attempting a redirect.
+
+#### Lesson Learned
+⚠ BÀI HỌC #020: Always clear the authentication state/token before redirecting to a "Login Required" page to prevent infinite loops. State "cleanup" must precede "navigation".
+
+---
+
+### [BUG-019] — Character Encoding Artifacts (Garbled Text)
+**Status**: CLOSED
+**Severity**: MEDIUM
+**Discovered**: [2026-05-07] | **Fixed**: [2026-05-08]
+
+#### Symptom
+UI elements displayed garbled characters like `â€”`, `â–¼`, and `â€¢` instead of arrows, dashes, or bullet points.
+
+#### Root Cause
+Files were saved or interpreted with incorrect encoding (likely UTF-8 vs ISO-8859-1) during previous automated edits or environment shifts, causing non-standard ASCII characters to break.
+
+#### Fix Applied
+Replaced all hardcoded symbols with standard punctuation or SVG icons from the `lucide-react` library across all components (`LandingPage`, `PublicHeader`, `CaptureTab`, `DataTab`).
+
+#### Lesson Learned
+⚠ BÀI HỌC #019: Never rely on special characters or emojis in source code strings if they aren't strictly UTF-8 compliant. Prefer standard SVG icons for UI indicators like arrows and toggles.
+
+---
+
+### [BUG-018] — OG Image Pointing to Localhost
+**Status**: CLOSED
+**Severity**: HIGH
+**Discovered**: [2026-05-07] | **Fixed**: [2026-05-07]
+
+#### Symptom
+Social media previews (Facebook/Twitter) were broken because the OpenGraph image metadata was hardcoded to `http://localhost:3000/og-image.png`.
+
+#### Root Cause
+Metadata configuration was left with development values during the initial SEO setup.
+
+#### Fix Applied
+Updated `layout.tsx` metadata to use the production URL `https://www.imagesnap.cloud/og-image.png`.
+
+#### Lesson Learned
+⚠ BÀI HỌC #018: Always verify metadata URLs in a production-like environment before final deployment. Hardcoded local URLs in meta tags are a common cause of broken SEO previews.
+
+---
+
+### [BUG-017] — Duplicate UI Titles in Dashboard Tabs
+**Status**: CLOSED
+**Severity**: LOW
+**Discovered**: [2026-05-08] | **Fixed**: [2026-05-08]
+
+#### Symptom
+The Dashboard displayed the tab name twice (e.g., "CAPTURE" in the header and another "CAPTURE" in the tab body).
+
+#### Root Cause
+Redundant `h2` elements were present in individual tab components while the main `Header` was also rendering the `activeTab` title.
+
+#### Fix Applied
+Removed local title elements from `CaptureTab`, `DataTab`, `SettingsTab`, and `HelpTab`.
+
+#### Lesson Learned
+⚠ BÀI HỌC #017: Maintain a clear separation of concerns between layout (Header) and content (Tabs). Layout elements should handle global context like titles.
 **Status**: CLOSED
 **Severity**: HIGH
 **Discovered**: [2026-05-06] | **Fixed**: [2026-05-06]
@@ -369,7 +468,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 13 |
+| Total bugs logged | 21 |
 | Open | 0 |
-| Closed | 13 |
+| Closed | 21 |
 | Patterns extracted | 2 |
