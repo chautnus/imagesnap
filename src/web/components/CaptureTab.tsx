@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, X, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, Plus } from 'lucide-react';
 import { Camera } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
@@ -97,12 +97,12 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           const next = { ...prev };
           cat.fields.forEach(f => {
             const label = translate(f.label, lang).toLowerCase();
-            if (importTitle && !next[f.id] && (f.type === 'key' || label.includes('tÃªn') || label.includes('name') || label.includes('title'))) next[f.id] = importTitle;
-            if (importPrice && !next[f.id] && (f.type === 'number' || label.includes('giÃ¡') || label.includes('price'))) {
+            if (importTitle && !next[f.id] && (f.type === 'key' || label.includes('tên') || label.includes('name') || label.includes('title'))) next[f.id] = importTitle;
+            if (importPrice && !next[f.id] && (f.type === 'number' || label.includes('giá') || label.includes('price'))) {
               const m = importPrice.match(/[\d.]+/);
               next[f.id] = m ? m[0] : importPrice;
             }
-            if (importDesc && !next[f.id] && (label.includes('mÃ´ táº£') || label.includes('description') || label.includes('desc'))) next[f.id] = importDesc;
+            if (importDesc && !next[f.id] && (label.includes('mô tả') || label.includes('description') || label.includes('desc'))) next[f.id] = importDesc;
           });
           return next;
         });
@@ -124,19 +124,19 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       if (typeof chrome !== 'undefined' && chrome.tabs && chrome.scripting) {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab?.id) {
-          if (tab.url?.startsWith('chrome://') || tab.url?.startsWith('edge://') || tab.url?.startsWith('about:') || tab.url?.startsWith('https://chrome.google.com/webstore')) {
-            alert("TRANG WEB Bá»Š CHáº¶N: TrÃ¬nh duyá»‡t khÃ´ng cho phÃ©p Extension truy cáº­p vÃ o cÃ¡c trang há»‡ thá»‘ng. Vui lÃ²ng sá»­ dá»¥ng tÃ­nh nÄƒng nÃ y trÃªn cÃ¡c trang web mua sáº¯m.");
-            return;
-          }
+            if (tab.url?.startsWith('chrome://') || tab.url?.startsWith('edge://') || tab.url?.startsWith('about:') || tab.url?.startsWith('https://chrome.google.com/webstore')) {
+              alert("TRANG WEB BỊ CHẶN: Trình duyệt không cho phép Extension truy cập vào các trang hệ thống. Vui lòng sử dụng tính năng này trên các trang web mua sắm.");
+              return;
+            }
           try {
             await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
           } catch (e: any) {
-            alert("Lá»–I Cáº¤P QUYá»€N HOáº¶C TRANG CHÆ¯A Táº¢I: " + (e.message || "Vui lÃ²ng táº£i láº¡i (F5) trang web vÃ  thá»­ láº¡i."));
+            alert("LỖI CẤP QUYỀN HOẶC TRANG CHƯA TẢI: " + (e.message || "Vui lòng tải lại (F5) trang web và thử lại."));
             return;
           }
           chrome.tabs.sendMessage(tab.id, { action: "extract" }, (response) => {
             if (chrome.runtime.lastError) {
-              alert("Lá»–I Káº¾T Ná»I: KhÃ´ng thá»ƒ liÃªn láº¡c vá»›i trang web. Vui lÃ²ng F5 trang web báº¡n muá»‘n láº¥y áº£nh vÃ  thá»­ láº¡i.");
+              alert("LỖI KẾT NỐI: Không thể liên lạc với trang web. Vui lòng F5 trang web bạn muốn lấy ảnh và thử lại.");
               setIsExtracting(false);
               return;
             }
@@ -152,12 +152,12 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                     cat.fields.forEach(f => {
                       const label = translate(f.label, lang).toLowerCase();
                       if (f.type === 'url' && !next[f.id]) next[f.id] = url;
-                      if (metadata.t && !next[f.id] && (f.type === 'key' || label.includes('tÃªn') || label.includes('name') || label.includes('title'))) next[f.id] = metadata.t;
-                      if (metadata.p && !next[f.id] && (f.type === 'number' || label.includes('giÃ¡') || label.includes('price'))) {
+                      if (metadata.t && !next[f.id] && (f.type === 'key' || label.includes('tên') || label.includes('name') || label.includes('title'))) next[f.id] = metadata.t;
+                      if (metadata.p && !next[f.id] && (f.type === 'number' || label.includes('giá') || label.includes('price'))) {
                         const m = (metadata.p as string).match(/[\d.]+/);
                         next[f.id] = m ? m[0] : metadata.p;
                       }
-                      if (metadata.d && !next[f.id] && (label.includes('mÃ´ táº£') || label.includes('description') || label.includes('desc'))) next[f.id] = metadata.d;
+                      if (metadata.d && !next[f.id] && (label.includes('mô tả') || label.includes('description') || label.includes('desc'))) next[f.id] = metadata.d;
                     });
                     return next;
                   });
@@ -209,7 +209,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
       {isAtLimit && (
         <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-2xl flex flex-col gap-2">
-          <p className="text-xs text-yellow-500 font-bold leading-tight">âš ï¸ {t('limitReachedMsg') || 'You have reached the free limit. Upgrade to PRO for unlimited snaps!'}</p>
+          <p className="text-xs text-yellow-500 font-bold leading-tight">⚠️ {t('limitReachedMsg') || 'You have reached the free limit. Upgrade to PRO for unlimited snaps!'}</p>
           <button onClick={onUpgrade} className="text-[11px] bg-yellow-500 text-bg px-3 py-1.5 rounded-lg font-black uppercase w-fit">Upgrade Now</button>
         </div>
       )}
@@ -218,18 +218,18 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       <div className="grid grid-cols-4 gap-2">
         {typeof chrome !== 'undefined' && chrome.tabs && (
           <button onClick={handleExtensionSnap} disabled={isExtracting || isAtLimit}
-            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)]'} active:scale-95`}
+            className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all h-20 ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)]'} active:scale-95`}
           >
-            {isExtracting ? <RefreshCw size={20} className="animate-spin" /> : <GlobeIcon size={20} />}
-            <span className="text-[10px] font-black tracking-tight uppercase leading-tight text-center">{t('snapFromBrowser')}</span>
+            {isExtracting ? <RefreshCw size={18} className="animate-spin" /> : <GlobeIcon size={18} />}
+            <span className="text-[10px] font-black tracking-tighter uppercase leading-tight text-center">{t('snapFromBrowser')}</span>
           </button>
         )}
 
         <BurstCamera imageCount={images.length} onPhotoTaken={dataUrl => setImages(prev => [...prev, dataUrl])} />
 
-        <label htmlFor="file-gallery" className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent hover:text-accent transition-all cursor-pointer">
-          <ImagesIcon size={20} />
-          <span className="text-[11px] font-black tracking-tighter uppercase">GALLERY</span>
+        <label htmlFor="file-gallery" className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent hover:text-accent transition-all cursor-pointer h-20">
+          <ImagesIcon size={18} />
+          <span className="text-[10px] font-black tracking-tighter uppercase">GALLERY</span>
           <input type="file" accept="image/*" multiple className="hidden" id="file-gallery"
             onChange={e => Array.from(e.target.files ?? new FileList()).forEach((file: File) => {
               const reader = new FileReader();
@@ -239,9 +239,9 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           />
         </label>
 
-        <label htmlFor="file-native" className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent hover:text-accent transition-all cursor-pointer">
-          <Camera size={20} className="stroke-[3]" />
-          <span className="text-[11px] font-black tracking-tighter uppercase text-center leading-tight">APP CAMERA</span>
+        <label htmlFor="file-native" className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent hover:text-accent transition-all cursor-pointer h-20">
+          <Camera size={18} className="stroke-[2.5]" />
+          <span className="text-[10px] font-black tracking-tighter uppercase text-center leading-tight">APP CAMERA</span>
           <input type="file" accept="image/*" capture="environment" multiple className="hidden" id="file-native"
             onChange={e => Array.from(e.target.files ?? new FileList()).forEach((file: File) => {
               const reader = new FileReader();
@@ -275,12 +275,12 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <label className="label-meta tracking-widest text-[12px]">Select Category</label>
+            <label className="label-meta">Select Category</label>
             <button onClick={() => setShowQuickAdd(true)} className="flex items-center gap-1 text-[10px] font-black text-accent bg-accent/10 px-2 py-1 rounded-lg border border-accent/20 hover:bg-accent/20 transition-all">
               <Plus size={12} /> NEW
             </button>
           </div>
-          <input type="text" placeholder={lang === 'en' ? 'Search...' : 'TÃ¬m kiáº¿m...'} value={searchTerm}
+          <input type="text" placeholder={lang === 'en' ? 'Search...' : 'Tìm kiếm...'} value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="bg-card border-2 border-line rounded-xl px-4 py-2 text-sm w-36 focus:border-accent outline-none font-bold"
           />
@@ -310,7 +310,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           <div className="grid grid-cols-1 gap-4">
             {[...activeCategory.fields].sort((a, b) => (a.type === 'key' ? -1 : b.type === 'key' ? 1 : 0)).map(field => (
               <div key={field.id} className={`flex flex-col gap-1.5 ${field.type === 'key' ? 'p-3 bg-accent/5 rounded-xl border border-accent/20' : ''}`}>
-                <label className="label-meta text-[9px] flex items-center gap-1.5">
+                <label className="label-meta flex items-center gap-1.5">
                   {translate(field.label, lang)} {field.required && '*'}
                   {field.type === 'url' && <LinkIcon size={10} className="text-muted" />}
                   {field.type === 'date' && <Calendar size={10} className="text-muted" />}

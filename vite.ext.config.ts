@@ -29,6 +29,18 @@ export default defineConfig({
         if (existsSync(popupPath)) {
           copyFileSync(popupPath, 'dist-ext/index.html');
         }
+
+        // Copy all files from public/ to dist-ext/
+        const publicDir = path.resolve(__dirname, 'public');
+        if (existsSync(publicDir)) {
+          const files = ['imagesnap_extension_form_preview.png', 'og-image.png', 'landing_variant_1_ecom.png', 'landing_variant_2_org.png', 'landing_variant_3_cloud.png'];
+          files.forEach(file => {
+            const src = path.join(publicDir, file);
+            if (existsSync(src)) {
+              copyFileSync(src, path.join(__dirname, 'dist-ext', file));
+            }
+          });
+        }
       },
     },
   ],

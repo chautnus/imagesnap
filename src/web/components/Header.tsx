@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}>
               {subStatus.isAdmin ? 'ADMIN' : subStatus.role === 'staff' ? 'STAFF' : 'USER'}
             </span>
-            <span className="text-[11px] font-bold text-white max-w-[120px] truncate">
+            <span className="text-[11px] font-bold text-white max-w-[200px] truncate">
               {user?.email || user?.username || 'OFFLINE'}
             </span>
           </div>

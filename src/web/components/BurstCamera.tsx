@@ -47,7 +47,7 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
 
   const startCamera = async (mode = facingMode) => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      alert("TrÃ¬nh duyá»‡t nÃ y khÃ´ng há»— trá»£ Live Camera hoáº·c báº¡n Ä‘ang khÃ´ng sá»­ dá»¥ng HTTPS. HÃ£y dÃ¹ng nÃºt APP CAMERA bÃªn cáº¡nh Ä‘á»ƒ thay tháº¿.");
+      alert("Trình duyệt này không hỗ trợ Live Camera hoặc bạn đang không sử dụng HTTPS. Hãy dùng nút APP CAMERA bên cạnh để thay thế.");
       return;
     }
     streamRef.current?.getTracks().forEach(t => t.stop());
@@ -81,9 +81,9 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
       setIsCameraOpen(true);
     } catch (err: any) {
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        alert("QUYá»€N CAMERA Bá»Š CHáº¶N: Vui lÃ²ng vÃ o cÃ i Ä‘áº·t trÃ¬nh duyá»‡t, tÃ¬m má»¥c ImageSnap vÃ  chá»n 'Allow Camera' sau Ä‘Ã³ thá»­ láº¡i.");
+        alert("QUYỀN CAMERA BỊ CHẶN: Vui lòng vào cài đặt trình duyệt, tìm mục ImageSnap và chọn 'Allow Camera' sau đó thử lại.");
       } else {
-        alert("Lá»–I CAMERA: " + (err.message || "KhÃ´ng thá»ƒ khá»Ÿi Ä‘á»™ng camera."));
+        alert("LỖI CAMERA: " + (err.message || "Không thể khởi động camera."));
       }
       setIsCameraOpen(false);
     }
@@ -188,10 +188,10 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
     <>
       <button
         onClick={() => startCamera()}
-        className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${isCameraOpen ? 'bg-accent text-bg border-accent shadow-[0_0_20px_rgba(212,255,0,0.3)]' : 'bg-card border-line text-muted hover:border-accent hover:text-accent'}`}
+        className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all h-20 ${isCameraOpen ? 'bg-accent text-bg border-accent shadow-[0_0_20px_rgba(212,255,0,0.3)]' : 'bg-card border-line text-muted hover:border-accent hover:text-accent'}`}
       >
-        <Camera size={20} />
-        <span className="text-[8px] font-black tracking-tighter uppercase">BURST CAM</span>
+        <Camera size={18} />
+        <span className="text-[10px] font-black tracking-tighter uppercase">BURST CAM</span>
       </button>
 
       <div>

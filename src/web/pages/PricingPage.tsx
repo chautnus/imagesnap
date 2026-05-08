@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 import { Check, Chrome } from 'lucide-react';
 import { SEO } from '../components/SEO';
@@ -7,7 +7,7 @@ export const PricingPage = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
       <SEO 
-        title="Pricing â€” ImageSnap.cloud" 
+        title="Pricing — ImageSnap.cloud" 
         description="Choose the plan that's right for you. Start for free and upgrade as your team grows."
       />
       

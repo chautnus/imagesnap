@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigation } from './components/Navigation';
 import { CaptureTab, ProductMetadata } from './components/CaptureTab';
 import { DataTab } from './components/DataTab';
@@ -267,7 +267,7 @@ export default function App() {
   if (view === 'privacy' || location.pathname === '/privacy') {
     return (
       <>
-        <SEO title="Privacy Policy â€” ImageSnap.cloud" description="Our privacy policy and data protection commitment." />
+        <SEO title="Privacy Policy — ImageSnap.cloud" description="Our privacy policy and data protection commitment." />
         <PrivacyPolicy onBack={() => {
           window.location.hash = '';
           setView(user ? 'app' : 'landing');
@@ -379,7 +379,7 @@ export default function App() {
           ) : (
             <>
               <SEO 
-                title="ImageSnap â€” Auto-organize team photos in Google Drive" 
+                title="ImageSnap — Auto-organize team photos in Google Drive" 
                 description="Save images from the web directly to Google Drive, auto-classify into folders, and attach detailed metadata."
               />
               <LandingPage onLogin={() => requestToken()} t={t} variant={landingVariant} />
@@ -393,9 +393,9 @@ export default function App() {
         <Route path="/use-cases/construction-teams" element={<ConstructionTeams onLogin={() => requestToken()} />} />
         <Route path="/use-cases/competitor-tracking-beyond-keyword-tools" element={<CompetitorTracking onLogin={() => requestToken()} />} />
         <Route path="/use-cases/swipe-file-tool" element={<SwipeFileTool onLogin={() => requestToken()} />} />
-        <Route path="/use-cases/ecommerce-studios" element={<GenericSEOPage onLogin={() => requestToken()} title="E-commerce Asset Management for Studios â€” ImageSnap" headline="Streamline your E-commerce Visual Workflow" description="Automatically organize product shots and marketing assets in Google Drive with structured metadata for your e-commerce studio." />} />
-        <Route path="/use-cases/real-estate-photographers" element={<GenericSEOPage onLogin={() => requestToken()} title="Real Estate Photo Management & Sync â€” ImageSnap" headline="Zero-friction Real Estate Photo Sync" description="Sync real estate photos from site to Google Drive instantly. Keep properties organized by address and metadata automatically." />} />
-        <Route path="/use-cases/field-inspections" element={<GenericSEOPage onLogin={() => requestToken()} title="Field Inspection Photo Documentation â€” ImageSnap" headline="Reliable Field Inspection Documentation" description="Capture inspection photos with GPS data, timestamps, and custom notes directly into organized Google Drive folders." />} />
+        <Route path="/use-cases/ecommerce-studios" element={<GenericSEOPage onLogin={() => requestToken()} title="E-commerce Asset Management for Studios — ImageSnap" headline="Streamline your E-commerce Visual Workflow" description="Automatically organize product shots and marketing assets in Google Drive with structured metadata for your e-commerce studio." />} />
+        <Route path="/use-cases/real-estate-photographers" element={<GenericSEOPage onLogin={() => requestToken()} title="Real Estate Photo Management & Sync — ImageSnap" headline="Zero-friction Real Estate Photo Sync" description="Sync real estate photos from site to Google Drive instantly. Keep properties organized by address and metadata automatically." />} />
+        <Route path="/use-cases/field-inspections" element={<GenericSEOPage onLogin={() => requestToken()} title="Field Inspection Photo Documentation — ImageSnap" headline="Reliable Field Inspection Documentation" description="Capture inspection photos with GPS data, timestamps, and custom notes directly into organized Google Drive folders." />} />
         
         <Route path="/compare/imagesnap-vs-manual-spreadsheet" element={<ComparisonManualSheet onLogin={() => requestToken()} />} />
         <Route path="/compare/imagesnap-vs-custom-scraper" element={<ComparisonCustomScraper onLogin={() => requestToken()} />} />
@@ -403,15 +403,15 @@ export default function App() {
         <Route path="/compare/imagesnap-vs-scraping-api" element={<ComparisonScrapingAPI onLogin={() => requestToken()} />} />
 
         <Route path="/features/web-image-import" element={<WebImageImport onLogin={() => requestToken()} />} />
-        <Route path="/features/auto-folder-organization" element={<GenericSEOPage onLogin={() => requestToken()} title="Auto Folder Organization â€” ImageSnap" headline="Automatic Folder Structure" />} />
-        <Route path="/features/team-collaboration" element={<GenericSEOPage onLogin={() => requestToken()} title="Team Collaboration â€” ImageSnap" headline="Collaborate with your Team" />} />
-        <Route path="/features/metadata-auto-fill" element={<GenericSEOPage onLogin={() => requestToken()} title="Metadata Auto-fill â€” ImageSnap" headline="Automatic Metadata Extraction" />} />
+        <Route path="/features/auto-folder-organization" element={<GenericSEOPage onLogin={() => requestToken()} title="Auto Folder Organization — ImageSnap" headline="Automatic Folder Structure" />} />
+        <Route path="/features/team-collaboration" element={<GenericSEOPage onLogin={() => requestToken()} title="Team Collaboration — ImageSnap" headline="Collaborate with your Team" />} />
+        <Route path="/features/metadata-auto-fill" element={<GenericSEOPage onLogin={() => requestToken()} title="Metadata Auto-fill — ImageSnap" headline="Automatic Metadata Extraction" />} />
         
-        <Route path="/integrations/google-drive" element={<GenericSEOPage onLogin={() => requestToken()} title="Google Drive Integration â€” ImageSnap" headline="The Best Google Drive Extension" />} />
+        <Route path="/integrations/google-drive" element={<GenericSEOPage onLogin={() => requestToken()} title="Google Drive Integration — ImageSnap" headline="The Best Google Drive Extension" />} />
         
-        <Route path="/tools/exif-viewer" element={<GenericSEOPage onLogin={() => requestToken()} title="Free Online EXIF Viewer: Inspect Image Metadata â€” ImageSnap" headline="Instant EXIF Data Viewer" description="View hidden EXIF metadata in any image. Inspect camera settings, GPS location, and timestamps for free." />} />
-        <Route path="/tools/bulk-photo-renamer" element={<GenericSEOPage onLogin={() => requestToken()} title="Bulk Photo Renamer: Batch Rename Files Online â€” ImageSnap" headline="Batch Photo Renaming Tool" description="Rename hundreds of photos in seconds based on custom rules, dates, or metadata. Keep your Google Drive organized." />} />
-        <Route path="/tools/drive-folder-generator" element={<GenericSEOPage onLogin={() => requestToken()} title="Google Drive Folder Structure Generator â€” ImageSnap" headline="Instant Folder Structure Creator" description="Automatically generate complex nested folder structures in Google Drive for your projects and teams." />} />
+        <Route path="/tools/exif-viewer" element={<GenericSEOPage onLogin={() => requestToken()} title="Free Online EXIF Viewer: Inspect Image Metadata — ImageSnap" headline="Instant EXIF Data Viewer" description="View hidden EXIF metadata in any image. Inspect camera settings, GPS location, and timestamps for free." />} />
+        <Route path="/tools/bulk-photo-renamer" element={<GenericSEOPage onLogin={() => requestToken()} title="Bulk Photo Renamer: Batch Rename Files Online — ImageSnap" headline="Batch Photo Renaming Tool" description="Rename hundreds of photos in seconds based on custom rules, dates, or metadata. Keep your Google Drive organized." />} />
+        <Route path="/tools/drive-folder-generator" element={<GenericSEOPage onLogin={() => requestToken()} title="Google Drive Folder Structure Generator — ImageSnap" headline="Instant Folder Structure Creator" description="Automatically generate complex nested folder structures in Google Drive for your projects and teams." />} />
         
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/why-copy-paste-research-breaks-at-scale" element={<BlogPost_WhyCopyPasteBreaks onLogin={() => requestToken()} />} />

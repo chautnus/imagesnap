@@ -91,7 +91,7 @@
   }
   
   .label-meta {
-    @apply text-[12px] text-muted font-mono font-black uppercase tracking-[0.15em];
+    @apply text-[18px] text-muted font-mono font-black uppercase tracking-[0.15em];
   }
 }
 
