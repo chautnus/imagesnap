@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
@@ -141,14 +141,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
         )}
       </div>
 
-      <header className="max-w-6xl mx-auto px-6 pt-32 pb-20 text-center">
-          <div
-            
-            
-            className="inline-block px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-accent text-xs font-black uppercase tracking-widest mb-8"
-          >
-            v4.1 Positioning Live
-          </div>
+        <header className="max-w-6xl mx-auto px-6 pt-32 pb-20 text-center">
           <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9]">
               Your pictures are <span className="text-accent italic">worthless</span> without context.
           </h1>

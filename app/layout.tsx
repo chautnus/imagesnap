@@ -16,21 +16,21 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.imagesnap.cloud"),
-  title: "ImageSnap | Auto-organize team photos in Google Drive",
-  description: "Save images from the web directly to Google Drive, auto-classify into folders, and attach detailed metadata.",
-  keywords: ["dropshipping", "product research", "google sheets", "ecommerce tool", "image scraper", "shopify collector"],
+  title: "ImageSnap | Save Images with Context to Google Drive & Sheets",
+  description: "Capture any image from the web with custom context fields. Auto-save to Google Drive, log details to Google Sheets. Free plan: 30 captures/month.",
+  keywords: ["image context", "google drive photos", "google sheets research", "product research tool", "image metadata capture", "visual database"],
   openGraph: {
     type: "website",
-    title: "ImageSnap | Ecommerce Image & Data Collector",
-    description: "Snap product images and details directly to Google Sheets from any website.",
-    images: ["/og-image.png"],
+    title: "ImageSnap | Save Images with Context to Google Drive & Sheets",
+    description: "Capture any image from the web with custom context fields. Auto-save to Google Drive, log details to Google Sheets.",
+    images: [{ url: "https://www.imagesnap.cloud/og-image.png" }],
     url: "https://www.imagesnap.cloud/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ImageSnap | Ecommerce Image & Data Collector",
-    description: "Collect product images and metadata from any ecommerce site directly to Google Sheets.",
-    images: ["/og-image.png"],
+    title: "ImageSnap | Save Images with Context to Google Drive & Sheets",
+    description: "Capture any image from the web with custom context fields. Auto-save to Google Drive, log details to Google Sheets.",
+    images: ["https://www.imagesnap.cloud/og-image.png"],
   },
   alternates: {
     canonical: "https://www.imagesnap.cloud/",
