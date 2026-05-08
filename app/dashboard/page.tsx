@@ -72,14 +72,14 @@ export default function Dashboard() {
             }
           } else {
             console.error("No profile found for token");
+            localStorage.removeItem('ps_access_token');
             setIsAuthReady(false);
-            revokeToken();
             window.location.href = '/';
           }
         } catch (e) {
           console.error("Dashboard auth error:", e);
+          localStorage.removeItem('ps_access_token');
           setIsAuthReady(false);
-          revokeToken();
           window.location.href = '/';
         }
       });
@@ -188,7 +188,7 @@ export default function Dashboard() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.4.1"
+        version="v1.4.2"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

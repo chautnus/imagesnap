@@ -10,18 +10,27 @@ export default function HomeClient() {
   const { t } = useI18n();
 
   useEffect(() => {
-    initGis(async (token) => {
-      setAccessToken(token);
-      const profile = await getUserInfo(token);
-      if (profile && window.location.pathname === '/') {
+    const checkAuth = async () => {
+      const isStaff = localStorage.getItem('ps_is_staff') === 'true';
+      if (isStaff) {
         window.location.href = '/dashboard';
+        return;
       }
-    });
+
+      initGis(async (token) => {
+        setAccessToken(token);
+        try {
+          const profile = await getUserInfo(token);
+          if (profile && window.location.pathname === '/') {
+            window.location.href = '/dashboard';
+          }
+        } catch (e) {
+          console.warn("Silent auth failed, staying on landing.");
+        }
+      });
+    };
     
-    const isStaff = localStorage.getItem('ps_is_staff') === 'true';
-    if (isStaff && window.location.pathname === '/') {
-      window.location.href = '/dashboard';
-    }
+    checkAuth();
   }, []);
 
   const handleLogin = () => {

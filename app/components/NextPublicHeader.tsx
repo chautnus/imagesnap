@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from 'react';
 
-import { Image as ImageIcon, Chrome, Zap, X, Menu } from 'lucide-react';
+import { Image as ImageIcon, Chrome, Zap, X, Menu, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { requestToken } from '@shared/lib/google-auth';
@@ -104,7 +104,7 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
           
           <div className="hidden lg:flex items-center gap-8 text-sm font-bold text-muted">
             <div className="group relative">
-              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Compare <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">â–¼</span></button>
+              <button className="hover:text-white transition-colors py-8 flex items-center gap-1.5">Compare <ChevronDown size={14} className="opacity-50 group-hover:rotate-180 transition-transform" /></button>
               <div className="absolute top-full left-0 w-72 glass-dark p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10 shadow-2xl">
                 <Link href="/compare/imagesnap-vs-manual-spreadsheet" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Manual Spreadsheet</Link>
                 <Link href="/compare/imagesnap-vs-custom-scraper" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Custom Scraper</Link>
@@ -113,7 +113,7 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
               </div>
             </div>
             <div className="group relative">
-              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Use Cases <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">â–¼</span></button>
+              <button className="hover:text-white transition-colors py-8 flex items-center gap-1.5">Use Cases <ChevronDown size={14} className="opacity-50 group-hover:rotate-180 transition-transform" /></button>
               <div className="absolute top-full left-0 w-72 glass-dark p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10 shadow-2xl">
                 <Link href="/use-cases/competitor-tracking-beyond-keyword-tools" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Competitor Tracking</Link>
                 <Link href="/use-cases/swipe-file-tool" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Swipe File Tool</Link>
