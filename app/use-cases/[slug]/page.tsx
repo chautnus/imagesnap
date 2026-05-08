@@ -35,8 +35,15 @@ const USE_CASE_PAGES: Record<string, { component: any, props?: any, title: strin
   }
 };
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const page = USE_CASE_PAGES[params.slug];
+export async function generateStaticParams() {
+  return Object.keys(USE_CASE_PAGES).map((slug) => ({
+    slug,
+  }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const page = USE_CASE_PAGES[slug];
   if (!page) return { title: "Page Not Found" };
   return {
     title: page.title,
@@ -44,15 +51,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function UseCasePage({ params }: { params: { slug: string } }) {
-  const page = USE_CASE_PAGES[params.slug];
+export default async function UseCasePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const page = USE_CASE_PAGES[slug];
   if (!page) notFound();
 
   const Component = page.component;
 
   return (
-    <NextPublicLayout onLogin={() => {}}>
-      <Component onLogin={() => {}} {...(page.props || {})} />
+    <NextPublicLayout>
+      <Component {...(page.props || {})} />
     </NextPublicLayout>
   );
 }

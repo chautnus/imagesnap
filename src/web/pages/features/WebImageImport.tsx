@@ -1,10 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const WebImageImport = ({ onLogin }: { onLogin: () => void }) => {
+export const WebImageImport = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="Web Image Import — Save directly to Google Drive"
+      title="Web Image Import â€” Save directly to Google Drive"
       description="Save any image from any website directly to your Google Drive with one click. Extract metadata, product info, and source links automatically."
       headline={<>The Internet is your <span className="text-accent italic">Resource Library</span>.</>}
       subheadline="Stop downloading and re-uploading. Our Chrome extension lets you 'Snap' any asset from the web directly into your organized Drive folders."

@@ -1,13 +1,13 @@
-import React from 'react';
-import { motion } from 'motion/react';
+﻿import React from 'react';
+
 import { Check, Chrome } from 'lucide-react';
 import { SEO } from '../components/SEO';
 
-export const PricingPage = ({ onLogin }: { onLogin: () => void }) => {
+export const PricingPage = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
       <SEO 
-        title="Pricing — ImageSnap.cloud" 
+        title="Pricing â€” ImageSnap.cloud" 
         description="Choose the plan that's right for you. Start for free and upgrade as your team grows."
       />
       
@@ -18,9 +18,9 @@ export const PricingPage = ({ onLogin }: { onLogin: () => void }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
          {/* Free Tier */}
-         <motion.div 
-           initial={{ opacity: 0, x: -20 }}
-           animate={{ opacity: 1, x: 0 }}
+         <div 
+           
+           
            className="glass p-12 rounded-[2.5rem] border-white/5 flex flex-col h-full"
          >
             <div className="mb-10">
@@ -36,12 +36,12 @@ export const PricingPage = ({ onLogin }: { onLogin: () => void }) => {
             <button onClick={onLogin} className="w-full py-5 glass rounded-2xl font-black text-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
                <Chrome size={20} /> INSTALL FOR FREE
             </button>
-         </motion.div>
+         </div>
 
          {/* Pro Tier */}
-         <motion.div 
-           initial={{ opacity: 0, x: 20 }}
-           animate={{ opacity: 1, x: 0 }}
+         <div 
+           
+           
            className="glass p-12 rounded-[2.5rem] border-accent/30 bg-accent/[0.03] flex flex-col h-full relative overflow-hidden"
          >
             <div className="absolute top-8 right-8 px-3 py-1 bg-accent text-bg text-[10px] font-black rounded-full uppercase tracking-widest">MOST POPULAR</div>
@@ -59,7 +59,7 @@ export const PricingPage = ({ onLogin }: { onLogin: () => void }) => {
             <button onClick={onLogin} className="w-full py-5 bg-accent text-bg rounded-2xl font-black text-lg hover:glow-accent transition-all shadow-[0_0_30px_rgba(212,255,0,0.2)]">
                UPGRADE TO PRO
             </button>
-         </motion.div>
+         </div>
       </div>
     </div>
   );

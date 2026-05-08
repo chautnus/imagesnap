@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const BlogPost_BuildingDatabase = ({ onLogin }: { onLogin: () => void }) => {
+export const BlogPost_BuildingDatabase = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Building a Competitor Database Without a Scraper"

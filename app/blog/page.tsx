@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function BlogListPage() {
   return (
-    <NextPublicLayout onLogin={() => {}}>
+    <NextPublicLayout>
       <BlogPage />
     </NextPublicLayout>
   );

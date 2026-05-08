@@ -1,10 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const PicsioAlternative = ({ onLogin }: { onLogin: () => void }) => {
+export const PicsioAlternative = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="Pics.io Alternative — Seamless Digital Asset Management"
+      title="Pics.io Alternative â€” Seamless Digital Asset Management"
       description="Looking for a Pics.io alternative? ImageSnap provides a more intuitive way to manage your Google Drive assets with automated folder organization."
       headline={<>A <span className="text-accent italic">Faster</span> Way to Manage Drive Assets.</>}
       subheadline="Don't overcomplicate your DAM. ImageSnap helps you organize, tag, and search your Google Drive image library with zero learning curve."

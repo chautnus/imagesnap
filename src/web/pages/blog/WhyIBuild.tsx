@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const BlogPost_WhyIBuild = ({ onLogin }: { onLogin: () => void }) => {
+export const BlogPost_WhyIBuild = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Why I Built ImageSnap (And Why I Almost Didn't)"
-      description="The story behind ImageSnap — how a frustrating product research workflow led to a Chrome extension that saves images with context into Google Drive and Sheets."
+      description="The story behind ImageSnap â€” how a frustrating product research workflow led to a Chrome extension that saves images with context into Google Drive and Sheets."
       headline={<>Why I Built ImageSnap (And Why I Almost <span className="text-accent italic">Didn't</span>)</>}
       subheadline="I didn't set out to build a product. I set out to fix a workflow that was wasting my time. Here's the story behind the extension."
       onCtaClick={onLogin}
@@ -53,7 +53,7 @@ export const BlogPost_WhyIBuild = ({ onLogin }: { onLogin: () => void }) => {
                   <li className="flex gap-3"><span className="text-accent">1.</span> Click a button on any product page.</li>
                   <li className="flex gap-3"><span className="text-accent">2.</span> Images go to my Google Drive.</li>
                   <li className="flex gap-3"><span className="text-accent">3.</span> Product data goes to my Google Sheet.</li>
-                  <li className="flex gap-3"><span className="text-accent">4.</span> I add my own fields — notes, ratings, tags.</li>
+                  <li className="flex gap-3"><span className="text-accent">4.</span> I add my own fields â€” notes, ratings, tags.</li>
                   <li className="flex gap-3 font-bold text-white"><span className="text-accent">5.</span> Done. One click. Everything organized.</li>
                </ul>
             </div>

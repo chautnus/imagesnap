@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { X, ChevronRight, ChevronDown, Check, Save } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+
 
 export interface ExtractedImage {
   url: string;
@@ -30,9 +30,9 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({ isOpen, extractedImage
   };
 
   return (
-    <AnimatePresence>
+    <div>
       {isOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <div 
           className="fixed inset-0 bg-black/90 z-[200] flex flex-col backdrop-blur-md"
         >
           <div className="flex items-center justify-between p-6 border-b border-white/10 bg-bg/50">
@@ -87,7 +87,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({ isOpen, extractedImage
                   {!isCollapsed && (
                     <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-4">
                       {groupImgs.map((img, idx) => (
-                        <motion.div key={idx} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.02 }}
+                        <div key={idx} 
                           onClick={() => {
                             const next = new Set(pickerSelection);
                             if (next.has(img.url)) next.delete(img.url); else next.add(img.url);
@@ -106,7 +106,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({ isOpen, extractedImage
                           <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
                             <span className="text-[8px] font-mono font-bold text-white/80">{img.width}x{img.height}</span>
                           </div>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -123,8 +123,8 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({ isOpen, extractedImage
               CONFIRM_SELECTION ({pickerSelection.size})
             </button>
           </div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </div>
   );
 };

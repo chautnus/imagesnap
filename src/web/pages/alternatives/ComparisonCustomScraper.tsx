@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const ComparisonCustomScraper = ({ onLogin }: { onLogin: () => void }) => {
+export const ComparisonCustomScraper = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Tired of Maintaining a Product Scraper?"
@@ -29,10 +29,10 @@ export const ComparisonCustomScraper = ({ onLogin }: { onLogin: () => void }) =>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  <tr><td className="py-3 px-4">Proxy service</td><td className="py-3 px-4 text-red-400">$30–$200/month</td></tr>
-                  <tr><td className="py-3 px-4">Server/compute</td><td className="py-3 px-4 text-red-400">$10–$50/month</td></tr>
-                  <tr><td className="py-3 px-4">Maintenance time</td><td className="py-3 px-4 text-red-400">3–8 hours/month</td></tr>
-                  <tr><td className="py-3 px-4">Data cleaning</td><td className="py-3 px-4 text-red-400">1–3 hours/session</td></tr>
+                  <tr><td className="py-3 px-4">Proxy service</td><td className="py-3 px-4 text-red-400">$30â€“$200/month</td></tr>
+                  <tr><td className="py-3 px-4">Server/compute</td><td className="py-3 px-4 text-red-400">$10â€“$50/month</td></tr>
+                  <tr><td className="py-3 px-4">Maintenance time</td><td className="py-3 px-4 text-red-400">3â€“8 hours/month</td></tr>
+                  <tr><td className="py-3 px-4">Data cleaning</td><td className="py-3 px-4 text-red-400">1â€“3 hours/session</td></tr>
                   <tr><td className="py-3 px-4">Policy/legal risk</td><td className="py-3 px-4 text-red-400 italic">Hard to quantify</td></tr>
                 </tbody>
               </table>
@@ -44,13 +44,13 @@ export const ComparisonCustomScraper = ({ onLogin }: { onLogin: () => void }) =>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
                 <p className="text-muted text-lg leading-relaxed font-medium">
-                  ImageSnap takes a fundamentally different approach. Instead of sending bots to collect data automatically, you browse product pages normally — and capture what you need with one click.
+                  ImageSnap takes a fundamentally different approach. Instead of sending bots to collect data automatically, you browse product pages normally â€” and capture what you need with one click.
                 </p>
                 <ul className="space-y-4 text-muted font-medium">
-                   <li className="flex gap-3"><span className="text-accent">✓</span> No bots or proxies needed</li>
-                   <li className="flex gap-3"><span className="text-accent">✓</span> No selectors to maintain</li>
-                   <li className="flex gap-3"><span className="text-accent">✓</span> Zero maintenance overhead</li>
-                   <li className="flex gap-3"><span className="text-accent">✓</span> Zero policy risk</li>
+                   <li className="flex gap-3"><span className="text-accent">âœ“</span> No bots or proxies needed</li>
+                   <li className="flex gap-3"><span className="text-accent">âœ“</span> No selectors to maintain</li>
+                   <li className="flex gap-3"><span className="text-accent">âœ“</span> Zero maintenance overhead</li>
+                   <li className="flex gap-3"><span className="text-accent">âœ“</span> Zero policy risk</li>
                 </ul>
               </div>
               <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[2rem] text-center">
@@ -84,7 +84,7 @@ export const ComparisonCustomScraper = ({ onLogin }: { onLogin: () => void }) =>
                   </tr>
                   <tr>
                     <td className="py-4 px-4 font-medium text-muted">Monthly cost</td>
-                    <td className="py-4 px-4">$50–$250+ (proxies)</td>
+                    <td className="py-4 px-4">$50â€“$250+ (proxies)</td>
                     <td className="py-4 px-4 text-accent font-bold">Free tier available</td>
                   </tr>
                   <tr>
@@ -122,28 +122,28 @@ export const ComparisonCustomScraper = ({ onLogin }: { onLogin: () => void }) =>
               <div className="p-8 bg-accent/20 rounded-3xl border border-accent/20">
                 <h3 className="text-xl font-bold mb-4 text-accent">Use ImageSnap when:</h3>
                 <ul className="space-y-2 text-muted text-sm list-disc pl-5 font-medium">
-                  <li>You need 50–500 curated, high-quality records</li>
+                  <li>You need 50â€“500 curated, high-quality records</li>
                   <li>You care about image quality and context</li>
                   <li>You want structured data in Google Sheets instantly</li>
                   <li>Policy compliance and risk reduction are priority</li>
                 </ul>
               </div>
             </div>
-            <p className="mt-8 text-center text-muted italic text-sm">Many teams use both — a scraper for broad monitoring and ImageSnap for high-quality research records.</p>
+            <p className="mt-8 text-center text-muted italic text-sm">Many teams use both â€” a scraper for broad monitoring and ImageSnap for high-quality research records.</p>
           </section>
 
           <section id="faq" className="space-y-6">
             <h2 className="text-3xl font-black mb-6">FAQ</h2>
             <div className="space-y-4">
               {[
-                { q: "Is ImageSnap just a scraper with a UI?", a: "No. A scraper sends automated requests. ImageSnap works inside your browser session — it captures data from pages you're already viewing normally." },
+                { q: "Is ImageSnap just a scraper with a UI?", a: "No. A scraper sends automated requests. ImageSnap works inside your browser session â€” it captures data from pages you're already viewing normally." },
                 { q: "What about websites that block scrapers?", a: "Since ImageSnap operates within your normal browser session, there's nothing to block. Anti-bot measures don't apply because you're browsing like a real human." },
                 { q: "Does ImageSnap work on any website?", a: "It works best on e-commerce and listing pages with structured product data. It captures images and context from most modern product platforms." }
               ].map((item, i) => (
                 <details key={i} className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 group">
                   <summary className="font-bold cursor-pointer list-none flex justify-between items-center text-lg">
                     {item.q}
-                    <span className="transition group-open:rotate-180">▾</span>
+                    <span className="transition group-open:rotate-180">â–¾</span>
                   </summary>
                   <p className="text-muted mt-4 leading-relaxed font-medium">{item.a}</p>
                 </details>

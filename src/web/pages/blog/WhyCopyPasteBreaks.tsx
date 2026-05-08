@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const BlogPost_WhyCopyPasteBreaks = ({ onLogin }: { onLogin: () => void }) => {
+export const BlogPost_WhyCopyPasteBreaks = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Why Copy-Paste Research Breaks at Scale"
-      description="Copy-paste product research works for 10 products. At 100, it falls apart. Here's why — and what to do instead."
+      description="Copy-paste product research works for 10 products. At 100, it falls apart. Here's why â€” and what to do instead."
       headline={<>Why Copy-Paste Research Breaks at <span className="text-accent italic">Scale</span></>}
       subheadline="Every product researcher starts with copy-paste. But at scale, the mistakes compound and the time cost explodes. Here's how to fix your workflow."
       onCtaClick={onLogin}
@@ -15,7 +15,7 @@ export const BlogPost_WhyCopyPasteBreaks = ({ onLogin }: { onLogin: () => void }
           <section>
             <p className="text-muted text-lg leading-relaxed font-medium">
               Every product researcher starts the same way: open a product page, copy the title, paste it into a spreadsheet. Copy the price. Paste. Save the image. Upload. Link.
-              It's manual. It's tedious. But it works — for the first 10 products.
+              It's manual. It's tedious. But it works â€” for the first 10 products.
             </p>
             <p className="text-muted text-lg mt-6 leading-relaxed font-medium">
               At 50 products, it's slow. At 100, it's painful. Mistakes start compounding: wrong cells, missing fields, orphaned images. 
@@ -104,7 +104,7 @@ export const BlogPost_WhyCopyPasteBreaks = ({ onLogin }: { onLogin: () => void }
           <section className="space-y-6">
             <h2 className="text-2xl font-bold">When Manual Still Makes Sense</h2>
             <p className="text-muted leading-relaxed font-medium">
-              If you're researching 5–10 products for a quick comparison, manual is fine. The breakpoint is around 20–30 products per session. Above that, the time cost and quality degradation start compounding.
+              If you're researching 5â€“10 products for a quick comparison, manual is fine. The breakpoint is around 20â€“30 products per session. Above that, the time cost and quality degradation start compounding.
             </p>
           </section>
         </div>

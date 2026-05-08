@@ -1,7 +1,9 @@
+﻿"use client";
 import React from 'react';
-import { motion } from 'motion/react';
+
 import { ArrowRight, Check } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { requestToken } from '@shared/lib/google-auth';
 
 interface SEOPageProps {
   title: string;
@@ -26,9 +28,7 @@ export const SEOPage: React.FC<SEOPageProps> = ({
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
       <SEO title={title} description={description} />
       
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div 
         className="text-center mb-20"
       >
         <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight">
@@ -39,13 +39,21 @@ export const SEOPage: React.FC<SEOPageProps> = ({
         </p>
         <div className="mt-10 flex justify-center">
           <button 
-            onClick={onCtaClick}
+            onClick={() => {
+              if (onCtaClick) {
+                onCtaClick();
+              } else {
+                requestToken('consent', () => {
+                  window.location.href = '/dashboard';
+                });
+              }
+            }}
             className="px-10 py-5 bg-accent text-bg font-black text-xl rounded-2xl flex items-center gap-3 hover:glow-accent transition-all hover:-translate-y-1"
           >
             {ctaText} <ArrowRight size={24} />
           </button>
         </div>
-      </motion.div>
+      </div>
 
       <div className="glass rounded-[3rem] p-10 md:p-20 border-white/5">
         {content}

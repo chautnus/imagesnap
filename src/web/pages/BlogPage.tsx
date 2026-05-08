@@ -1,14 +1,14 @@
 import React from 'react';
-import { motion } from 'motion/react';
+
 import { ArrowRight, Clock, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { SEO } from '../components/SEO';
 
 const posts = [
   {
     title: "Why Copy-Paste Research Breaks at Scale",
     slug: "why-copy-paste-research-breaks-at-scale",
-    description: "Copy-paste product research works for 10 products. At 100, it falls apart. Here's why — and what to do instead.",
+    description: "Copy-paste product research works for 10 products. At 100, it falls apart. Here's why â€” and what to do instead.",
     date: "May 5, 2026",
     readTime: "6 min read"
   },
@@ -29,7 +29,7 @@ const posts = [
   {
     title: "Why I Built ImageSnap (And Why I Almost Didn't)",
     slug: "why-i-built-imagesnap",
-    description: "The story behind ImageSnap — how a frustrating product research workflow led to a Chrome extension that saves images with context.",
+    description: "The story behind ImageSnap â€” how a frustrating product research workflow led to a Chrome extension that saves images with context.",
     date: "April 28, 2026",
     readTime: "5 min read"
   }
@@ -38,7 +38,7 @@ const posts = [
 export const BlogPage = () => {
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-      <SEO title="Blog — ImageSnap" description="Tips and tricks for product research, competitive intelligence, and visual organization." />
+      <SEO title="Blog â€” ImageSnap" description="Tips and tricks for product research, competitive intelligence, and visual organization." />
       
       <div className="text-center mb-20">
         <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight">The <span className="text-accent italic">Context</span> Blog</h1>
@@ -49,14 +49,14 @@ export const BlogPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {posts.map((post, i) => (
-          <motion.div
+          <div
             key={post.slug}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+            
+            
+            
           >
             <Link
-              to={`/blog/${post.slug}`}
+              href={`/blog/${post.slug}`}
               className="group glass p-8 rounded-[2.5rem] border-white/5 hover:border-accent/20 transition-all hover:-translate-y-1 block h-full"
             >
             <div className="flex items-center gap-4 text-xs font-black text-muted uppercase tracking-widest mb-6">
@@ -76,7 +76,7 @@ export const BlogPage = () => {
               Read Article <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
-        </motion.div>
+        </div>
       ))}
       </div>
     </div>

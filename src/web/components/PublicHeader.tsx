@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+
 import { Image as ImageIcon, Chrome, Zap, X, Menu } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
 
 interface PublicHeaderProps {
   onLogin: () => void;
@@ -10,25 +10,24 @@ interface PublicHeaderProps {
 export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
   const [showLoginOptions, setShowLoginOptions] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <>
       {/* Login Options Modal */}
-      <AnimatePresence>
+      <div>
         {showLoginOptions && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div 
+              
+              
+              
               onClick={() => setShowLoginOptions(false)}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            <div 
+              
+              
+              
               className="relative w-full max-w-lg glass rounded-[2.5rem] p-10 border-white/10 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-6">
@@ -55,7 +54,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
                 </button>
 
                 <button 
-                  onClick={() => { setShowLoginOptions(false); window.location.hash = '#staff'; navigate('/'); }}
+                  onClick={() => { setShowLoginOptions(false); window.location.hash = '#staff'; window.location.href = '/'; }}
                   className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -71,15 +70,15 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
               <div className="mt-8 p-4 bg-white/5 rounded-2xl border border-dashed border-white/10 text-[11px] text-center text-muted font-medium">
                 Note: Staff accounts must be created by an Admin in the Settings tab.
               </div>
-            </motion.div>
+            </div>
           </div>
         )}
-      </AnimatePresence>
+      </div>
 
       <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-black">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
                 <ImageIcon size={18} className="text-bg fill-current" />
               </div>
@@ -93,25 +92,25 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
           
           <div className="hidden lg:flex items-center gap-8 text-sm font-bold text-muted">
             <div className="group relative">
-              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Compare <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">▼</span></button>
+              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Compare <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">â–¼</span></button>
               <div className="absolute top-full left-0 w-72 glass-dark p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10 shadow-2xl">
-                <Link to="/compare/imagesnap-vs-manual-spreadsheet" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Manual Spreadsheet</Link>
-                <Link to="/compare/imagesnap-vs-custom-scraper" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Custom Scraper</Link>
-                <Link to="/compare/imagesnap-vs-web-clipper" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Web Clippers</Link>
-                <Link to="/compare/imagesnap-vs-scraping-api" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Scraping APIs</Link>
+                <Link href="/compare/imagesnap-vs-manual-spreadsheet" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Manual Spreadsheet</Link>
+                <Link href="/compare/imagesnap-vs-custom-scraper" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Custom Scraper</Link>
+                <Link href="/compare/imagesnap-vs-web-clipper" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Web Clippers</Link>
+                <Link href="/compare/imagesnap-vs-scraping-api" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Scraping APIs</Link>
               </div>
             </div>
             <div className="group relative">
-              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Use Cases <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">▼</span></button>
+              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Use Cases <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">â–¼</span></button>
               <div className="absolute top-full left-0 w-72 glass-dark p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10 shadow-2xl">
-                <Link to="/use-cases/competitor-tracking-beyond-keyword-tools" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Competitor Tracking</Link>
-                <Link to="/use-cases/swipe-file-tool" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Swipe File Tool</Link>
-                <Link to="/use-cases/construction-teams" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Construction Teams</Link>
-                <Link to="/use-cases/ecommerce-studios" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">E-commerce Studios</Link>
+                <Link href="/use-cases/competitor-tracking-beyond-keyword-tools" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Competitor Tracking</Link>
+                <Link href="/use-cases/swipe-file-tool" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Swipe File Tool</Link>
+                <Link href="/use-cases/construction-teams" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Construction Teams</Link>
+                <Link href="/use-cases/ecommerce-studios" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">E-commerce Studios</Link>
               </div>
             </div>
-            <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
-            <Link to="/blog" className="hover:text-white transition-colors">Blog</Link>
+            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -128,25 +127,25 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
         </div>
         
         {/* Mobile Menu */}
-        <AnimatePresence>
+        <div>
           {isMenuOpen && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+            <div 
+              
+              
+              
               className="lg:hidden bg-bg border-b border-white/5 overflow-hidden"
             >
               <div className="p-6 flex flex-col gap-6 text-muted font-bold uppercase tracking-widest text-xs">
-                <Link to="/#how-it-works" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>How it works</Link>
+                <Link href="/#how-it-works" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>How it works</Link>
                 <div className="space-y-4">
                    <div className="text-white opacity-50">Comparison</div>
                    <div className="pl-4 flex flex-col gap-3">
-                      <Link to="/compare/imagesnap-vs-manual-spreadsheet" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>vs Manual Spreadsheet</Link>
-                      <Link to="/compare/imagesnap-vs-custom-scraper" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>vs Custom Scraper</Link>
+                      <Link href="/compare/imagesnap-vs-manual-spreadsheet" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>vs Manual Spreadsheet</Link>
+                      <Link href="/compare/imagesnap-vs-custom-scraper" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>vs Custom Scraper</Link>
                    </div>
                 </div>
-                <Link to="/pricing" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>Pricing</Link>
-                <Link to="/blog" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>Blog</Link>
+                <Link href="/pricing" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>Pricing</Link>
+                <Link href="/blog" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>Blog</Link>
                 <button 
                   onClick={() => { setIsMenuOpen(false); setShowLoginOptions(true); }}
                   className="w-full py-4 bg-accent text-bg font-black rounded-xl text-sm"
@@ -154,9 +153,9 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
                   SIGN IN
                 </button>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
       </nav>
     </>
   );

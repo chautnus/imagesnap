@@ -1,20 +1,20 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const ComparisonManualSheet = ({ onLogin }: { onLogin: () => void }) => {
+export const ComparisonManualSheet = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Still Copy-Pasting Product Data into Google Sheets?"
       description="Stop wasting hours on manual copy-paste. ImageSnap captures product images and details into your Google Sheet in one click. Compare the two workflows."
       headline={<>Still <span className="text-accent italic">Copy-Pasting</span> Product Data?</>}
-      subheadline="For 50 products, that's 4+ hours of your day — doing work that adds zero insight to your research. There's a faster way."
+      subheadline="For 50 products, that's 4+ hours of your day â€” doing work that adds zero insight to your research. There's a faster way."
       onCtaClick={onLogin}
       content={
         <div className="space-y-16">
           <section>
             <h2 className="text-3xl font-black mb-6">The Hidden Cost of Manual Research</h2>
             <p className="text-muted text-lg mb-8 leading-relaxed">
-              Most product researchers start with a Google Sheet. It makes sense — Sheets is free, flexible, and familiar. 
+              Most product researchers start with a Google Sheet. It makes sense â€” Sheets is free, flexible, and familiar. 
               But the workflow around it is brutal. At 50 products per session, you're spending <strong>over 2 hours</strong> on data entry alone.
             </p>
             
@@ -70,7 +70,7 @@ export const ComparisonManualSheet = ({ onLogin }: { onLogin: () => void }) => {
                   </tr>
                   <tr>
                     <td className="py-4 px-4 font-medium text-muted">Image handling</td>
-                    <td className="py-4 px-4">Save → Upload → Link manually</td>
+                    <td className="py-4 px-4">Save â†’ Upload â†’ Link manually</td>
                     <td className="py-4 px-4 text-accent">Auto-saved to Drive</td>
                   </tr>
                   <tr>
@@ -98,7 +98,7 @@ export const ComparisonManualSheet = ({ onLogin }: { onLogin: () => void }) => {
             <ol className="grid grid-cols-1 md:grid-cols-2 gap-6 list-none counter-reset-step">
               {[
                 "Install the ImageSnap extension from Chrome Web Store.",
-                "Connect your Google account — ImageSnap uses your own Drive and Sheets.",
+                "Connect your Google account â€” ImageSnap uses your own Drive and Sheets.",
                 "Open any product page and click the extension icon.",
                 "See the data appear in your Sheet with images in your Drive."
               ].map((step, i) => (
@@ -115,13 +115,13 @@ export const ComparisonManualSheet = ({ onLogin }: { onLogin: () => void }) => {
             <div className="space-y-4">
               {[
                 { q: "Does ImageSnap replace my Google Sheet?", a: "No. ImageSnap writes directly into your Google Sheet. It replaces the copy-paste process, not the spreadsheet." },
-                { q: "Can I keep my existing Sheet columns?", a: "Yes. You define your own fields — ImageSnap captures into the structure you set up." },
+                { q: "Can I keep my existing Sheet columns?", a: "Yes. You define your own fields â€” ImageSnap captures into the structure you set up." },
                 { q: "Is my data stored on ImageSnap servers?", a: "No. Images go to your Google Drive. Context goes to your Google Sheet. We don't store your research data." }
               ].map((item, i) => (
                 <details key={i} className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 group">
                   <summary className="font-bold cursor-pointer list-none flex justify-between items-center text-lg">
                     {item.q}
-                    <span className="transition group-open:rotate-180">▾</span>
+                    <span className="transition group-open:rotate-180">â–¾</span>
                   </summary>
                   <p className="text-muted mt-4 leading-relaxed font-medium">{item.a}</p>
                 </details>

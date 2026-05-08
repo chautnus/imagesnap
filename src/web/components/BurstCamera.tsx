@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, RefreshCw, X, Grid3X3, Square, Zap } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+
 
 interface BurstCameraProps {
   imageCount: number;
@@ -47,7 +47,7 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
 
   const startCamera = async (mode = facingMode) => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      alert("Trình duyệt này không hỗ trợ Live Camera hoặc bạn đang không sử dụng HTTPS. Hãy dùng nút APP CAMERA bên cạnh để thay thế.");
+      alert("TrÃ¬nh duyá»‡t nÃ y khÃ´ng há»— trá»£ Live Camera hoáº·c báº¡n Ä‘ang khÃ´ng sá»­ dá»¥ng HTTPS. HÃ£y dÃ¹ng nÃºt APP CAMERA bÃªn cáº¡nh Ä‘á»ƒ thay tháº¿.");
       return;
     }
     streamRef.current?.getTracks().forEach(t => t.stop());
@@ -81,9 +81,9 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
       setIsCameraOpen(true);
     } catch (err: any) {
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        alert("QUYỀN CAMERA BỊ CHẶN: Vui lòng vào cài đặt trình duyệt, tìm mục ImageSnap và chọn 'Allow Camera' sau đó thử lại.");
+        alert("QUYá»€N CAMERA Bá»Š CHáº¶N: Vui lÃ²ng vÃ o cÃ i Ä‘áº·t trÃ¬nh duyá»‡t, tÃ¬m má»¥c ImageSnap vÃ  chá»n 'Allow Camera' sau Ä‘Ã³ thá»­ láº¡i.");
       } else {
-        alert("LỖI CAMERA: " + (err.message || "Không thể khởi động camera."));
+        alert("Lá»–I CAMERA: " + (err.message || "KhÃ´ng thá»ƒ khá»Ÿi Ä‘á»™ng camera."));
       }
       setIsCameraOpen(false);
     }
@@ -194,9 +194,9 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
         <span className="text-[8px] font-black tracking-tighter uppercase">BURST CAM</span>
       </button>
 
-      <AnimatePresence>
+      <div>
         {isCameraOpen && (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+          <div 
             className="fixed inset-0 z-[150] bg-black flex flex-col overflow-hidden select-none touch-none"
           >
             <div className={`relative flex-1 overflow-hidden bg-black flex items-center justify-center ${aspectRatio === 'square' ? 'aspect-square' : ''}`}>
@@ -209,19 +209,19 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
                   {[...Array(9)].map((_, i) => <div key={i} className={`${i % 3 !== 2 ? 'border-r' : ''} ${i < 6 ? 'border-b' : ''} border-white/20`} />)}
                 </div>
               )}
-              <AnimatePresence>
+              <div>
                 {focusPoint && (
-                  <motion.div initial={{ opacity: 0, scale: 2 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                  <div 
                     style={{ left: focusPoint.x - 40, top: focusPoint.y - 40 }}
                     className="absolute w-20 h-20 border-2 border-accent rounded-sm z-[180] pointer-events-none flex items-center justify-center"
                   >
                     <div className="w-1 h-1 bg-accent rounded-full" />
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
-              <AnimatePresence>
-                {showFlash && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white z-[200]" />}
-              </AnimatePresence>
+              </div>
+              <div>
+                {showFlash && <div className="absolute inset-0 bg-white z-[190]" />}
+              </div>
             </div>
 
             {sessionImages.length > 0 && (
@@ -284,9 +284,9 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
                 <RefreshCw size={24} />
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
     </>
   );
 };

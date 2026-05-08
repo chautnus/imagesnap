@@ -1,16 +1,24 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+
 import { Image as ImageIcon, Chrome, Zap, X, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { requestToken } from '@shared/lib/google-auth';
 
 interface PublicHeaderProps {
-  onLogin: () => void;
+  onLogin?: () => void;
 }
 
 export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
+  const defaultOnLogin = () => {
+    requestToken('consent', (token) => {
+      window.location.href = '/dashboard';
+    });
+  };
+
+  const handleLogin = onLogin || defaultOnLogin;
   const [showLoginOptions, setShowLoginOptions] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
@@ -18,20 +26,20 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
   return (
     <>
       {/* Login Options Modal */}
-      <AnimatePresence>
+      <div>
         {showLoginOptions && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div 
+              
+              
+              
               onClick={() => setShowLoginOptions(false)}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            <div 
+              
+              
+              
               className="relative w-full max-w-lg glass rounded-[2.5rem] p-10 border-white/10 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-6">
@@ -45,7 +53,7 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button 
-                  onClick={() => { setShowLoginOptions(false); onLogin(); }}
+                  onClick={() => { setShowLoginOptions(false); handleLogin(); }}
                   className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-accent hover:bg-accent/10 transition-all group"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -74,10 +82,10 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
               <div className="mt-8 p-4 bg-white/5 rounded-2xl border border-dashed border-white/10 text-[11px] text-center text-muted font-medium">
                 Note: Staff accounts must be created by an Admin in the Settings tab.
               </div>
-            </motion.div>
+            </div>
           </div>
         )}
-      </AnimatePresence>
+      </div>
 
       <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-black">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -96,7 +104,7 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
           
           <div className="hidden lg:flex items-center gap-8 text-sm font-bold text-muted">
             <div className="group relative">
-              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Compare <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">▼</span></button>
+              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Compare <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">â–¼</span></button>
               <div className="absolute top-full left-0 w-72 glass-dark p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10 shadow-2xl">
                 <Link href="/compare/imagesnap-vs-manual-spreadsheet" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Manual Spreadsheet</Link>
                 <Link href="/compare/imagesnap-vs-custom-scraper" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">vs Custom Scraper</Link>
@@ -105,7 +113,7 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
               </div>
             </div>
             <div className="group relative">
-              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Use Cases <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">▼</span></button>
+              <button className="hover:text-white transition-colors py-8 flex items-center gap-1">Use Cases <span className="text-[10px] opacity-50 group-hover:rotate-180 transition-transform">â–¼</span></button>
               <div className="absolute top-full left-0 w-72 glass-dark p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all rounded-2xl border border-white/10 shadow-2xl">
                 <Link href="/use-cases/competitor-tracking-beyond-keyword-tools" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Competitor Tracking</Link>
                 <Link href="/use-cases/swipe-file-tool" className="block p-3 hover:bg-white/5 rounded-lg text-xs font-bold border border-transparent hover:border-white/5 transition-all">Swipe File Tool</Link>
@@ -131,12 +139,12 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
         </div>
         
         {/* Mobile Menu */}
-        <AnimatePresence>
+        <div>
           {isMenuOpen && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+            <div 
+              
+              
+              
               className="lg:hidden bg-bg border-b border-white/5 overflow-hidden"
             >
               <div className="p-6 flex flex-col gap-6 text-muted font-bold uppercase tracking-widest text-xs">
@@ -157,9 +165,9 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
                   SIGN IN
                 </button>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
       </nav>
     </>
   );

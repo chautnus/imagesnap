@@ -5,7 +5,7 @@ import { NextPublicHeader } from './NextPublicHeader';
 import { NextPublicFooter } from './NextPublicFooter';
 
 interface PublicLayoutProps {
-  onLogin: () => void;
+  onLogin?: () => void;
   children: React.ReactNode;
 }
 

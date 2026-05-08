@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from './SEOPage';
 
 export const GenericSEOPage = ({ title, description, headline, subheadline, onLogin }: any) => (

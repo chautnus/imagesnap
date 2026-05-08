@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { User, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
-import { motion } from 'motion/react';
+
 
 const API_BASE_URL = (typeof window !== 'undefined' && 
   (window.location.protocol === 'extension:' || 
@@ -52,9 +52,9 @@ export const StaffLogin: React.FC<StaffLoginProps> = ({ onLogin, onBack, t }) =>
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg p-6">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div 
+        
+        
         className="card w-full max-w-sm p-8 flex flex-col gap-8 shadow-2xl border-line"
       >
         <div className="flex flex-col gap-2 text-center">
@@ -89,7 +89,7 @@ export const StaffLogin: React.FC<StaffLoginProps> = ({ onLogin, onBack, t }) =>
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                 className="input pl-12 h-14"
                 required
               />
@@ -115,7 +115,7 @@ export const StaffLogin: React.FC<StaffLoginProps> = ({ onLogin, onBack, t }) =>
         <button onClick={onBack} className="text-muted text-[10px] font-black uppercase tracking-widest hover:text-accent transition-colors">
           &larr; BACK TO ADMIN PORTAL
         </button>
-      </motion.div>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { notFound } from 'next/navigation';
 import { BlogPost_WhyCopyPasteBreaks } from '@web/pages/blog/WhyCopyPasteBreaks';
 import { BlogPost_BuildingDatabase } from '@web/pages/blog/BuildingDatabase';
@@ -30,8 +31,15 @@ const BLOG_POSTS: Record<string, { component: React.FC<any>, title: string, desc
   }
 };
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = BLOG_POSTS[params.slug];
+export async function generateStaticParams() {
+  return Object.keys(BLOG_POSTS).map((slug) => ({
+    slug,
+  }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const post = BLOG_POSTS[slug];
   if (!post) return { title: "Post Not Found" };
   return {
     title: post.title,
@@ -39,15 +47,38 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = BLOG_POSTS[params.slug];
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = BLOG_POSTS[slug];
   if (!post) notFound();
 
   const Component = post.component;
+  const otherPosts = Object.entries(BLOG_POSTS)
+    .filter(([s]) => s !== slug)
+    .slice(0, 2);
 
   return (
-    <NextPublicLayout onLogin={() => {}}>
-      <Component onLogin={() => {}} />
+    <NextPublicLayout>
+      <div className="pb-20">
+        <Component />
+        
+        {/* Related Posts */}
+        <section className="max-w-4xl mx-auto px-6 mt-20 pt-10 border-t border-white/10">
+          <h3 className="text-2xl font-black mb-8 italic">Continue Reading</h3>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {otherPosts.map(([slug, p]) => (
+              <a 
+                key={slug} 
+                href={`/blog/${slug}`}
+                className="glass p-8 rounded-3xl border-white/5 hover:border-accent/20 transition-all group"
+              >
+                <h4 className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">{p.title.split('|')[0]}</h4>
+                <p className="text-xs text-muted font-medium line-clamp-2">{p.description}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      </div>
     </NextPublicLayout>
   );
 }

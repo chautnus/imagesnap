@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const CompetitorTracking = ({ onLogin }: { onLogin: () => void }) => {
+export const CompetitorTracking = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Competitor Tracking Beyond Keyword Tools"
-      description="Keyword tools show trends. ImageSnap helps you track what competitors actually do — products, pricing, visuals, positioning. Build a competitor database you own."
+      description="Keyword tools show trends. ImageSnap helps you track what competitors actually do â€” products, pricing, visuals, positioning. Build a competitor database you own."
       headline={<>Competitor Tracking <span className="text-accent italic">Beyond</span> Keyword Tools</>}
       subheadline="Keyword tools show search trends. ImageSnap tracks what competitors actually do on their pages. Build a database you own, not just a list of keywords."
       onCtaClick={onLogin}
@@ -37,12 +37,12 @@ export const CompetitorTracking = ({ onLogin }: { onLogin: () => void }) => {
                 { 
                   step: 1, 
                   title: "Define Your Fields", 
-                  desc: "Before you start, decide what matters. Competitor name, category, price, positioning notes, visual style — you define the schema that makes sense for your market." 
+                  desc: "Before you start, decide what matters. Competitor name, category, price, positioning notes, visual style â€” you define the schema that makes sense for your market." 
                 },
                 { 
                   step: 2, 
                   title: "Regular Browse-and-Capture Sessions", 
-                  desc: "Set a cadence — weekly or biweekly. Browse competitors normally. When you see something worth tracking, click the extension. Images go to Drive, context goes to Sheets." 
+                  desc: "Set a cadence â€” weekly or biweekly. Browse competitors normally. When you see something worth tracking, click the extension. Images go to Drive, context goes to Sheets." 
                 },
                 { 
                   step: 3, 
@@ -123,13 +123,13 @@ export const CompetitorTracking = ({ onLogin }: { onLogin: () => void }) => {
             <div className="space-y-4">
               {[
                 { q: "Do I need to be technical to use this?", a: "No. ImageSnap is a browser extension. You click a button. Data goes to your Google Sheet. If you can use Sheets, you can use ImageSnap." },
-                { q: "Can my team share the competitor database?", a: "Yes. Since the data lives in Google Sheets and Drive, you share it the same way you share any Google file — add collaborators to the Sheet and the Drive folder." },
+                { q: "Can my team share the competitor database?", a: "Yes. Since the data lives in Google Sheets and Drive, you share it the same way you share any Google file â€” add collaborators to the Sheet and the Drive folder." },
                 { q: "What's the difference between this and a web scraper?", a: "A scraper automates data collection at scale. ImageSnap is human-guided. For competitor tracking, the human judgment of *what's worth tracking* is often more valuable than bulk data collection." }
               ].map((item, i) => (
                 <details key={i} className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 group">
                   <summary className="font-bold cursor-pointer list-none flex justify-between items-center text-lg">
                     {item.q}
-                    <span className="transition group-open:rotate-180">▾</span>
+                    <span className="transition group-open:rotate-180">â–¾</span>
                   </summary>
                   <p className="text-muted mt-4 leading-relaxed font-medium">{item.a}</p>
                 </details>

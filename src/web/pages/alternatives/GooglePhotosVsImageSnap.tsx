@@ -1,10 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const GooglePhotosVsImageSnap = ({ onLogin }: { onLogin: () => void }) => {
+export const GooglePhotosVsImageSnap = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="Google Photos vs ImageSnap — Which is better for professional teams?"
+      title="Google Photos vs ImageSnap â€” Which is better for professional teams?"
       description="Compare Google Photos and ImageSnap. Learn why ImageSnap is the superior choice for organized team asset management and field photo capture."
       headline={<>Professional <span className="text-accent italic">Organization</span> vs Cloud Storage.</>}
       subheadline="Google Photos is for memories. ImageSnap is for work. Discover the features that make ImageSnap the clear winner for business workflows."

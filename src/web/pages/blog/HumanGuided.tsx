@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const BlogPost_HumanGuided = ({ onLogin }: { onLogin: () => void }) => {
+export const BlogPost_HumanGuided = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Human-Guided Capture vs Full Automation"
@@ -15,7 +15,7 @@ export const BlogPost_HumanGuided = ({ onLogin }: { onLogin: () => void }) => {
           <section>
              <p className="text-muted text-lg leading-relaxed font-medium">
                The data collection world has a spectrum. Most product researchers assume they need to pick a side: either grind through manual work, or invest in complex automation.
-               But there's a third option: <strong>human-guided capture</strong> — where a human browses and decides what to save, but the saving itself is automated.
+               But there's a third option: <strong>human-guided capture</strong> â€” where a human browses and decides what to save, but the saving itself is automated.
              </p>
           </section>
 
@@ -64,7 +64,7 @@ export const BlogPost_HumanGuided = ({ onLogin }: { onLogin: () => void }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  <tr><td className="py-4 px-4 font-medium text-muted">Records per hour</td><td className="py-4 px-4">1,000–100,000+</td><td className="py-4 px-4 text-accent">30–60</td></tr>
+                  <tr><td className="py-4 px-4 font-medium text-muted">Records per hour</td><td className="py-4 px-4">1,000â€“100,000+</td><td className="py-4 px-4 text-accent">30â€“60</td></tr>
                   <tr><td className="py-4 px-4 font-medium text-muted">Data quality</td><td className="py-4 px-4">Inconsistent</td><td className="py-4 px-4 text-accent font-bold">Consistent</td></tr>
                   <tr><td className="py-4 px-4 font-medium text-muted">Image handling</td><td className="py-4 px-4">Separate pipeline</td><td className="py-4 px-4 text-accent font-bold">Integrated</td></tr>
                   <tr><td className="py-4 px-4 font-medium text-muted">Annotations</td><td className="py-4 px-4">None (ML-based)</td><td className="py-4 px-4 text-accent font-bold">Human judgment</td></tr>
@@ -89,7 +89,7 @@ export const BlogPost_HumanGuided = ({ onLogin }: { onLogin: () => void }) => {
                <div className="space-y-6">
                   <h3 className="text-xl font-bold text-accent">Human-Guided wins when:</h3>
                   <ul className="space-y-2 text-muted text-sm list-disc pl-5 font-medium">
-                     <li>You need 50–500 high-quality records</li>
+                     <li>You need 50â€“500 high-quality records</li>
                      <li>Visual context and image quality are critical</li>
                      <li>Human judgment and notes are the core value</li>
                      <li>Compliance and low policy risk are priorities</li>
@@ -101,7 +101,7 @@ export const BlogPost_HumanGuided = ({ onLogin }: { onLogin: () => void }) => {
           <section className="bg-white/[0.02] p-10 rounded-[3rem] border border-white/5 text-center">
             <h2 className="text-3xl font-black mb-6">Put judgment where it adds value.</h2>
             <p className="text-muted text-lg mb-8 max-w-2xl mx-auto font-medium">
-              Don't eliminate human involvement. Put human judgment where it matters — deciding what's worth saving — and automate the repetitive parts.
+              Don't eliminate human involvement. Put human judgment where it matters â€” deciding what's worth saving â€” and automate the repetitive parts.
             </p>
             <button onClick={onLogin} className="px-10 py-5 bg-accent text-bg font-black text-xl rounded-2xl hover:glow-accent transition-all">
                Try Human-Guided Capture

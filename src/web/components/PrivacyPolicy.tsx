@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+﻿import React from 'react';
+
 import { ArrowLeft } from 'lucide-react';
 
 export const PrivacyPolicy = ({ onBack }: { onBack: () => void }) => {
@@ -12,9 +12,9 @@ export const PrivacyPolicy = ({ onBack }: { onBack: () => void }) => {
         <ArrowLeft size={16} /> BACK TO HOME
       </button>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div
+        
+        
         className="prose prose-invert max-w-none"
       >
         <h1 className="text-4xl font-black mb-8">Privacy Policy</h1>
@@ -71,7 +71,7 @@ export const PrivacyPolicy = ({ onBack }: { onBack: () => void }) => {
             If you have any questions about this Privacy Policy, please contact us at: <strong>loch7444@gmail.com</strong>
           </p>
         </section>
-      </motion.div>
+      </div>
     </div>
   );
 };

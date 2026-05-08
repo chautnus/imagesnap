@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { ChevronRight, Folder, Package, Trash2, Filter, Search, Calendar, User, Tag, X, ExternalLink } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
-import { motion, AnimatePresence } from 'motion/react';
+
 import { translate } from '@shared/lib/translations';
 import { DriveImage } from './DriveImage';
 
@@ -74,12 +74,12 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
         </button>
       </div>
 
-      <AnimatePresence>
+      <div>
         {showFilters && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+          <div 
+            
+            
+            
             className="overflow-hidden"
           >
             <div className="card p-4 grid grid-cols-2 gap-4 border-accent/20 bg-accent/5">
@@ -129,9 +129,9 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
                 Reset Filters
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 
@@ -207,7 +207,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
               <span className="text-4xl">{cat?.icon}</span>
               <h2 className="text-3xl font-black tracking-tight uppercase">{selectedProduct.name}</h2>
             </div>
-            <div className="label-meta">{cat && translate(cat.name, lang)} • {new Date(selectedProduct.createdAt).toLocaleString()}</div>
+            <div className="label-meta">{cat && translate(cat.name, lang)} â€¢ {new Date(selectedProduct.createdAt).toLocaleString()}</div>
           </div>
 
           <div className="card p-6 flex flex-col gap-6 bg-accent/5 border-accent/20">

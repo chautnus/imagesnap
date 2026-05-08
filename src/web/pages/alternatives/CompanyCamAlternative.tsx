@@ -1,10 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const CompanyCamAlternative = ({ onLogin }: { onLogin: () => void }) => {
+export const CompanyCamAlternative = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="CompanyCam Alternative — Better Photo Management for Teams"
+      title="CompanyCam Alternative â€” Better Photo Management for Teams"
       description="Looking for a CompanyCam alternative? ImageSnap offers a faster, more flexible way to organize team photos directly in Google Drive."
       headline={<>The <span className="text-accent italic">Lighter</span> Alternative to CompanyCam.</>}
       subheadline="Streamline your field operations without the complexity. Capture, tag, and sync job site photos directly to your team's Google Drive folders."

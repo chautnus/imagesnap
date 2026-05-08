@@ -30,8 +30,15 @@ const COMPARISON_PAGES: Record<string, { component: React.FC<any>, title: string
   }
 };
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const page = COMPARISON_PAGES[params.slug];
+export async function generateStaticParams() {
+  return Object.keys(COMPARISON_PAGES).map((slug) => ({
+    slug,
+  }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const page = COMPARISON_PAGES[slug];
   if (!page) return { title: "Page Not Found" };
   return {
     title: page.title,
@@ -39,15 +46,45 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function ComparisonPage({ params }: { params: { slug: string } }) {
-  const page = COMPARISON_PAGES[params.slug];
+export default async function ComparisonPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const page = COMPARISON_PAGES[slug];
   if (!page) notFound();
 
   const Component = page.component;
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.imagesnap.cloud"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Compare",
+        "item": "https://www.imagesnap.cloud/compare"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": page.title.split(':')[0],
+        "item": `https://www.imagesnap.cloud/compare/${slug}`
+      }
+    ]
+  };
+
   return (
-    <NextPublicLayout onLogin={() => {}}>
-      <Component onLogin={() => {}} />
+    <NextPublicLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Component />
     </NextPublicLayout>
   );
 }

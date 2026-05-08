@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const ComparisonWebClipper = ({ onLogin }: { onLogin: () => void }) => {
+export const ComparisonWebClipper = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Web Clippers Save Pages. ImageSnap Saves Structured Data."
-      description="Notion Web Clipper, Pinterest, and Eagle save content — but not structured data. ImageSnap captures images + your custom context into Google Sheets. Compare them."
+      description="Notion Web Clipper, Pinterest, and Eagle save content â€” but not structured data. ImageSnap captures images + your custom context into Google Sheets. Compare them."
       headline={<>Web Clippers Save <span className="text-accent italic">Pages</span>. ImageSnap Saves <span className="text-accent italic">Structured Data</span>.</>}
       subheadline="The problem isn't saving. It's saving without context. Stop clipping and start capturing data that stays useful forever."
       onCtaClick={onLogin}
@@ -72,33 +72,33 @@ export const ComparisonWebClipper = ({ onLogin }: { onLogin: () => void }) => {
                 <tbody className="divide-y divide-white/5">
                   <tr>
                     <td className="py-4 px-4 font-medium text-muted">Saves images</td>
-                    <td className="py-4 px-4">✅ (embedded)</td>
-                    <td className="py-4 px-4">✅</td>
-                    <td className="py-4 px-4 text-accent">✅ (to your Drive)</td>
+                    <td className="py-4 px-4">âœ… (embedded)</td>
+                    <td className="py-4 px-4">âœ…</td>
+                    <td className="py-4 px-4 text-accent">âœ… (to your Drive)</td>
                   </tr>
                   <tr>
                     <td className="py-4 px-4 font-medium text-muted">Structured fields</td>
-                    <td className="py-4 px-4">❌</td>
-                    <td className="py-4 px-4">❌</td>
-                    <td className="py-4 px-4 text-accent font-bold">✅ (Fully custom)</td>
+                    <td className="py-4 px-4">âŒ</td>
+                    <td className="py-4 px-4">âŒ</td>
+                    <td className="py-4 px-4 text-accent font-bold">âœ… (Fully custom)</td>
                   </tr>
                   <tr>
                     <td className="py-4 px-4 font-medium text-muted">Spreadsheet view</td>
-                    <td className="py-4 px-4">❌</td>
-                    <td className="py-4 px-4">❌</td>
-                    <td className="py-4 px-4 text-accent font-bold">✅ (Google Sheets)</td>
+                    <td className="py-4 px-4">âŒ</td>
+                    <td className="py-4 px-4">âŒ</td>
+                    <td className="py-4 px-4 text-accent font-bold">âœ… (Google Sheets)</td>
                   </tr>
                   <tr>
                     <td className="py-4 px-4 font-medium text-muted">Data export</td>
                     <td className="py-4 px-4">MD/CSV export</td>
-                    <td className="py-4 px-4">❌</td>
+                    <td className="py-4 px-4">âŒ</td>
                     <td className="py-4 px-4 text-accent font-bold">Native in Sheets</td>
                   </tr>
                   <tr>
                     <td className="py-4 px-4 font-medium text-muted">Team ready</td>
-                    <td className="py-4 px-4">✅ (Notion)</td>
+                    <td className="py-4 px-4">âœ… (Notion)</td>
                     <td className="py-4 px-4">Shared boards</td>
-                    <td className="py-4 px-4 text-accent">✅ (Shared Drive)</td>
+                    <td className="py-4 px-4 text-accent">âœ… (Shared Drive)</td>
                   </tr>
                 </tbody>
               </table>
@@ -131,13 +131,13 @@ export const ComparisonWebClipper = ({ onLogin }: { onLogin: () => void }) => {
             <div className="space-y-4">
               {[
                 { q: "Can I use ImageSnap alongside Notion?", a: "Yes. Many users keep Notion for notes and general knowledge, and use ImageSnap specifically for product research that needs structured data and image organization." },
-                { q: "Does ImageSnap replace Pinterest for mood boards?", a: "Not exactly. Pinterest is great for visual inspiration. ImageSnap is for research where you need to track specific details — prices, suppliers, specs — alongside images." },
-                { q: "Where do my images go?", a: "To your own Google Drive, in organized folders. Not to a third-party server, not embedded in a page — your Drive, your files." }
+                { q: "Does ImageSnap replace Pinterest for mood boards?", a: "Not exactly. Pinterest is great for visual inspiration. ImageSnap is for research where you need to track specific details â€” prices, suppliers, specs â€” alongside images." },
+                { q: "Where do my images go?", a: "To your own Google Drive, in organized folders. Not to a third-party server, not embedded in a page â€” your Drive, your files." }
               ].map((item, i) => (
                 <details key={i} className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 group">
                   <summary className="font-bold cursor-pointer list-none flex justify-between items-center text-lg">
                     {item.q}
-                    <span className="transition group-open:rotate-180">▾</span>
+                    <span className="transition group-open:rotate-180">â–¾</span>
                   </summary>
                   <p className="text-muted mt-4 leading-relaxed font-medium">{item.a}</p>
                 </details>

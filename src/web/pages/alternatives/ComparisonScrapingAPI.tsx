@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { SEOPage } from '../SEOPage';
 
-export const ComparisonScrapingAPI = ({ onLogin }: { onLogin: () => void }) => {
+export const ComparisonScrapingAPI = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
       title="Do You Actually Need a Scraping API?"
-      description="Scraping APIs like Apify and ScrapingBee are powerful — but expensive and complex. ImageSnap offers a simpler path for curated product research. Compare both."
+      description="Scraping APIs like Apify and ScrapingBee are powerful â€” but expensive and complex. ImageSnap offers a simpler path for curated product research. Compare both."
       headline={<>Do You Actually Need a <span className="text-accent italic">Scraping API?</span></>}
       subheadline="Don't use a rocket ship to go to the grocery store. For curated research, simplicity beats complexity every time."
       onCtaClick={onLogin}
@@ -23,7 +23,7 @@ export const ComparisonScrapingAPI = ({ onLogin }: { onLogin: () => void }) => {
               <div className="p-8 bg-white/[0.02] border border-white/5 rounded-[2rem] space-y-6">
                 <h3 className="text-xl font-bold text-red-400">What you sign up for with an API:</h3>
                 <ul className="space-y-3 text-sm text-muted font-medium">
-                  <li className="flex justify-between"><span>Monthly cost</span> <span className="text-white">$49–$500+</span></li>
+                  <li className="flex justify-between"><span>Monthly cost</span> <span className="text-white">$49â€“$500+</span></li>
                   <li className="flex justify-between"><span>Setup time</span> <span className="text-white">Hours of config</span></li>
                   <li className="flex justify-between"><span>Learning curve</span> <span className="text-white">API docs & webhooks</span></li>
                   <li className="flex justify-between"><span>Data cleaning</span> <span className="text-white">Still required</span></li>
@@ -57,7 +57,7 @@ export const ComparisonScrapingAPI = ({ onLogin }: { onLogin: () => void }) => {
                 <tbody className="divide-y divide-white/5">
                   <tr>
                     <td className="py-4 px-4 font-medium text-muted">Scale</td>
-                    <td className="py-4 px-4">10k–1M+ records/day</td>
+                    <td className="py-4 px-4">10kâ€“1M+ records/day</td>
                     <td className="py-4 px-4 text-accent">Human browsing speed</td>
                   </tr>
                   <tr>
@@ -94,13 +94,13 @@ export const ComparisonScrapingAPI = ({ onLogin }: { onLogin: () => void }) => {
                   <li>You need 5,000+ records per run</li>
                   <li>Real-time price monitoring is the use case</li>
                   <li>You have a data engineering pipeline ready</li>
-                  <li>Budget allows $50–$500/month for data infra</li>
+                  <li>Budget allows $50â€“$500/month for data infra</li>
                 </ul>
               </div>
               <div className="space-y-4">
                 <h3 className="text-xl font-bold text-accent">Use ImageSnap when:</h3>
                 <ul className="space-y-2 text-muted text-sm list-disc pl-5 font-medium leading-relaxed">
-                  <li>You need 50–500 curated research records</li>
+                  <li>You need 50â€“500 curated research records</li>
                   <li>Image quality and context matter as much as data</li>
                   <li>Your output destination is Google Sheets</li>
                   <li>You want to start capturing in minutes, not hours</li>
@@ -114,13 +114,13 @@ export const ComparisonScrapingAPI = ({ onLogin }: { onLogin: () => void }) => {
             <div className="space-y-4">
               {[
                 { q: "Is ImageSnap an API?", a: "No. ImageSnap is a browser extension. There's no API to configure, no webhooks to set up, and no coding required." },
-                { q: "Can I integrate ImageSnap with other tools?", a: "Yes. Your data lives in Google Sheets and Drive — two of the most connected tools. You can use Zapier, Make, or Apps Script to build automations." },
+                { q: "Can I integrate ImageSnap with other tools?", a: "Yes. Your data lives in Google Sheets and Drive â€” two of the most connected tools. You can use Zapier, Make, or Apps Script to build automations." },
                 { q: "What happens to my data if I cancel?", a: "Everything stays. Your images are in your Google Drive and data in your Google Sheet. You own your research data completely." }
               ].map((item, i) => (
                 <details key={i} className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 group">
                   <summary className="font-bold cursor-pointer list-none flex justify-between items-center text-lg">
                     {item.q}
-                    <span className="transition group-open:rotate-180">▾</span>
+                    <span className="transition group-open:rotate-180">â–¾</span>
                   </summary>
                   <p className="text-muted mt-4 leading-relaxed font-medium">{item.a}</p>
                 </details>
