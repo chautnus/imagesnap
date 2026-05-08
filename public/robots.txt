@@ -3,6 +3,7 @@ Allow: /
 
 # Block app-internal routes
 Disallow: /api/
+Disallow: /dashboard
 Disallow: /#staff
 Disallow: /#capture
 Disallow: /#data

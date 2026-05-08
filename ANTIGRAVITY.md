@@ -40,12 +40,12 @@
 - **UX Improvement**: Giữ nguyên giá trị của các trường `select` và `date` sau khi lưu để thuận tiện cho việc nhập liệu hàng loạt.
 - **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.4.0**.
 - **Store Preparation**: Chuẩn bị tài liệu giải trình quyền (`PRIVACY_JUSTIFICATION.md`) cho Chrome Web Store.
-- **Mobile & PWA Fixes**: 
-  - Khôi phục tính năng **Share Target** (chia sẻ ảnh từ mobile sang app).
-  - Thêm `manifest.json` và cấu hình PWA cho Next.js để hỗ trợ "Cài đặt ứng dụng" trên phone.
-  - Sửa lỗi không lấy được Category trên mobile bằng cách cải thiện logic `initGis` (retry 10 lần).
-  - Port toàn bộ các API còn thiếu (Staff Login, Admin Management, Proxy Save) sang Next.js.
-  - Thêm trang `/staff` chuyên biệt cho nhân viên đăng nhập.
+- **Mobile & PWA Fixes**: Khôi phục Share Target, cấu hình manifest.json và sửa lỗi vỡ UI mobile.
+- **SEO Audit & Fixes**: 
+  - Thực hiện audit SEO toàn diện và phát hiện 12+ route quan trọng (Blog, Compare, Use Cases) bị lỗi 404 sau khi chuyển sang Next.js.
+  - Port thành công toàn bộ các trang nội dung sang dynamic routes (`app/blog/[slug]`, `app/compare/[slug]`, `app/use-cases/[slug]`).
+  - Cập nhật `robots.txt` để bảo mật trang dashboard và tối ưu crawl budget.
+  - Tích hợp `generateMetadata` để tối ưu SEO cho từng bài viết và trang so sánh.
 
 ### Dừng ở đâu?
 - Ứng dụng Next.js đã build thành công và hoạt động tốt trên Railway.

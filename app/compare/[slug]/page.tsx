@@ -1,0 +1,53 @@
+import React from 'react';
+import { notFound } from 'next/navigation';
+import { ComparisonManualSheet } from '@web/pages/alternatives/ComparisonManualSheet';
+import { ComparisonCustomScraper } from '@web/pages/alternatives/ComparisonCustomScraper';
+import { ComparisonWebClipper } from '@web/pages/alternatives/ComparisonWebClipper';
+import { ComparisonScrapingAPI } from '@web/pages/alternatives/ComparisonScrapingAPI';
+import { NextPublicLayout } from '../../components/NextPublicLayout';
+import { Metadata } from 'next';
+
+const COMPARISON_PAGES: Record<string, { component: React.FC<any>, title: string, description: string }> = {
+  'imagesnap-vs-manual-spreadsheet': {
+    component: ComparisonManualSheet,
+    title: "ImageSnap vs Manual Spreadsheets: Stop the Copy-Paste Madness",
+    description: "Compare manual data entry with ImageSnap's one-click capture and context system."
+  },
+  'imagesnap-vs-custom-scraper': {
+    component: ComparisonCustomScraper,
+    title: "ImageSnap vs Custom Scrapers: Human Intelligence vs Bot Brute Force",
+    description: "Why human-guided capture is more reliable than custom scraping scripts for research."
+  },
+  'imagesnap-vs-web-clipper': {
+    component: ComparisonWebClipper,
+    title: "ImageSnap vs Generic Web Clippers: Captured Context vs Dead Snaps",
+    description: "Generic clippers save pixels. ImageSnap saves meaning."
+  },
+  'imagesnap-vs-scraping-api': {
+    component: ComparisonScrapingAPI,
+    title: "ImageSnap vs Scraping APIs: Research Workflow vs Data Dumping",
+    description: "Why APIs are great for bots but bad for research workflows."
+  }
+};
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const page = COMPARISON_PAGES[params.slug];
+  if (!page) return { title: "Page Not Found" };
+  return {
+    title: page.title,
+    description: page.description,
+  };
+}
+
+export default function ComparisonPage({ params }: { params: { slug: string } }) {
+  const page = COMPARISON_PAGES[params.slug];
+  if (!page) notFound();
+
+  const Component = page.component;
+
+  return (
+    <NextPublicLayout onLogin={() => {}}>
+      <Component onLogin={() => {}} />
+    </NextPublicLayout>
+  );
+}
