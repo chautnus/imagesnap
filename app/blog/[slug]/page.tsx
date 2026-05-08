@@ -57,8 +57,64 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     .filter(([s]) => s !== slug)
     .slice(0, 2);
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.imagesnap.cloud"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://www.imagesnap.cloud/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": post.title.split('|')[0],
+        "item": `https://www.imagesnap.cloud/blog/${slug}`
+      }
+    ]
+  };
+
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.description,
+    "author": {
+      "@type": "Person",
+      "name": "ImageSnap Founder"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "ImageSnap",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.imagesnap.cloud/icon192.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://www.imagesnap.cloud/blog/${slug}`
+    }
+  };
+
   return (
     <NextPublicLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <div className="pb-20">
         <Component />
         

@@ -58,8 +58,37 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
 
   const Component = page.component;
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.imagesnap.cloud"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Use Cases",
+        "item": "https://www.imagesnap.cloud/#use-cases"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": page.title.split('|')[0],
+        "item": `https://www.imagesnap.cloud/use-cases/${slug}`
+      }
+    ]
+  };
+
   return (
     <NextPublicLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Component {...(page.props || {})} />
     </NextPublicLayout>
   );

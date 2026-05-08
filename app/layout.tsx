@@ -15,6 +15,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.imagesnap.cloud"),
   title: "ImageSnap | Auto-organize team photos in Google Drive",
   description: "Save images from the web directly to Google Drive, auto-classify into folders, and attach detailed metadata.",
   keywords: ["dropshipping", "product research", "google sheets", "ecommerce tool", "image scraper", "shopify collector"],
