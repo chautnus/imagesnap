@@ -200,8 +200,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
   return (
     <div className="pb-24 p-4 flex flex-col gap-5">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-black tracking-tighter uppercase">{t('capture')}</h2>
+      <div className="flex justify-end items-center">
         <button onClick={onSwitchToHelp} className="text-[10px] bg-accent/10 text-accent font-black px-2.5 py-1 rounded-lg border border-accent/20 hover:bg-accent/20 transition-all tracking-widest uppercase">
           Help Guide
         </button>

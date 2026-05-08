@@ -30,7 +30,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   return (
     <div className="pb-24 p-6 flex flex-col gap-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-4xl tracking-tighter">{t('settings')}</h1>
       </div>
 
       {/* Subscription Status */}

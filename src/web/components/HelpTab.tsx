@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { BookOpen, Camera, Globe, Smartphone, Zap, Save, CheckCircle2 } from 'lucide-react';
 
 
@@ -11,7 +11,7 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
     {
       icon: <Zap className="text-blue-400" />,
       title: "1. Design your context",
-      desc: "Define the fields that matter for your research â€” or use defaults. Each category can have its own schema."
+      desc: "Define the fields that matter for your research — or use defaults. Each category can have its own schema."
     },
     {
       icon: <Camera className="text-accent" />,
@@ -28,10 +28,6 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
   return (
     <div className="pb-24 p-6 flex flex-col gap-8">
       <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-black tracking-tighter uppercase flex items-center gap-3">
-          <BookOpen className="text-accent" size={32} />
-          {t('userGuide') || 'USER_GUIDE'}
-        </h2>
         <p className="text-muted text-sm font-medium leading-relaxed">
           Welcome to ImageSnap. Here are the three steps to start building your visual database with designed context.
         </p>
@@ -67,7 +63,7 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
             Use custom fields in Settings to adapt ImageSnap to your workflow.
           </li>
           <li className="flex gap-3 text-xs font-bold text-white/80">
-            <span className="text-accent">â€¢</span>
+            <span className="text-accent">•</span>
             For ecommerce sites, prices and titles are auto-extracted when possible.
           </li>
           <li className="flex gap-3 text-xs font-bold text-white/80">
@@ -79,7 +75,7 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
 
       <div className="flex justify-center mt-4">
         <span className="text-[10px] font-black text-muted tracking-widest uppercase opacity-30">
-          ImageSnap v1.3.4 â€¢ Documentation Snapshot
+          ImageSnap v1.4.2 • Documentation Snapshot
         </span>
       </div>
     </div>

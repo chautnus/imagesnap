@@ -53,87 +53,6 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
 
   const isSearching = searchQuery || filters.dateFrom || filters.dateTo || filters.categoryId || filters.author || filters.tag;
 
-  const renderSearchHeader = () => (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2">
-        <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors" size={16} />
-          <input 
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('searchPlaceholder')}
-            className="input pl-10 text-sm font-medium"
-          />
-        </div>
-        <button 
-          onClick={() => setShowFilters(!showFilters)}
-          className={`p-2.5 rounded-lg border transition-all ${showFilters ? 'bg-accent border-accent text-bg' : 'border-line text-muted'}`}
-        >
-          <Filter size={18} />
-        </button>
-      </div>
-
-      <div>
-        {showFilters && (
-          <div 
-            
-            
-            
-            className="overflow-hidden"
-          >
-            <div className="card p-4 grid grid-cols-2 gap-4 border-accent/20 bg-accent/5">
-              <div className="flex flex-col gap-1.5">
-                <label className="label-meta text-[11px]">{t('dateFrom')}</label>
-                <input 
-                  type="date" 
-                  value={filters.dateFrom}
-                  onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
-                  className="input !py-1.5 !text-[10px]"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="label-meta text-[11px]">{t('dateTo')}</label>
-                <input 
-                  type="date" 
-                  value={filters.dateTo}
-                  onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
-                  className="input !py-1.5 !text-[10px]"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="label-meta text-[11px]">{t('category')}</label>
-                <select 
-                  value={filters.categoryId}
-                  onChange={(e) => setFilters({...filters, categoryId: e.target.value})}
-                  className="input !py-1.5 !text-[10px]"
-                >
-                  <option value="">All</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{translate(c.name, lang)}</option>)}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="label-meta text-[11px]">{t('tags')}</label>
-                <input 
-                  type="text" 
-                  value={filters.tag}
-                  onChange={(e) => setFilters({...filters, tag: e.target.value})}
-                  placeholder="Tag..."
-                  className="input !py-1.5 !text-[10px]"
-                />
-              </div>
-              <button 
-                onClick={() => setFilters({ dateFrom: '', dateTo: '', categoryId: '', author: '', tag: '' })}
-                className="col-span-2 text-[11px] text-accent font-bold uppercase tracking-widest hover:underline text-center mt-1"
-              >
-                Reset Filters
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   const renderProductItem = (item: Product, idx: number) => {
     const cat = categories.find(c => c.id === item.categoryId);
@@ -260,11 +179,84 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
     return (
       <div className="pb-24 p-6 flex flex-col gap-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-black uppercase tracking-tight">{t('data')}</h2>
           {!isAdmin && <span className="px-2 py-1 bg-accent/10 text-accent rounded text-[10px] font-black">VIEW ONLY</span>}
-          <span className="text-[12px] font-mono text-muted font-bold tracking-widest">{allFilteredProducts.length} ITEMS FOUND</span>
+          <span className="text-[12px] font-mono text-muted font-bold tracking-widest uppercase">{allFilteredProducts.length} ITEMS FOUND</span>
         </div>
-        {renderSearchHeader()}
+        {/* Search Header Inlined to prevent focus loss */}
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-2">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors" size={16} />
+              <input 
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('searchPlaceholder')}
+                className="input pl-10 text-sm font-medium"
+              />
+            </div>
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`p-2.5 rounded-lg border transition-all ${showFilters ? 'bg-accent border-accent text-bg' : 'border-line text-muted'}`}
+            >
+              <Filter size={18} />
+            </button>
+          </div>
+
+          <div>
+            {showFilters && (
+              <div className="overflow-hidden">
+                <div className="card p-4 grid grid-cols-2 gap-4 border-accent/20 bg-accent/5">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="label-meta text-[11px]">{t('dateFrom')}</label>
+                    <input 
+                      type="date" 
+                      value={filters.dateFrom}
+                      onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
+                      className="input !py-1.5 !text-[10px]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="label-meta text-[11px]">{t('dateTo')}</label>
+                    <input 
+                      type="date" 
+                      value={filters.dateTo}
+                      onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
+                      className="input !py-1.5 !text-[10px]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="label-meta text-[11px]">{t('category')}</label>
+                    <select 
+                      value={filters.categoryId}
+                      onChange={(e) => setFilters({...filters, categoryId: e.target.value})}
+                      className="input !py-1.5 !text-[10px]"
+                    >
+                      <option value="">All</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{translate(c.name, lang)}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="label-meta text-[11px]">{t('tags')}</label>
+                    <input 
+                      type="text" 
+                      value={filters.tag}
+                      onChange={(e) => setFilters({...filters, tag: e.target.value})}
+                      placeholder="Tag..."
+                      className="input !py-1.5 !text-[10px]"
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setFilters({ dateFrom: '', dateTo: '', categoryId: '', author: '', tag: '' })}
+                    className="col-span-2 text-[11px] text-accent font-bold uppercase tracking-widest hover:underline text-center mt-1"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
         <div className="grid grid-cols-1 gap-3">
           {allFilteredProducts.map((item, idx) => renderProductItem(item, idx))}
           {allFilteredProducts.length === 0 && (
@@ -287,10 +279,83 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
     return (
       <div className="pb-24 p-6 flex flex-col gap-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-black uppercase tracking-tight">{t('data')}</h2>
           {!isAdmin && <span className="px-2 py-1 bg-accent/10 text-accent rounded text-[10px] font-black">VIEW ONLY</span>}
         </div>
-        {renderSearchHeader()}
+        {/* Search Header Inlined to prevent focus loss */}
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-2">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors" size={16} />
+              <input 
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('searchPlaceholder')}
+                className="input pl-10 text-sm font-medium"
+              />
+            </div>
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className={`p-2.5 rounded-lg border transition-all ${showFilters ? 'bg-accent border-accent text-bg' : 'border-line text-muted'}`}
+            >
+              <Filter size={18} />
+            </button>
+          </div>
+
+          <div>
+            {showFilters && (
+              <div className="overflow-hidden">
+                <div className="card p-4 grid grid-cols-2 gap-4 border-accent/20 bg-accent/5">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="label-meta text-[11px]">{t('dateFrom')}</label>
+                    <input 
+                      type="date" 
+                      value={filters.dateFrom}
+                      onChange={(e) => setFilters({...filters, dateFrom: e.target.value})}
+                      className="input !py-1.5 !text-[10px]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="label-meta text-[11px]">{t('dateTo')}</label>
+                    <input 
+                      type="date" 
+                      value={filters.dateTo}
+                      onChange={(e) => setFilters({...filters, dateTo: e.target.value})}
+                      className="input !py-1.5 !text-[10px]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="label-meta text-[11px]">{t('category')}</label>
+                    <select 
+                      value={filters.categoryId}
+                      onChange={(e) => setFilters({...filters, categoryId: e.target.value})}
+                      className="input !py-1.5 !text-[10px]"
+                    >
+                      <option value="">All</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{translate(c.name, lang)}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="label-meta text-[11px]">{t('tags')}</label>
+                    <input 
+                      type="text" 
+                      value={filters.tag}
+                      onChange={(e) => setFilters({...filters, tag: e.target.value})}
+                      placeholder="Tag..."
+                      className="input !py-1.5 !text-[10px]"
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setFilters({ dateFrom: '', dateTo: '', categoryId: '', author: '', tag: '' })}
+                    className="col-span-2 text-[11px] text-accent font-bold uppercase tracking-widest hover:underline text-center mt-1"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           {categories.filter(c => !c._deleted).map((cat, idx) => (
             <button
