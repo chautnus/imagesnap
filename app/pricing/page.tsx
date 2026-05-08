@@ -1,20 +1,12 @@
-"use client";
+import type { Metadata } from 'next';
+import PricingClient from './PricingClient';
 
-import React from 'react';
-import { PricingPage } from '@web/pages/PricingPage';
-import { requestToken } from '@shared/lib/google-auth';
-import { NextPublicLayout } from '../components/NextPublicLayout';
+export const metadata: Metadata = {
+  title: "Pricing — ImageSnap | Free & $19/mo Plans",
+  description: "Start free with 30 captures/month. Upgrade to Solo at $19/mo for unlimited captures, categories, and Google Drive & Sheets sync.",
+  alternates: { canonical: "https://www.imagesnap.cloud/pricing" },
+};
 
 export default function Pricing() {
-  const handleLogin = () => {
-    requestToken('consent', (token) => {
-      window.location.href = '/dashboard';
-    });
-  };
-
-  return (
-    <NextPublicLayout onLogin={handleLogin}>
-      <PricingPage onLogin={handleLogin} />
-    </NextPublicLayout>
-  );
+  return <PricingClient />;
 }
