@@ -47,7 +47,8 @@ export const PricingPage = ({ onLogin }: { onLogin?: () => void }) => {
             <div className="absolute top-8 right-8 px-3 py-1 bg-accent text-bg text-[10px] font-black rounded-full uppercase tracking-widest">MOST POPULAR</div>
             <div className="mb-10">
                <div className="text-sm font-black uppercase tracking-[0.2em] text-accent mb-4">PROFESSIONAL</div>
-               <div className="text-6xl font-black">$9<span className="text-xl text-muted ml-2">/ month</span></div>
+                <div className="text-6xl font-black">$9.99<span className="text-xl text-muted ml-2">/ month</span></div>
+                <div className="text-sm font-bold text-accent mt-2">$99.9 / yearly (Save 20%)</div>
             </div>
             <ul className="space-y-6 mb-12 flex-1">
                <PricingItem text="Unlimited image captures" accent />

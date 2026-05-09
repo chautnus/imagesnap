@@ -249,7 +249,8 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
             <h2 className="text-4xl font-black mb-12">Simple, predictable pricing.</h2>
             <div className="glass p-12 rounded-[3rem] border-accent/20 bg-accent/5">
                 <div className="text-accent text-sm font-black uppercase tracking-[0.2em] mb-4">Solo Plan</div>
-                <div className="text-6xl font-black mb-6">$19<span className="text-xl text-muted">/mo</span></div>
+                <div className="text-5xl font-black mb-2">$9.99<span className="text-lg text-muted font-medium">/mo</span></div>
+              <div className="text-sm font-bold text-accent mb-8">$99.9 / yearly</div>
                 <ul className="space-y-4 mb-10 text-muted font-bold text-sm">
                   <li className="flex items-center justify-center gap-2"><Check size={14} className="text-accent" /> Unlimited captures</li>
                   <li className="flex items-center justify-center gap-2"><Check size={14} className="text-accent" /> Unlimited categories</li>
@@ -259,7 +260,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
                   Start Researching Now
                 </button>
             </div>
-            <p className="mt-8 text-muted font-medium">Free plan available: 30 captures/month forever.</p>
+            <p className="text-white/60 mb-8 font-medium">From $9.99/month for unlimited captures and AI extraction.</p>
         </div>
       </section>
 

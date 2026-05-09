@@ -107,8 +107,11 @@
   - Fixes: Resolved OG Image localhost error. Updated production URLs for social sharing.
   - Features: Completed technical SEO audit, verified sitemap.xml and robots.txt.
 - [DEV-2026W19-11] Cross-Platform Version Synchronization (v1.4.2)
-  - Fixes: Synchronized version numbers across Web (App, Dashboard) and Extension (manifest.json).
+  - Fixes: Synchronized version numbers across Web (App, Dashboard), Extension (manifest.json), and package.json.
   - UI: Increased extension width to 500px to prevent layout truncation.
+- [DEV-2026W19-12] Pricing Model Update & Marketing Sync
+  - Features: Updated pricing to $9.99/mo and $99.9/yr (20% discount) across Landing Page, Pricing Page, and SEO Schema.
+  - Fixes: Removed all legacy $19/mo and $29 references.
 
 ### 💡 Decisions Made
 - [DEV-2026W19-D01] Abandoned local JSON storage in favor of PostgreSQL.

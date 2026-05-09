@@ -108,6 +108,44 @@ Removed local title elements from `CaptureTab`, `DataTab`, `SettingsTab`, and `H
 
 #### Lesson Learned
 ⚠ BÀI HỌC #017: Maintain a clear separation of concerns between layout (Header) and content (Tabs). Layout elements should handle global context like titles.
+
+---
+
+### [BUG-023] — Stale Pricing References in Landing Page
+**Status**: CLOSED
+**Severity**: MEDIUM
+**Discovered**: [2026-05-08] | **Fixed**: [2026-05-08]
+
+#### Symptom
+The Landing Page and Schema markup displayed outdated pricing ($19/mo or $29 lifetime) while the actual price was set to $9.99/mo.
+
+#### Root Cause
+Hardcoded pricing strings were scattered across `LandingPage.tsx`, `PricingPage.tsx`, and `index.html`. During pricing updates, some files were missed.
+
+#### Fix Applied
+Updated all references to $9.99/mo and $99.9/yr across all components and schema metadata.
+
+#### Lesson Learned
+⚠ BÀI HỌC #023: Pricing should ideally be pulled from a central config file or the database to avoid "stale pricing" bugs in marketing copy.
+
+---
+
+### [BUG-022] — Cross-platform Version Desync
+**Status**: CLOSED
+**Severity**: LOW
+**Discovered**: [2026-05-08] | **Fixed**: [2026-05-08]
+
+#### Symptom
+The Chrome Extension, Web Dashboard, and Landing Page reported different version numbers (v1.4.1 vs v1.4.2).
+
+#### Root Cause
+Manual updates of version strings in `manifest.json`, `package.json`, and multiple React components were inconsistent.
+
+#### Fix Applied
+Standardized all version strings to `v1.4.2` and documented the need for a unified versioning script.
+
+#### Lesson Learned
+⚠ BÀI HỌC #022: Use a pre-build script to inject the version from `package.json` into all relevant files (manifest, UI, help docs) to ensure 100% parity.
 **Status**: CLOSED
 **Severity**: HIGH
 **Discovered**: [2026-05-06] | **Fixed**: [2026-05-06]
@@ -468,7 +506,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 21 |
+| Total bugs logged | 23 |
 | Open | 0 |
-| Closed | 21 |
+| Closed | 23 |
 | Patterns extracted | 2 |
