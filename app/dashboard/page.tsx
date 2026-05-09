@@ -182,7 +182,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen pb-20 max-w-md mx-auto relative bg-bg text-white">
+    <div className="min-h-screen pb-20 w-full max-w-2xl mx-auto relative bg-bg text-white">
       <Header 
         activeTab={activeTab}
         user={user}

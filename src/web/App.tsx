@@ -286,7 +286,7 @@ export default function App() {
     });
 
     return (
-      <div className="min-h-screen pb-20 max-w-md mx-auto relative bg-bg">
+      <div className="min-h-screen pb-20 w-full max-w-2xl mx-auto relative bg-bg">
         <SEO title="ImageSnap Dashboard" description="Capture and organize your images." />
         <Header 
           activeTab={activeTab}
