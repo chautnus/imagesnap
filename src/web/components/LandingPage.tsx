@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 import { Chrome, Zap, X, ArrowRight, Share2, Database, ShieldCheck, ChevronDown, Check } from 'lucide-react';
-import Image from 'next/image';
 
 export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, t: any, variant?: number }) => {
   const [showLoginOptions, setShowLoginOptions] = useState(false);
@@ -160,12 +159,14 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
           <div className="relative group max-w-5xl mx-auto">
             <div className="absolute -inset-1 bg-gradient-to-r from-accent to-blue-500 rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
             <div className="relative glass rounded-[3rem] aspect-video flex items-center justify-center overflow-hidden border-white/10">
-                <Image 
-                  src="/imagesnap_extension_form_preview.png" 
-                  alt="ImageSnap Chrome Extension interface: saving product images and structured context to Google Drive" 
-                  fill
-                  className="object-cover opacity-80"
-                  priority
+                <img 
+                  src={variant === 1 ? '/landing_variant_1_ecom.png' : 
+                       variant === 2 ? '/landing_variant_2_org.png' : 
+                       variant === 3 ? '/landing_variant_3_cloud.png' : 
+                       '/imagesnap_extension_form_preview.png'} 
+                  alt="ImageSnap Interface" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-80"
+                  loading="eager"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent opacity-60"></div>
             </div>
