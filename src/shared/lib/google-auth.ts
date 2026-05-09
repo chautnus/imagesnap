@@ -26,11 +26,11 @@ export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
 
   const google = (window as any).google;
   if (!google) {
-    if (retries < 10) {
+    if (retries < 30) {
       console.log(`Google GSI script not loaded yet. Retrying in 500ms... (attempt ${retries + 1})`);
       setTimeout(() => initGis(onSuccess, retries + 1), 500);
     } else {
-      console.warn('Google GSI script failed to load after 10 attempts.');
+      console.warn('Google GSI script failed to load after 30 attempts.');
     }
     return;
   }
@@ -84,7 +84,7 @@ export async function getUserInfo(token: string) {
 export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {
   // @ts-ignore
   if (window.chrome && window.chrome.identity) {
-    // Force the redirect URI to match our fixed Extension ID
+    // Extension Logic (unchanged)
     const redirectUri = 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${GOOGLE_CLIENT_ID}&` +
@@ -100,7 +100,6 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
         console.error('LaunchWebAuthFlow Error:', window.chrome.runtime.lastError.message);
         return;
       }
-
       if (redirectUrl) {
         const url = new URL(redirectUrl.replace('#', '?'));
         const token = url.searchParams.get('access_token');
@@ -108,8 +107,6 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
           accessToken = token;
           localStorage.setItem('ps_access_token', token);
           if (onSuccess) onSuccess(token);
-          
-          // Use explicit navigation to avoid ERR_FILE_NOT_FOUND on reload
           if (window.chrome && window.chrome.runtime && window.chrome.runtime.getURL) {
             window.location.href = window.chrome.runtime.getURL('index.html');
           } else {
@@ -122,9 +119,16 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
   }
 
   if (!tokenClient) {
-    alert("Auth client not ready. Please refresh.");
+    console.log("Auth client not ready, attempting to initialize...");
+    initGis((token) => {
+      if (tokenClient) {
+        tokenClient.requestAccessToken({ prompt });
+        if (onSuccess) onSuccess(token);
+      }
+    });
     return;
   }
+  
   tokenClient.requestAccessToken({ prompt });
 };
 

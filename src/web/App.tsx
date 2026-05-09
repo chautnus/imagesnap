@@ -109,17 +109,15 @@ export default function App() {
       });
     };
 
-    // If in extension, we can init immediately as initGis handles both cases
-    // @ts-ignore
-    const isExtension = !!(window.chrome && window.chrome.identity);
-
-    if (isExtension || (window as any).google) {
-      handleInit();
-    } else {
-      window.addEventListener('load', handleInit);
+    // Use a more robust initialization check
+    if (typeof window !== 'undefined') {
+      if (document.readyState === 'complete') {
+        handleInit();
+      } else {
+        window.addEventListener('load', handleInit);
+        return () => window.removeEventListener('load', handleInit);
+      }
     }
-    
-    return () => window.removeEventListener('load', handleInit);
   }, []);
 
   // Handle Incoming Shared Data (PWA Share Target)
