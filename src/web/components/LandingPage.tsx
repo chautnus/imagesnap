@@ -283,6 +283,8 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
                 </details>
               ))}
           </div>
+      </section>
+
       {/* FOOTER */}
       <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-white/5 text-center">
           <p className="text-muted text-sm font-bold uppercase tracking-widest">
