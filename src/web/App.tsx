@@ -55,6 +55,8 @@ export default function App() {
   const [isStaff, setIsStaff] = useState(false);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(localStorage.getItem('ps_sheet_id'));
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
+  const [sharedImages, setSharedImages] = useState<string[]>([]);
+  const [sharedMetadata, setSharedMetadata] = useState<ProductMetadata>({});
   
   const { lang, t, toggleLang } = useI18n();
   const { 
@@ -118,6 +120,48 @@ export default function App() {
     }
     
     return () => window.removeEventListener('load', handleInit);
+  }, []);
+
+  // Handle Incoming Shared Data (PWA Share Target)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('sharing') === '1') {
+      const loadSharedData = async () => {
+        try {
+          const dbRequest = indexedDB.open('ImageSnapSharing', 1);
+          dbRequest.onsuccess = (event: any) => {
+            const db = event.target.result;
+            const transaction = db.transaction('sharedContent', 'readonly');
+            const store = transaction.objectStore('sharedContent');
+            const getRequest = store.get('latest');
+
+            getRequest.onsuccess = () => {
+              const data = getRequest.result;
+              if (data) {
+                console.log('Retrieved shared data:', data);
+                if (data.image) {
+                  const blobUrl = URL.createObjectURL(data.image);
+                  setSharedImages([blobUrl]);
+                }
+                setSharedMetadata({
+                  t: data.title || '',
+                  d: data.text || '',
+                  url: data.url || ''
+                });
+                
+                // If logged in, go straight to app
+                if (localStorage.getItem('ps_access_token')) {
+                  setView('app');
+                }
+              }
+            };
+          };
+        } catch (err) {
+          console.error('Error loading shared data:', err);
+        }
+      };
+      loadSharedData();
+    }
   }, []);
 
   const [importedImages, setImportedImages] = useState<string[]>([]);
@@ -315,12 +359,12 @@ export default function App() {
               lang={lang}
               subStatus={subStatus}
               onUpgrade={handleUpgrade}
-              initialImages={importedImages}
+              initialImages={sharedImages.length > 0 ? sharedImages : importedImages}
               importedUrl={importedUrl}
-              importedMetadata={importedMetadata}
-              onClearInitialImages={() => setImportedImages([])}
+              importedMetadata={Object.keys(sharedMetadata).length > 0 ? sharedMetadata : importedMetadata}
+              onClearInitialImages={() => { setImportedImages([]); setSharedImages([]); }}
               onClearImportedUrl={() => setImportedUrl('')}
-              onClearImportedMetadata={() => setImportedMetadata({})}
+              onClearImportedMetadata={() => { setImportedMetadata({}); setSharedMetadata({}); }}
               onSaveCategory={handleSaveCategory}
               onSwitchToHelp={() => setActiveTab('help')}
             />

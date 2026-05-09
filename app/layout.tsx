@@ -60,7 +60,19 @@ export default function RootLayout({
             gtag('config', 'G-XC45ZRJ7Y9');
           `}
         </Script>
-        <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" />
+        <Script id="register-sw" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                  console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, function(err) {
+                  console.log('ServiceWorker registration failed: ', err);
+                });
+              });
+            }
+          `}
+        </Script>
       </body>
     </html>
   );
