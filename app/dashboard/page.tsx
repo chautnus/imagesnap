@@ -228,38 +228,50 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg text-white">
         <div className="flex flex-col items-center gap-6 p-8 text-center">
-          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+          </div>
+          
           <div className="space-y-4">
             <div className="space-y-1">
               <div className="text-xs font-black tracking-widest uppercase opacity-60">
-                {authError || "Authenticating ImageSnap..."}
+                {authError || "Authenticating..."}
               </div>
-              <p className="text-[10px] text-muted max-w-[200px] mx-auto">
-                {authError 
-                  ? "A connection error occurred. Redirecting..." 
-                  : "Establishing secure connection to Google Services. This may take a few seconds on mobile."}
-              </p>
+              <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
+                {!authError && (
+                  <>
+                    <span>1. Loading Google Security Script</span>
+                    <span>2. Verifying Identity Token</span>
+                    <span>3. Establishing Encrypted Session</span>
+                  </>
+                )}
+              </div>
+              {authError && (
+                <p className="text-[10px] text-accent mt-2 max-w-[220px] mx-auto leading-relaxed">
+                  The authentication service timed out or was blocked by the browser. 
+                  Please ensure you are logged into Google and try refreshing.
+                </p>
+              )}
             </div>
             
-            {!authError && (
-              <div className="pt-4 animate-pulse">
-                <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  System Version v1.5.3
-                </div>
+            <div className="pt-4 animate-pulse">
+              <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
+                System v1.5.1-Vercel
               </div>
-            )}
+            </div>
           </div>
           
           <div className="flex flex-col gap-3">
             <button 
               onClick={() => window.location.href = '/'}
-              className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold hover:bg-white/10 transition-colors"
+              className="px-8 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
             >
-              Back to Home / Login
+              Back to Home
             </button>
             <button 
               onClick={() => window.location.reload()}
-              className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4"
+              className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4 hover:text-white transition-colors"
             >
               Force Refresh App
             </button>

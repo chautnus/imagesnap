@@ -1,15 +1,17 @@
-// ImageSnap Service Worker
+// ImageSnap Service Worker v6 - Marvin Core Refined
 const CACHE_NAME = 'imagesnap-v6';
 
 self.addEventListener('install', (event) => {
+  // Force the waiting service worker to become the active service worker.
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+  // Ensure that updates to underlying service workers take effect immediately.
   event.waitUntil(clients.claim());
 });
 
-// Handle Web Share Target
+// Handle Web Share Target with Intercept-and-Redirect pattern (POST -> 303 -> GET)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const isDashboardPath = url.pathname === '/dashboard' || url.pathname === '/dashboard/';
@@ -17,24 +19,30 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method === 'POST' && isDashboardPath) {
     event.respondWith(
       (async () => {
-        const formData = await event.request.formData();
-        const imageFile = formData.get('images');
-        const title = formData.get('title') || '';
-        const text = formData.get('text') || '';
-        const link = formData.get('url') || '';
+        try {
+          const formData = await event.request.formData();
+          const imageFile = formData.get('images');
+          const title = formData.get('title') || '';
+          const text = formData.get('text') || '';
+          const link = formData.get('url') || '';
 
-        // Store shared data in IndexedDB and notify when done
-        if (imageFile) {
-          await saveSharedData({ 
-            image: imageFile, 
-            title, 
-            text, 
-            url: link,
-            timestamp: Date.now() 
-          });
+          // Atomic write to IndexedDB
+          if (imageFile) {
+            await saveSharedData({ 
+              image: imageFile, 
+              title, 
+              text, 
+              url: link,
+              timestamp: Date.now() 
+            });
+          }
+
+          // Return 303 See Other to force the browser to reload using GET
+          return Response.redirect('/dashboard', 303);
+        } catch (err) {
+          console.error('SW Share Interception Failed:', err);
+          return Response.redirect('/dashboard?error=share_failed', 303);
         }
-
-        return Response.redirect('/dashboard', 303);
       })()
     );
   }
