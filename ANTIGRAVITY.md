@@ -43,6 +43,12 @@
 - **Hotfix Auth Redirect**: Sửa lỗi thiếu script GSI và logic singleton cho `tokenClient` gây ra vòng lặp redirect về Landing Page.
 - **Documentation Audit**: Cập nhật toàn bộ hệ thống tài liệu (`BR.md`, `ARCH.md`) theo kiến trúc Next.js mới và thêm hướng dẫn cài đặt di động.
 
+## TỔNG KẾT TRẠNG THÁI (v1.4.6)
+- **Hệ thống**: Đã ổn định trên Next.js App Router.
+- **PWA**: Share Target hoạt động tốt trên Android, có hướng dẫn bù đắp cho iOS.
+- **Auth**: Đã fix triệt để lỗi kẹt màn hình logo và thiếu script GSI.
+- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.4.6).
+
 ### Dừng ở đâu?
 - Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.4.4.
 - Tính năng Share Target đã được sửa lỗi logic và sẵn sàng cho việc cài đặt PWA trên điện thoại.

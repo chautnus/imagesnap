@@ -20,7 +20,7 @@ Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based
 - **Service Worker (`sw.js`)**: 
     - Xử lý Web Share Target (POST `/share`).
     - Lưu trữ dữ liệu chia sẻ tạm thời vào IndexedDB (`ImageSnapSharing`).
-    - Redirect người dùng về `/dashboard?share-target=true`.
+    - Phát tín hiệu qua `BroadcastChannel` và Redirect người dùng về `/dashboard`.
 - **Manifest (`manifest.json`)**: Định nghĩa icon, theme và `share_target` configuration.
 
 ### ARCH-2.3 Extension (`src/extension/`)
