@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v6 - Marvin Core Refined
-const CACHE_NAME = 'imagesnap-v6';
+// ImageSnap Service Worker v7 - Payload Bypass Edition
+const CACHE_NAME = 'imagesnap-v7';
 
 self.addEventListener('install', (event) => {
   // Force the waiting service worker to become the active service worker.
@@ -14,9 +14,9 @@ self.addEventListener('activate', (event) => {
 // Handle Web Share Target with Intercept-and-Redirect pattern (POST -> 303 -> GET)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  const isDashboardPath = url.pathname === '/dashboard' || url.pathname === '/dashboard/';
+  const isSharePath = url.pathname === '/api/share-target';
 
-  if (event.request.method === 'POST' && isDashboardPath) {
+  if (event.request.method === 'POST' && isSharePath) {
     event.respondWith(
       (async () => {
         try {

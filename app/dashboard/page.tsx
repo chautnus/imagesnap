@@ -257,7 +257,7 @@ export default function Dashboard() {
             
             <div className="pt-4 animate-pulse">
               <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                System v1.5.6
+                System v1.5.7
               </div>
             </div>
           </div>
@@ -270,10 +270,16 @@ export default function Dashboard() {
               Back to Home
             </button>
             <button 
-              onClick={() => window.location.reload()}
+              onClick={async () => {
+                if ('serviceWorker' in navigator) {
+                  const regs = await navigator.serviceWorker.getRegistrations();
+                  for(let reg of regs) await reg.unregister();
+                  window.location.reload();
+                }
+              }}
               className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4 hover:text-white transition-colors"
             >
-              Force Refresh App
+              Reset & Update App
             </button>
           </div>
         </div>
@@ -294,7 +300,7 @@ export default function Dashboard() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.5.6"
+        version="v1.5.7"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

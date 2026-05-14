@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'edge'; // Use Edge Runtime for better payload handling
+
 export async function POST(request: NextRequest) {
-  // This is a fallback for when the Service Worker fails to intercept the Share Target request.
-  // Since we can't easily save large blobs to IndexedDB from the server-side fallback 
-  // without a complex session, we redirect back to dashboard with a hint.
+  // Server-side fallback (SW failed)
+  console.log("Edge share fallback triggered.");
   
-  console.log("Server-side share fallback triggered. SW interception failed.");
-  
-  // Return a 303 redirect to Dashboard as per PWA spec
-  return NextResponse.redirect(new URL('/dashboard?error=sw_interception_failed', request.url), 303);
+  // Try to redirect even if payload is large
+  return NextResponse.redirect(new URL('/dashboard?error=sw_not_ready', request.url), 303);
 }
 
 export async function GET(request: NextRequest) {
