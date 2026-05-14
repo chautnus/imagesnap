@@ -229,20 +229,41 @@ export default function Dashboard() {
       <div className="min-h-screen flex items-center justify-center bg-bg text-white">
         <div className="flex flex-col items-center gap-6 p-8 text-center">
           <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-          <div className="space-y-2">
-            <div className="text-xs font-black tracking-widest uppercase opacity-60">
-              {authError || "Authenticating ImageSnap..."}
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <div className="text-xs font-black tracking-widest uppercase opacity-60">
+                {authError || "Authenticating ImageSnap..."}
+              </div>
+              <p className="text-[10px] text-muted max-w-[200px] mx-auto">
+                {authError 
+                  ? "A connection error occurred. Redirecting..." 
+                  : "Establishing secure connection to Google Services. This may take a few seconds on mobile."}
+              </p>
             </div>
-            <p className="text-[10px] text-muted max-w-[200px]">
-              {authError ? "Redirecting..." : "If this takes too long, please try refreshing or logging in again."}
-            </p>
+            
+            {!authError && (
+              <div className="pt-4 animate-pulse">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
+                  System Version v1.5.3
+                </div>
+              </div>
+            )}
           </div>
-          <button 
-            onClick={() => window.location.href = '/'}
-            className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold hover:bg-white/10 transition-colors"
-          >
-            Back to Home / Login
-          </button>
+          
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={() => window.location.href = '/'}
+              className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold hover:bg-white/10 transition-colors"
+            >
+              Back to Home / Login
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4"
+            >
+              Force Refresh App
+            </button>
+          </div>
         </div>
       </div>
     );

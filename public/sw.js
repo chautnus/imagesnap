@@ -1,5 +1,5 @@
 // ImageSnap Service Worker
-const CACHE_NAME = 'imagesnap-v5';
+const CACHE_NAME = 'imagesnap-v6';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -12,9 +12,9 @@ self.addEventListener('activate', (event) => {
 // Handle Web Share Target
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  const isSharePath = url.pathname === '/share' || url.pathname === '/share/';
+  const isDashboardPath = url.pathname === '/dashboard' || url.pathname === '/dashboard/';
 
-  if (event.request.method === 'POST' && isSharePath) {
+  if (event.request.method === 'POST' && isDashboardPath) {
     event.respondWith(
       (async () => {
         const formData = await event.request.formData();
