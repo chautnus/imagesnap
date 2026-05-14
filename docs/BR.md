@@ -90,3 +90,4 @@
 | 2026-05-14 | v1.6.1 | RELEASE | Secure Migration (Nuclear Clean) & Deterministic Halt | Antigravity | Critical |
 | 2026-05-14 | v1.6.2 | HOTFIX | Fix TS build error (window.location.reload argument) | Antigravity | Medium |
 | 2026-05-14 | v1.6.3 | HOTFIX | Implement Suspense Boundary for useSearchParams compliance | Antigravity | Medium |
+| 2026-05-14 | v1.6.4 | RELEASE | Data-First Architecture & Sequential Initialization | Antigravity | Critical |

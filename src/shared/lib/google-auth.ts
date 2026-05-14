@@ -58,10 +58,9 @@ export const initGis = async (onSuccess: (token: string) => void) => {
   // Link the caller's callback to this promise
   authPromise.then(onSuccess).catch((err) => {
     console.error('Deterministic Auth Failure:', err.message);
-    // Force cleanup and redirect if needed
+    // Static Halt: Clear token but do NOT redirect automatically
     if (err.message === 'GSI_LOAD_TIMEOUT' || err.message === 'GSI_LOAD_FAILED') {
       localStorage.removeItem('ps_access_token');
-      window.location.href = '/?error=auth_timeout';
     }
   });
 

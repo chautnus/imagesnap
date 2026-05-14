@@ -28,6 +28,7 @@ function DashboardContent() {
   const [importedImages, setImportedImages] = useState<string[]>([]);
   const [importedUrl, setImportedUrl] = useState<string>('');
   const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
+  const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
 
   const { lang, t, toggleLang } = useI18n();
   const { 
@@ -41,12 +42,25 @@ function DashboardContent() {
   } = useAppData(spreadsheetId, user);
 
   useEffect(() => {
+    const runInitialization = async () => {
+      // Phase 1: Data-First Retrieval
+      setInitStage('DATA_READ');
+      await handleShareTarget();
+      
+      // Phase 2: Sequential Authentication
+      setInitStage('AUTH_PROCESS');
+      await handleInit();
+      
+      setInitStage('COMPLETED');
+    };
+
     const handleInit = async () => {
       const storedToken = localStorage.getItem('ps_access_token');
       const isStaff = localStorage.getItem('ps_is_staff') === 'true';
 
       if (!storedToken && !isStaff) {
-        window.location.href = '/';
+        // Static Halt instead of auto-redirect for better UX control
+        setAuthError("Session Required - Please login from the home page.");
         return;
       }
 
@@ -80,11 +94,11 @@ function DashboardContent() {
               initializeWorkspace();
             }
           } else {
-            setAuthError("Session Expired - Your identity could not be verified on the new infrastructure.");
+            setAuthError("Session Expired - Verification failed on new infrastructure.");
             localStorage.removeItem('ps_access_token');
           }
         } catch (e) {
-          setAuthError("Session Expired - Identity verification failed.");
+          setAuthError("Session Expired - Identity service error.");
           localStorage.removeItem('ps_access_token');
         }
       }).catch((err) => {
@@ -92,11 +106,9 @@ function DashboardContent() {
         localStorage.removeItem('ps_access_token');
       });
       
-      // Marvin Core Fix: UI recovery timeout must be > Service latency (10s + 5s = 15s)
-      // Setting to 18s for safety buffer
       const recoveryTimer = setTimeout(() => {
         if (!isAuthReady) {
-          setAuthError("Authentication Timed Out - Please check your connection.");
+          setAuthError("Authentication Timed Out - Check your connection.");
           localStorage.removeItem('ps_access_token');
         }
       }, 18000);
@@ -110,7 +122,19 @@ function DashboardContent() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    handleInit();
+    runInitialization();
+
+    // Background Migration Cleanup (Idle Phase)
+    if (typeof window !== 'undefined' && (window as any).requestIdleCallback) {
+      (window as any).requestIdleCallback(() => {
+        if ('serviceWorker' in navigator && !localStorage.getItem('migration_v1_6_1')) {
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            for(let r of regs) r.unregister();
+            localStorage.setItem('migration_v1_6_1', 'true');
+          });
+        }
+      });
+    }
 
     const channel = new BroadcastChannel('imagesnap-share-target');
     channel.onmessage = (event) => {
@@ -126,12 +150,7 @@ function DashboardContent() {
     };
   }, []);
 
-  // Separate effect for share target
-  useEffect(() => {
-    if (isAuthReady) {
-      handleShareTarget();
-    }
-  }, [isAuthReady]);
+  // Removed redundant dependency effect to maintain sequential flow
 
   const handleShareTarget = async () => {
     if (isConsumingRef.current) return;
@@ -252,17 +271,23 @@ function DashboardContent() {
             </div>
           )}
           
-          <div className="space-y-4">
+            <div className="space-y-4">
             <div className="space-y-1">
               <div className="text-xs font-black tracking-widest uppercase opacity-60">
-                {isTooLarge ? "File Too Large" : (authError ? "Critical Error" : "Authenticating...")}
+                {isTooLarge ? "File Too Large" : (authError ? "Critical Error" : "System Initializing")}
               </div>
               
               {!isTooLarge && !authError && (
                 <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
-                  <span>1. Loading Google Security Script</span>
-                  <span>2. Verifying Identity Token</span>
-                  <span>3. Establishing Encrypted Session</span>
+                  <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
+                    {initStage === 'DATA_READ' ? '●' : '○'} 1. Retrieving Shared Data
+                  </span>
+                  <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
+                    {initStage === 'AUTH_PROCESS' ? '●' : '○'} 2. Connecting to Google Identity
+                  </span>
+                  <span className={isAuthReady ? 'text-accent font-bold' : ''}>
+                    {isAuthReady ? '●' : '○'} 3. Verifying Security Token
+                  </span>
                 </div>
               )}
 
@@ -277,7 +302,7 @@ function DashboardContent() {
             
             <div className="pt-4 animate-pulse">
               <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                System v1.6.2
+                System v1.6.4
               </div>
             </div>
           </div>
@@ -333,7 +358,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.6.2"
+        version="v1.6.4"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
