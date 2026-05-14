@@ -38,19 +38,19 @@
 - **Accessibility**: Bật lại tính năng zoom cho người dùng di động (`user-scalable=yes`).
 - **Railway Compatibility**: Sửa lỗi Healthcheck bằng cách bind host `0.0.0.0` và thêm endpoint `/api/health`.
 - **UX Improvement**: Giữ nguyên giá trị của các trường `select` và `date` sau khi lưu để thuận tiện cho việc nhập liệu hàng loạt.
-- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.4.4**.
+- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.4.7**.
 - **Mobile & PWA Sync**: Rà soát và sửa lỗi Web Share Target API cho thiết bị di động, chuyển đổi lưu trữ từ Cache sang IndexedDB.
-- **Hotfix Auth Redirect**: Sửa lỗi thiếu script GSI và logic singleton cho `tokenClient` gây ra vòng lặp redirect về Landing Page.
+- **Hotfix Auth Redirect**: Sửa lỗi thiếu script GSI, logic singleton cho `tokenClient`, và lỗi vòng lặp useEffect (v1.4.7).
 - **Documentation Audit**: Cập nhật toàn bộ hệ thống tài liệu (`BR.md`, `ARCH.md`) theo kiến trúc Next.js mới và thêm hướng dẫn cài đặt di động.
 
-## TỔNG KẾT TRẠNG THÁI (v1.4.6)
+## TỔNG KẾT TRẠNG THÁI (v1.4.7)
 - **Hệ thống**: Đã ổn định trên Next.js App Router.
 - **PWA**: Share Target hoạt động tốt trên Android, có hướng dẫn bù đắp cho iOS.
 - **Auth**: Đã fix triệt để lỗi kẹt màn hình logo và thiếu script GSI.
-- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.4.6).
+- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.4.7).
 
 ### Dừng ở đâu?
-- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.4.4.
+- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.4.7.
 - Tính năng Share Target đã được sửa lỗi logic và sẵn sàng cho việc cài đặt PWA trên điện thoại.
 
 ---
