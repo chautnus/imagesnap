@@ -38,8 +38,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     const handleInit = async () => {
-      // ... (authentication logic)
+      // Immediate check for existing session
+      const storedToken = localStorage.getItem('ps_access_token');
       const isStaff = localStorage.getItem('ps_is_staff') === 'true';
+
+      if (!storedToken && !isStaff) {
+        console.log("No session found, redirecting to login...");
+        window.location.href = '/';
+        return;
+      }
+
       if (isStaff) {
         const staffEmail = localStorage.getItem('ps_staff_email');
         const storedId = localStorage.getItem('ps_sheet_id');
@@ -53,6 +61,7 @@ export default function Dashboard() {
         }
       }
 
+      // Initialize GIS and wait for token
       initGis(async (token) => {
         setAccessToken(token);
         try {
@@ -71,32 +80,43 @@ export default function Dashboard() {
             }
           } else {
             localStorage.removeItem('ps_access_token');
-            setIsAuthReady(false);
             window.location.href = '/';
           }
         } catch (e) {
           localStorage.removeItem('ps_access_token');
-          setIsAuthReady(false);
           window.location.href = '/';
         }
       });
+      
+      // Safety timeout: if GIS or profile takes > 10s, something is wrong
+      const timeout = setTimeout(() => {
+        if (!isAuthReady) {
+          console.warn("Auth timeout reached, checking status...");
+          if (!localStorage.getItem('ps_access_token')) window.location.href = '/';
+        }
+      }, 10000);
+      return () => clearTimeout(timeout);
     };
 
     handleInit();
-    
-    // Check for shared data on mount (Mutating Read)
-    handleShareTarget();
 
-    // Listen for realtime share events
+    // Listen for realtime share events (for apps already open)
     const channel = new BroadcastChannel('imagesnap-share-target');
     channel.onmessage = (event) => {
-      if (event.data.type === 'NEW_SHARE_DATA') {
+      if (event.data.type === 'NEW_SHARE_DATA' && isAuthReady) {
         handleShareTarget();
       }
     };
 
     return () => channel.close();
-  }, []);
+  }, [isAuthReady]); // Re-run or check when isAuthReady changes
+
+  // Separate effect for share target to ensure it only runs once when auth is ready
+  useEffect(() => {
+    if (isAuthReady) {
+      handleShareTarget();
+    }
+  }, [isAuthReady]);
 
   const handleShareTarget = async () => {
     if (isConsumingRef.current) return;
