@@ -49,6 +49,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={outfit.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator && !localStorage.getItem('migration_v1_6_1')) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              for(let registration of registrations) {
+                registration.unregister();
+              }
+              localStorage.setItem('migration_v1_6_1', 'true');
+              window.location.reload(true); 
+            });
+          }
+        `}} />
+      </head>
       <body className="antialiased">
         {children}
         <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />

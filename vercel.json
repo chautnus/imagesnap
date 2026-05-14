@@ -32,11 +32,5 @@
         }
       ]
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/share",
-      "destination": "/api/share-target"
-    }
   ]
 }

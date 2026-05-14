@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Navigation } from '@web/components/Navigation';
 import { CaptureTab, ProductMetadata } from '@web/components/CaptureTab';
 import { DataTab } from '@web/components/DataTab';
@@ -20,7 +21,9 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
+  const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
   const isConsumingRef = useRef(false);
+  const searchParams = useSearchParams();
   
   const [importedImages, setImportedImages] = useState<string[]>([]);
   const [importedUrl, setImportedUrl] = useState<string>('');
@@ -77,31 +80,35 @@ export default function Dashboard() {
               initializeWorkspace();
             }
           } else {
-            setAuthError("Failed to retrieve user profile. Please login again.");
+            setAuthError("Session Expired - Your identity could not be verified on the new infrastructure.");
             localStorage.removeItem('ps_access_token');
-            setTimeout(() => window.location.href = '/', 2000);
           }
         } catch (e) {
-          setAuthError("Authentication error. Please try again.");
+          setAuthError("Session Expired - Identity verification failed.");
           localStorage.removeItem('ps_access_token');
-          setTimeout(() => window.location.href = '/', 2000);
         }
       }).catch((err) => {
         setAuthError(`Auth Service Error: ${err.message}`);
-        setTimeout(() => window.location.href = '/', 3000);
+        localStorage.removeItem('ps_access_token');
       });
       
       // Marvin Core Fix: UI recovery timeout must be > Service latency (10s + 5s = 15s)
       // Setting to 18s for safety buffer
       const recoveryTimer = setTimeout(() => {
         if (!isAuthReady) {
-          setAuthError("Authentication is taking longer than expected. Retrying...");
-          setTimeout(() => { if (!isAuthReady) window.location.href = '/'; }, 3000);
+          setAuthError("Authentication Timed Out - Please check your connection.");
+          localStorage.removeItem('ps_access_token');
         }
       }, 18000);
 
       return () => clearTimeout(recoveryTimer);
     };
+
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     handleInit();
 
@@ -112,7 +119,11 @@ export default function Dashboard() {
       }
     };
 
-    return () => channel.close();
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      channel.close();
+    };
   }, []);
 
   // Separate effect for share target
@@ -225,39 +236,48 @@ export default function Dashboard() {
   };
 
   if (!user || !isAuthReady) {
+    const isTooLarge = searchParams.get('error') === 'file_too_large';
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg text-white">
         <div className="flex flex-col items-center gap-6 p-8 text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-          </div>
+          {!isTooLarge ? (
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
+              <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
+              <span className="text-2xl text-accent">⚠️</span>
+            </div>
+          )}
           
           <div className="space-y-4">
             <div className="space-y-1">
               <div className="text-xs font-black tracking-widest uppercase opacity-60">
-                {authError || "Authenticating..."}
+                {isTooLarge ? "File Too Large" : (authError ? "Critical Error" : "Authenticating...")}
               </div>
-              <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
-                {!authError && (
-                  <>
-                    <span>1. Loading Google Security Script</span>
-                    <span>2. Verifying Identity Token</span>
-                    <span>3. Establishing Encrypted Session</span>
-                  </>
-                )}
-              </div>
-              {authError && (
+              
+              {!isTooLarge && !authError && (
+                <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
+                  <span>1. Loading Google Security Script</span>
+                  <span>2. Verifying Identity Token</span>
+                  <span>3. Establishing Encrypted Session</span>
+                </div>
+              )}
+
+              {(authError || isTooLarge) && (
                 <p className="text-[10px] text-accent mt-2 max-w-[220px] mx-auto leading-relaxed">
-                  The authentication service timed out or was blocked by the browser. 
-                  Please ensure you are logged into Google and try refreshing.
+                  {isTooLarge 
+                    ? "The shared image exceeds the 20MB limit. Please try a smaller file for smooth performance."
+                    : authError}
                 </p>
               )}
             </div>
             
             <div className="pt-4 animate-pulse">
               <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                System v1.5.7
+                System v1.6.1
               </div>
             </div>
           </div>
@@ -272,14 +292,22 @@ export default function Dashboard() {
             <button 
               onClick={async () => {
                 if ('serviceWorker' in navigator) {
-                  const regs = await navigator.serviceWorker.getRegistrations();
-                  for(let reg of regs) await reg.unregister();
-                  window.location.reload();
+                  try {
+                    const regs = await navigator.serviceWorker.getRegistrations();
+                    for(let reg of regs) await reg.unregister();
+                    if ('caches' in window) {
+                      const keys = await caches.keys();
+                      for(let key of keys) await caches.delete(key);
+                    }
+                    window.location.reload(true);
+                  } catch (e) {
+                    window.location.reload();
+                  }
                 }
               }}
               className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4 hover:text-white transition-colors"
             >
-              Reset & Update App
+              Hard Reset & Update
             </button>
           </div>
         </div>
@@ -295,12 +323,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen pb-20 w-full max-w-2xl mx-auto relative bg-bg text-white">
+      {isOffline && (
+        <div className="bg-accent text-black text-[10px] font-black uppercase tracking-widest py-1 px-4 text-center sticky top-0 z-[100] animate-in slide-in-from-top duration-300">
+          ⚠️ You are currently offline. Some features may be limited.
+        </div>
+      )}
       <Header 
         activeTab={activeTab}
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.5.7"
+        version="v1.6.1"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

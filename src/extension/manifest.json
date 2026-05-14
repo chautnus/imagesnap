@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6AwwaOQOE63qkGk6mw80n+g1AHr8GwN7C36rx4xD/Tvn1zhAruW4C2wDcQFy+KQw0yacUEEcYLlCkfGI1zruv7QV/EYVJezYRb2TOsdnnmnNSvngrHSAebi2zB9x3R7BDqIZgCeJd3w0RDSOinAOydokuVJb+vdDn/XqwilPPjT5nJoiiRDza0hxqFfvusGOpl0SBarf+wQXCBMhsMhPKXKc7cOMzczMPzjna2dRv7pPVc5Jkz9X3u7M2yeHkQPJvvHl3eXkmcs6oOFdDwWQXxNPoyXMhvhAjoabSNIVVU1JpFPGnzDKRF7W8KvYZOmyM0Axh1vR7sTxNCPRmphi/wIDAQAB",
   "name": "ImageSnap — Save Images & Context to Google Sheets",
-  "version": "1.5.7",
+  "version": "1.6.1",
   "description": "Snap product images and metadata from any website directly to your Google Drive and Sheets.",
   "author": "ImageSnap Cloud",
   "icons": {
