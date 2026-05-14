@@ -30,7 +30,17 @@ Sau khi đã cài đặt ImageSnap lên màn hình chính, bạn có thể sử 
 
 ---
 
-## 3. Một số lưu ý
+## 3. Một số lưu ý quan trọng
+
+### ⚠️ Hạn chế trên iOS (iPhone/iPad)
+Hiện tại, **Apple (iOS) chưa cho phép** các ứng dụng web (PWA) xuất hiện trong danh sách chia sẻ của hệ thống. 
+- **Giải pháp cho iPhone**: Thay vì chia sẻ trực tiếp từ Ảnh, bạn hãy mở ứng dụng **ImageSnap** từ màn hình chính, sau đó nhấn vào nút **GALLERY** hoặc **APP CAMERA** để chọn ảnh.
+
+### ✅ Hỗ trợ tốt trên Android
+Tính năng chia sẻ trực tiếp hoạt động tốt trên các dòng máy Android (Samsung, Pixel, Oppo, v.v.) sử dụng trình duyệt Chrome.
+- **Yêu cầu**: Bạn phải chọn "Cài đặt ứng dụng" hoặc "Thêm vào màn hình chính" để trình duyệt đăng ký app với hệ thống chia sẻ của điện thoại.
+
+## 4. Các lưu ý khác
 - **Đăng nhập**: Bạn cần đăng nhập bằng tài khoản Google trên trình duyệt (Safari/Chrome) trước khi cài đặt hoặc lần đầu mở app để đảm bảo dữ liệu được đồng bộ về Google Sheets của bạn.
 - **Quyền truy cập**: Nếu hệ thống hỏi quyền truy cập ảnh hoặc thông báo, hãy chọn "Cho phép" để tính năng hoạt động ổn định nhất.
 - **Offline**: ImageSnap hỗ trợ hoạt động ngoại tuyến cơ bản, nhưng bạn cần kết nối mạng để dữ liệu được lưu thành công lên Google Drive và Sheets.
