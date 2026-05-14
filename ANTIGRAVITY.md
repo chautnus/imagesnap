@@ -10,6 +10,7 @@
 - **Official Domain**: [www.imagesnap.cloud](https://www.imagesnap.cloud)
 - **Status**: Active / Production Ready
 - **Core Architecture**: Centralized Storage (Staff-to-Admin Proxy) / Next.js SSR
+- **Deployment Platform**: Vercel (Production) / Railway (Backup/Legacy)
 
 ## 🚀 Key Features
 - **Next.js App Router**: Full SSR/SSG support for SEO optimization.
@@ -41,6 +42,7 @@
 - **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.5.1** (Marvin Core Edition).
 - **Mobile & PWA Sync**: Rà soát và sửa lỗi Web Share Target API cho thiết bị di động, chuyển đổi lưu trữ từ Cache sang IndexedDB.
 - **Deterministic Auth Flow**: Triển khai Hard Timeout (10s Script, 5s API), Callback Queue Flush, và đồng bộ hóa độ trễ UI/Service 18s (v1.5.1).
+- **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.5.1).
 - **Documentation Audit**: Cập nhật toàn bộ hệ thống tài liệu (`BR.md`, `ARCH.md`) theo kiến trúc Next.js mới và thêm hướng dẫn cài đặt di động.
 
 ## TỔNG KẾT TRẠNG THÁI (v1.5.1)
