@@ -39,20 +39,20 @@
 - **Accessibility**: Bật lại tính năng zoom cho người dùng di động (`user-scalable=yes`).
 - **Railway Compatibility**: Sửa lỗi Healthcheck bằng cách bind host `0.0.0.0` và thêm endpoint `/api/health`.
 - **UX Improvement**: Giữ nguyên giá trị của các trường `select` và `date` sau khi lưu để thuận tiện cho việc nhập liệu hàng loạt.
-- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.5.1** (Marvin Core Edition).
+- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.5.6**.
 - **Mobile & PWA Sync**: Rà soát và sửa lỗi Web Share Target API cho thiết bị di động, chuyển đổi lưu trữ từ Cache sang IndexedDB.
 - **Deterministic Auth Flow**: Triển khai Hard Timeout (10s Script, 5s API), Callback Queue Flush, và đồng bộ hóa độ trễ UI/Service 18s (v1.5.1).
-- **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.5.1).
+- **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.5.6).
 - **Documentation Audit**: Cập nhật toàn bộ hệ thống tài liệu (`BR.md`, `ARCH.md`) theo kiến trúc Next.js mới và thêm hướng dẫn cài đặt di động.
 
-## TỔNG KẾT TRẠNG THÁI (v1.5.1)
+## TỔNG KẾT TRẠNG THÁI (v1.5.6)
 - **Hệ thống**: Đã ổn định trên Next.js App Router.
 - **PWA**: Share Target hoạt động tốt trên Android, có hướng dẫn bù đắp cho iOS.
 - **Auth**: Đã fix triệt để lỗi kẹt màn hình logo và thiếu script GSI.
-- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.5.1).
+- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.5.6).
 
 ### Dừng ở đâu?
-- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.5.1.
+- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.5.6.
 - Tính năng Share Target đã được sửa lỗi logic và sẵn sàng cho việc cài đặt PWA trên điện thoại.
 
 ---
