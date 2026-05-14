@@ -10,28 +10,34 @@ export const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.
 
 let tokenClient: any = null;
 let accessToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('ps_access_token') : null;
+const successListeners = new Set<(token: string) => void>();
 
 export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
   if (typeof window === 'undefined') return;
+
+  // Add to listeners
+  successListeners.add(onSuccess);
 
   // Extension Check: Use chrome.identity if available
   // @ts-ignore
   const isExtension = !!(window.chrome && window.chrome.identity);
 
   if (isExtension) {
-    console.log('Detected Chrome Extension environment.');
     if (accessToken) onSuccess(accessToken);
-    return; // Extensions don't need GSI for background auth usually
+    return;
   }
 
   const google = (window as any).google;
   if (!google) {
     if (retries < 30) {
-      console.log(`Google GSI script not loaded yet. Retrying in 500ms... (attempt ${retries + 1})`);
       setTimeout(() => initGis(onSuccess, retries + 1), 500);
-    } else {
-      console.warn('Google GSI script failed to load after 30 attempts.');
     }
+    return;
+  }
+
+  // Singleton pattern for tokenClient
+  if (tokenClient) {
+    if (accessToken) onSuccess(accessToken);
     return;
   }
 
@@ -43,19 +49,16 @@ export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
       callback: (response: any) => {
         if (response.error !== undefined) {
           console.error('GIS Error:', response);
-          if (response.error === 'idpiframe_initialization_failed') {
-            alert('Lỗi khởi tạo: Hãy đảm bảo bạn đã bật cookies cho trang web này.');
-          }
           return;
         }
         accessToken = response.access_token;
         localStorage.setItem('ps_access_token', response.access_token);
-        onSuccess(response.access_token);
+        // Notify all listeners
+        successListeners.forEach(listener => listener(response.access_token));
       },
     });
     console.log('GIS initialized successfully');
 
-    // Auto-login if token exists
     if (accessToken) {
       onSuccess(accessToken);
     }
@@ -82,9 +85,11 @@ export async function getUserInfo(token: string) {
 }
 
 export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {
+  if (onSuccess) successListeners.add(onSuccess);
+
   // @ts-ignore
   if (window.chrome && window.chrome.identity) {
-    // Extension Logic (unchanged)
+    // ... extension logic (kept same)
     const redirectUri = 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${GOOGLE_CLIENT_ID}&` +
@@ -93,25 +98,14 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
       `scope=${encodeURIComponent(SCOPES)}&` +
       `prompt=${prompt}`;
 
-    console.log('Launching WebAuthFlow for extension...');
-    // @ts-ignore
     window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl: string | undefined) => {
-      if (window.chrome.runtime.lastError) {
-        console.error('LaunchWebAuthFlow Error:', window.chrome.runtime.lastError.message);
-        return;
-      }
       if (redirectUrl) {
         const url = new URL(redirectUrl.replace('#', '?'));
         const token = url.searchParams.get('access_token');
         if (token) {
           accessToken = token;
           localStorage.setItem('ps_access_token', token);
-          if (onSuccess) onSuccess(token);
-          if (window.chrome && window.chrome.runtime && window.chrome.runtime.getURL) {
-            window.location.href = window.chrome.runtime.getURL('index.html');
-          } else {
-            window.location.reload();
-          }
+          successListeners.forEach(l => l(token));
         }
       }
     });
@@ -119,11 +113,9 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
   }
 
   if (!tokenClient) {
-    console.log("Auth client not ready, attempting to initialize...");
     initGis((token) => {
       if (tokenClient) {
         tokenClient.requestAccessToken({ prompt });
-        if (onSuccess) onSuccess(token);
       }
     });
     return;

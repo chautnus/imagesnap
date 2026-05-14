@@ -51,6 +51,7 @@ export default function RootLayout({
     <html lang="en" className={outfit.variable}>
       <body className="antialiased">
         {children}
+        <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-XC45ZRJ7Y9" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
