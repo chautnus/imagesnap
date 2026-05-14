@@ -15,6 +15,7 @@ import { SubscriptionStatus } from '@shared/lib/types';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings' | 'help'>('capture');
+  const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
@@ -76,14 +77,26 @@ export default function Dashboard() {
               initializeWorkspace();
             }
           } else {
+            setAuthError("Failed to retrieve user profile. Please login again.");
             localStorage.removeItem('ps_access_token');
-            window.location.href = '/';
+            setTimeout(() => window.location.href = '/', 2000);
           }
         } catch (e) {
+          setAuthError("Authentication error. Please try again.");
           localStorage.removeItem('ps_access_token');
-          window.location.href = '/';
+          setTimeout(() => window.location.href = '/', 2000);
         }
       });
+      
+      // Auto-recovery after 12s
+      const recoveryTimer = setTimeout(() => {
+        if (!isAuthReady) {
+          setAuthError("Authentication is taking longer than expected...");
+          setTimeout(() => { if (!isAuthReady) window.location.href = '/'; }, 3000);
+        }
+      }, 12000);
+
+      return () => clearTimeout(recoveryTimer);
     };
 
     handleInit();
@@ -96,9 +109,9 @@ export default function Dashboard() {
     };
 
     return () => channel.close();
-  }, []); // Remove isAuthReady from dependencies to prevent loop
+  }, []);
 
-  // Separate effect for share target to ensure it only runs once when auth is ready
+  // Separate effect for share target
   useEffect(() => {
     if (isAuthReady) {
       handleShareTarget();
@@ -213,8 +226,12 @@ export default function Dashboard() {
         <div className="flex flex-col items-center gap-6 p-8 text-center">
           <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
           <div className="space-y-2">
-            <div className="text-xs font-black tracking-widest uppercase opacity-60">Authenticating ImageSnap...</div>
-            <p className="text-[10px] text-muted max-w-[200px]">If this takes too long, please try refreshing or logging in again.</p>
+            <div className="text-xs font-black tracking-widest uppercase opacity-60">
+              {authError || "Authenticating ImageSnap..."}
+            </div>
+            <p className="text-[10px] text-muted max-w-[200px]">
+              {authError ? "Redirecting..." : "If this takes too long, please try refreshing or logging in again."}
+            </p>
           </div>
           <button 
             onClick={() => window.location.href = '/'}
@@ -240,7 +257,7 @@ export default function Dashboard() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.4.8"
+        version="v1.4.9"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

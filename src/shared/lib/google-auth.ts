@@ -15,22 +15,32 @@ const successListeners = new Set<(token: string) => void>();
 export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
   if (typeof window === 'undefined') return;
 
-  // Add to listeners
+  // Add to listeners FIRST
   successListeners.add(onSuccess);
 
-  // Extension Check: Use chrome.identity if available
+  // Extension Check
   // @ts-ignore
-  const isExtension = !!(window.chrome && window.chrome.identity);
-
-  if (isExtension) {
+  if (window.chrome && window.chrome.identity) {
     if (accessToken) onSuccess(accessToken);
     return;
   }
 
   const google = (window as any).google;
+  
+  // Manual script injection fallback if script is missing or blocked
+  if (!google && retries === 0) {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   if (!google) {
     if (retries < 30) {
       setTimeout(() => initGis(onSuccess, retries + 1), 500);
+    } else {
+      console.error('Google GSI script failed to load after 30 retries');
     }
     return;
   }
@@ -53,11 +63,9 @@ export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
         }
         accessToken = response.access_token;
         localStorage.setItem('ps_access_token', response.access_token);
-        // Notify all listeners
         successListeners.forEach(listener => listener(response.access_token));
       },
     });
-    console.log('GIS initialized successfully');
 
     if (accessToken) {
       onSuccess(accessToken);
@@ -68,10 +76,16 @@ export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
 };
 
 export async function getUserInfo(token: string) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
   try {
     const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'Authorization': `Bearer ${token}` },
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
+    
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
         localStorage.removeItem('ps_access_token');
@@ -80,6 +94,7 @@ export async function getUserInfo(token: string) {
     }
     return response.json();
   } catch (e) {
+    console.warn('User info fetch failed or timed out:', e);
     return null;
   }
 }
