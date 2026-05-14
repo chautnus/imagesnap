@@ -38,31 +38,22 @@
 - **Accessibility**: Bật lại tính năng zoom cho người dùng di động (`user-scalable=yes`).
 - **Railway Compatibility**: Sửa lỗi Healthcheck bằng cách bind host `0.0.0.0` và thêm endpoint `/api/health`.
 - **UX Improvement**: Giữ nguyên giá trị của các trường `select` và `date` sau khi lưu để thuận tiện cho việc nhập liệu hàng loạt.
-- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.4.0**.
-- **Store Preparation**: Chuẩn bị tài liệu giải trình quyền (`PRIVACY_JUSTIFICATION.md`) cho Chrome Web Store.
-- **Mobile & PWA Fixes**: Khôi phục Share Target, cấu hình manifest.json và sửa lỗi vỡ UI mobile.
-- **SEO Audit & Fixes**: 
-  - Thực hiện audit SEO toàn diện và phát hiện 12+ route quan trọng (Blog, Compare, Use Cases) bị lỗi 404 sau khi chuyển sang Next.js.
-  - Port thành công toàn bộ các trang nội dung sang dynamic routes (`app/blog/[slug]`, `app/compare/[slug]`, `app/use-cases/[slug]`).
-  - Tối ưu hóa SSG: Thêm `generateStaticParams` để pre-render toàn bộ các trang nội dung, đảm bảo tốc độ load nhanh và SEO tốt nhất.
-  - Fix lỗi build Next.js 15+: Xử lý triệt để lỗi "Event handlers cannot be passed to Client Component" và "useContext is null" bằng cách chuẩn hóa ranh giới Server/Client và chuyển sang `next/link`.
-  - Cập nhật `robots.txt` để bảo mật trang dashboard và tối ưu crawl budget.
-  - Tích hợp `generateMetadata` và `next/image` cho toàn bộ landing page.
+- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.4.3**.
+- **Mobile & PWA Sync**: Rà soát và sửa lỗi Web Share Target API cho thiết bị di động, chuyển đổi lưu trữ từ Cache sang IndexedDB.
+- **Documentation Audit**: Cập nhật toàn bộ hệ thống tài liệu (`BR.md`, `ARCH.md`) theo kiến trúc Next.js mới và thêm hướng dẫn cài đặt di động.
 
 ### Dừng ở đâu?
-- Ứng dụng Next.js đã build thành công và hoạt động tốt trên Railway.
-- Extension đã được đồng bộ hóa logic với Web App.
-- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.4.0.
+- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.4.3.
+- Tính năng Share Target đã được sửa lỗi logic và sẵn sàng cho việc cài đặt PWA trên điện thoại.
 
 ---
 
 ## Open Items cần attention
 
 ```
-[x] [DEV-2026W19-07] Next.js Migration (SSR/SEO) → COMPLETED.
-[x] [DEV-2026W19-08] Railway Healthcheck Fix → COMPLETED.
-[x] [DEV-2026W19-09] Chrome Store Permission Justification → COMPLETED.
-[ ] [DEV-2026W19-10] Final QA & Extension Submission.
+[x] [DEV-2026W19-10] Final QA & Extension Submission.
+[x] [DEV-2026W19-11] Documentation Audit & Mobile PWA Guide.
+[ ] [DEV-2026W19-12] Promote PWA installation to mobile users via UI banner.
 ```
 
 ---

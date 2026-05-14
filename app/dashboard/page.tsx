@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navigation } from '@web/components/Navigation';
 import { CaptureTab, ProductMetadata } from '@web/components/CaptureTab';
 import { DataTab } from '@web/components/DataTab';
@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
+  const isConsumingRef = useRef(false);
   
   const [importedImages, setImportedImages] = useState<string[]>([]);
   const [importedUrl, setImportedUrl] = useState<string>('');
@@ -37,7 +38,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const handleInit = async () => {
-      // Check for staff session first
+      // ... (authentication logic)
       const isStaff = localStorage.getItem('ps_is_staff') === 'true';
       if (isStaff) {
         const staffEmail = localStorage.getItem('ps_staff_email');
@@ -52,9 +53,7 @@ export default function Dashboard() {
         }
       }
 
-      // Google Auth Initialization
       initGis(async (token) => {
-        console.log("Auth token ready, fetching user profile...");
         setAccessToken(token);
         try {
           const profile = await getUserInfo(token);
@@ -71,13 +70,11 @@ export default function Dashboard() {
               initializeWorkspace();
             }
           } else {
-            console.error("No profile found for token");
             localStorage.removeItem('ps_access_token');
             setIsAuthReady(false);
             window.location.href = '/';
           }
         } catch (e) {
-          console.error("Dashboard auth error:", e);
           localStorage.removeItem('ps_access_token');
           setIsAuthReady(false);
           window.location.href = '/';
@@ -86,44 +83,83 @@ export default function Dashboard() {
     };
 
     handleInit();
+    
+    // Check for shared data on mount (Mutating Read)
     handleShareTarget();
+
+    // Listen for realtime share events
+    const channel = new BroadcastChannel('imagesnap-share-target');
+    channel.onmessage = (event) => {
+      if (event.data.type === 'NEW_SHARE_DATA') {
+        handleShareTarget();
+      }
+    };
+
+    return () => channel.close();
   }, []);
 
   const handleShareTarget = async () => {
-    const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('share-target') === 'true') {
-      try {
-        const cache = await caches.open('shared-data');
-        const metaRes = await cache.match('/shared-metadata');
-        
-        if (metaRes) {
-          const metadata = await metaRes.json();
-          const images: string[] = [];
-          
-          for (let i = 0; i < metadata.imageCount; i++) {
-            const imgRes = await cache.match(`/shared-image-${i}`);
-            if (imgRes) {
-              const blob = await imgRes.blob();
-              const reader = new FileReader();
-              const dataUrl = await new Promise<string>((resolve) => {
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(blob);
-              });
-              images.push(dataUrl);
-            }
-          }
+    if (isConsumingRef.current) return;
+    isConsumingRef.current = true;
 
-          if (images.length > 0) setImportedImages(images);
-          if (metadata.url || metadata.text) setImportedUrl(metadata.url || metadata.text);
-          if (metadata.title) setImportedMetadata({ t: metadata.title });
-
-          await caches.delete('shared-data');
-          window.history.replaceState({}, document.title, window.location.pathname);
+    try {
+      // Mutating Read: Get and Delete in one go (conceptually atomic via IDB transaction)
+      const data = await consumeSharedDataFromDB();
+      
+      if (data) {
+        const images: string[] = [];
+        if (data.image) {
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(data.image);
+          });
+          images.push(dataUrl);
         }
-      } catch (e) {
-        console.error("Failed to load shared data", e);
+
+        if (images.length > 0) setImportedImages(images);
+        if (data.url || data.text) setImportedUrl(data.url || data.text);
+        if (data.title) setImportedMetadata({ t: data.title });
+        
+        // Ensure we are on the capture tab
+        setActiveTab('capture');
       }
+    } catch (e) {
+      console.error("Failed to consume shared data", e);
+    } finally {
+      isConsumingRef.current = false;
     }
+  };
+
+  const consumeSharedDataFromDB = (): Promise<any> => {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('ImageSnapSharing', 1);
+      request.onsuccess = (event: any) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('sharedContent')) {
+          resolve(null);
+          return;
+        }
+        
+        const transaction = db.transaction('sharedContent', 'readwrite');
+        const store = transaction.objectStore('sharedContent');
+        const getReq = store.get('latest');
+        
+        getReq.onsuccess = () => {
+          const result = getReq.result;
+          if (result) {
+            // Atomic delete immediately after successful read
+            store.delete('latest');
+            transaction.oncomplete = () => resolve(result);
+          } else {
+            resolve(null);
+          }
+        };
+        getReq.onerror = () => reject(getReq.error);
+        transaction.onerror = () => reject(transaction.error);
+      };
+      request.onerror = () => reject(request.error);
+    });
   };
 
   const initializeWorkspace = async () => {
@@ -188,7 +224,7 @@ export default function Dashboard() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.4.2"
+        version="v1.4.3"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

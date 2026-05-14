@@ -1,7 +1,7 @@
 // ProductSnap Background Script
 console.log('ImageSnap Background Service Worker Initializing...');
 
-const DEFAULT_APP_URL = 'https://ais-pre-litx3qlsepsiwqgx5n3vmu-658490117315.us-east1.run.app';
+const DEFAULT_APP_URL = 'https://www.imagesnap.cloud';
 
 // Handle messages from content scripts or popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

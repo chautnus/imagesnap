@@ -22,7 +22,7 @@ self.addEventListener('fetch', (event) => {
         const text = formData.get('text') || '';
         const link = formData.get('url') || '';
 
-        // Store shared data in IndexedDB
+        // Store shared data in IndexedDB and notify when done
         if (imageFile) {
           await saveSharedData({ 
             image: imageFile, 
@@ -33,7 +33,7 @@ self.addEventListener('fetch', (event) => {
           });
         }
 
-        return Response.redirect('/dashboard?sharing=1', 303);
+        return Response.redirect('/dashboard', 303);
       })()
     );
   }
@@ -61,6 +61,10 @@ async function saveSharedData(data) {
       store.add({ ...data, id: 'latest' });
       
       transaction.oncomplete = () => {
+        // Only broadcast once transaction is fully committed to disk
+        const channel = new BroadcastChannel('imagesnap-share-target');
+        channel.postMessage({ type: 'NEW_SHARE_DATA' });
+        channel.close();
         db.close();
         resolve();
       };

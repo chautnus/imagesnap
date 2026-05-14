@@ -64,6 +64,13 @@
 
 ---
 
+## BR-6. Progressive Web App (PWA)
+**BR-6.1 Installation**: Ứng dụng phải hỗ trợ cài đặt PWA trên iOS và Android (Add to Home Screen).
+**BR-6.2 Web Share Target**: Ứng dụng phải có khả năng nhận hình ảnh chia sẻ từ các ứng dụng khác thông qua Web Share Target API.
+**BR-6.3 Offline Access**: Hỗ trợ Service Worker để đảm bảo tính ổn định của ứng dụng và xử lý dữ liệu chia sẻ.
+
+---
+
 ## CHANGELOG
 > Mọi thay đổi BR đều ghi ở đây để trace nguyên nhân.
 
@@ -71,3 +78,5 @@
 |------|----|---------------|----------|--------|--------|
 | 2026-04-27 | BR-1 -> BR-4 | INITIAL | Khởi tạo từ PROJECT_REQUIREMENTS.md | Antigravity | N/A |
 | 2026-04-28 | BR-3, BR-5 | UPDATE | Thêm yêu cầu về Burst Mode, Native Camera và tuân thủ Chrome Store | Antigravity | High |
+| 2026-05-13 | BR-6 | NEW | Thêm yêu cầu về PWA và Web Share Target cho di động | Antigravity | Medium |
+| 2026-05-13 | ARCH-Update | UPDATE | Chuyển đổi toàn bộ kiến trúc sang Next.js App Router (v1.4.x) | Antigravity | High |
