@@ -83,4 +83,4 @@
 | 2026-04-28 | BR-3, BR-5 | UPDATE | Thêm yêu cầu về Burst Mode, Native Camera và tuân thủ Chrome Store | Antigravity | High |
 | 2026-05-13 | BR-6 | NEW | Thêm yêu cầu về PWA và Web Share Target cho di động | Antigravity | Medium |
 | 2026-05-13 | ARCH-Update | UPDATE | Chuyển đổi toàn bộ kiến trúc sang Next.js App Router (v1.4.x) | Antigravity | High |
-| 2026-05-14 | v1.4.7-Fix | HOTFIX | Sửa lỗi kẹt Auth Logo, thiếu GSI script và tối ưu Share Target | Antigravity | Medium |
+| 2026-05-14 | v1.5.1-Fix | HOTFIX | Triển khai Marvin Core Auth (Deterministic Flow) & Latency Sync 18s | Antigravity | Medium |

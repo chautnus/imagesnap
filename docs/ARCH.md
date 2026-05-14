@@ -16,6 +16,13 @@ Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based
 - **API Routes**: `/api/proxy-image`, `/api/proxy/save-product`, `/api/user-status`, v.v.
 - **Middleware/Layout**: Quản lý Auth (GIS) và SEO metadata toàn hệ thống.
 
+### 4. Xác thực & Phục hồi (Marvin Core Edition - v1.5.1)
+Hệ thống sử dụng triết lý **Deterministic Termination**:
+- **Script Loading**: Hard timeout 10s.
+- **User Info API**: Hard timeout 5s (AbortController).
+- **UI Sync**: Dashboard recovery timer 18s (đảm bảo bao phủ tổng độ trễ tầng Service).
+- **Fail-fast**: Xóa session và redirect ngay khi có lỗi `reject` từ Auth Queue.
+
 ### ARCH-2.2 PWA & Service Worker (`public/`)
 - **Service Worker (`sw.js`)**: 
     - Xử lý Web Share Target (POST `/share`).
