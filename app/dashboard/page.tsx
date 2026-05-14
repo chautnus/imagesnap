@@ -240,7 +240,7 @@ export default function Dashboard() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.4.7"
+        version="v1.4.8"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
