@@ -125,11 +125,11 @@ export async function getUserInfo(token: string) {
 }
 
 export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {
-  if (onSuccess) successListeners.add(onSuccess);
+  if (onSuccess) authQueue.push({ resolve: onSuccess, reject: () => {} });
 
+  // Extension Check: Use chrome.identity
   // @ts-ignore
   if (window.chrome && window.chrome.identity) {
-    // ... extension logic (kept same)
     const redirectUri = 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${GOOGLE_CLIENT_ID}&` +
@@ -145,7 +145,8 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
         if (token) {
           accessToken = token;
           localStorage.setItem('ps_access_token', token);
-          successListeners.forEach(l => l(token));
+          authQueue.forEach(q => q.resolve(token));
+          authQueue = [];
         }
       }
     });
