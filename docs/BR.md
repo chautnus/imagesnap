@@ -88,3 +88,4 @@
 | 2026-05-14 | v1.5.6 | UPDATE | Triển khai Intercept-and-Redirect 303 & Chuẩn hóa Versioning | Antigravity | High |
 | 2026-05-14 | v1.6.0 | RELEASE | Kiến trúc Đánh chặn Tuyệt đối & UX Guardrails (Offline/Size Check) | Antigravity | High |
 | 2026-05-14 | v1.6.1 | RELEASE | Secure Migration (Nuclear Clean) & Deterministic Halt | Antigravity | Critical |
+| 2026-05-14 | v1.6.2 | HOTFIX | Fix TS build error (window.location.reload argument) | Antigravity | Medium |

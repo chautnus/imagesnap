@@ -277,7 +277,7 @@ export default function Dashboard() {
             
             <div className="pt-4 animate-pulse">
               <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                System v1.6.1
+                System v1.6.2
               </div>
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function Dashboard() {
                       const keys = await caches.keys();
                       for(let key of keys) await caches.delete(key);
                     }
-                    window.location.reload(true);
+                    window.location.reload();
                   } catch (e) {
                     window.location.reload();
                   }
@@ -333,7 +333,7 @@ export default function Dashboard() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.6.1"
+        version="v1.6.2"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

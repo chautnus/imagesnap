@@ -42,20 +42,20 @@
 - **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.5.6**.
 - **Mobile & PWA Sync**: Rà soát và sửa lỗi Web Share Target API cho thiết bị di động, chuyển đổi lưu trữ từ Cache sang IndexedDB.
 - **Deterministic Auth Flow**: Triển khai Hard Timeout (10s Script, 5s API), Callback Queue Flush, và đồng bộ hóa độ trễ UI/Service 18s (v1.5.1).
-- **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.6.1).
-- **Absolute Interception**: Thực thi cơ chế đánh chặn tuyệt đối (POST -> 303 Redirect) để vượt qua giới hạn payload 4.5MB của Vercel (v1.6.1).
-- **Secure Migration (Nuclear Clean)**: Chèn Inline Script vào `<head>` để tự động phá khóa Cache v1.5.x một lần duy nhất (v1.6.1).
-- **Deterministic Halt**: Thiết lập cơ chế dừng xác định (Static Halt) cho Dashboard để triệt tiêu hoàn toàn vòng lặp Redirect Loop (v1.6.1).
-- **UX Guardrails**: Bổ sung kiểm tra kích thước file (20MB) và cảnh báo Offline thời gian thực (v1.6.1).
+- **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.6.2).
+- **Absolute Interception**: Thực thi cơ chế đánh chặn tuyệt đối (POST -> 303 Redirect) để vượt qua giới hạn payload 4.5MB của Vercel (v1.6.2).
+- **Secure Migration (Nuclear Clean)**: Chèn Inline Script vào `<head>` để tự động phá khóa Cache v1.5.x một lần duy nhất (v1.6.2).
+- **Deterministic Halt**: Thiết lập cơ chế dừng xác định (Static Halt) cho Dashboard để triệt tiêu hoàn toàn vòng lặp Redirect Loop (v1.6.2).
+- **UX Guardrails**: Bổ sung kiểm tra kích thước file (20MB) và cảnh báo Offline thời gian thực (v1.6.2).
 
-## TỔNG KẾT TRẠNG THÁI (v1.6.1)
+## TỔNG KẾT TRẠNG THÁI (v1.6.2)
 - **Hệ thống**: Đã ổn định trên Next.js App Router.
 - **PWA**: Share Target hoạt động tốt trên Android, có hướng dẫn bù đắp cho iOS.
 - **Auth**: Đã fix triệt để lỗi kẹt màn hình logo và thiếu script GSI.
-- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.6.1).
+- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.6.2).
 
 ### Dừng ở đâu?
-- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.6.1.
+- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.6.2.
 - Tính năng Share Target đã được sửa lỗi logic và sẵn sàng cho việc cài đặt PWA trên điện thoại.
 
 ---

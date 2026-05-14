@@ -57,7 +57,7 @@ export default function RootLayout({
                 registration.unregister();
               }
               localStorage.setItem('migration_v1_6_1', 'true');
-              window.location.reload(true); 
+              window.location.reload(); 
             });
           }
         `}} />
