@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Navigation } from '@web/components/Navigation';
 import { CaptureTab, ProductMetadata } from '@web/components/CaptureTab';
@@ -14,7 +14,7 @@ import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
 import { SubscriptionStatus } from '@shared/lib/types';
 
-export default function Dashboard() {
+function DashboardContent() {
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings' | 'help'>('capture');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -400,5 +400,25 @@ export default function Dashboard() {
 
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} t={t} />
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-bg text-white">
+        <div className="flex flex-col items-center gap-6 p-8 text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
+            <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+          </div>
+          <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold animate-pulse">
+            System Initializing...
+          </div>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
