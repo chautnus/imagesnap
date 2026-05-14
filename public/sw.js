@@ -1,5 +1,5 @@
 // ImageSnap Service Worker
-const CACHE_NAME = 'imagesnap-v1';
+const CACHE_NAME = 'imagesnap-v2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

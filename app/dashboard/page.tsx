@@ -38,12 +38,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     const handleInit = async () => {
-      // Immediate check for existing session
       const storedToken = localStorage.getItem('ps_access_token');
       const isStaff = localStorage.getItem('ps_is_staff') === 'true';
 
       if (!storedToken && !isStaff) {
-        console.log("No session found, redirecting to login...");
         window.location.href = '/';
         return;
       }
@@ -61,7 +59,6 @@ export default function Dashboard() {
         }
       }
 
-      // Initialize GIS and wait for token
       initGis(async (token) => {
         setAccessToken(token);
         try {
@@ -87,29 +84,19 @@ export default function Dashboard() {
           window.location.href = '/';
         }
       });
-      
-      // Safety timeout: if GIS or profile takes > 10s, something is wrong
-      const timeout = setTimeout(() => {
-        if (!isAuthReady) {
-          console.warn("Auth timeout reached, checking status...");
-          if (!localStorage.getItem('ps_access_token')) window.location.href = '/';
-        }
-      }, 10000);
-      return () => clearTimeout(timeout);
     };
 
     handleInit();
 
-    // Listen for realtime share events (for apps already open)
     const channel = new BroadcastChannel('imagesnap-share-target');
     channel.onmessage = (event) => {
-      if (event.data.type === 'NEW_SHARE_DATA' && isAuthReady) {
+      if (event.data.type === 'NEW_SHARE_DATA') {
         handleShareTarget();
       }
     };
 
     return () => channel.close();
-  }, [isAuthReady]); // Re-run or check when isAuthReady changes
+  }, []); // Remove isAuthReady from dependencies to prevent loop
 
   // Separate effect for share target to ensure it only runs once when auth is ready
   useEffect(() => {
@@ -223,9 +210,18 @@ export default function Dashboard() {
   if (!user || !isAuthReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg text-white">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-6 p-8 text-center">
           <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-          <div className="text-xs font-black tracking-widest uppercase opacity-60">Authenticating ImageSnap...</div>
+          <div className="space-y-2">
+            <div className="text-xs font-black tracking-widest uppercase opacity-60">Authenticating ImageSnap...</div>
+            <p className="text-[10px] text-muted max-w-[200px]">If this takes too long, please try refreshing or logging in again.</p>
+          </div>
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold hover:bg-white/10 transition-colors"
+          >
+            Back to Home / Login
+          </button>
         </div>
       </div>
     );
