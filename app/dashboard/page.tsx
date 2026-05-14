@@ -86,15 +86,19 @@ export default function Dashboard() {
           localStorage.removeItem('ps_access_token');
           setTimeout(() => window.location.href = '/', 2000);
         }
+      }).catch((err) => {
+        setAuthError(`Auth Service Error: ${err.message}`);
+        setTimeout(() => window.location.href = '/', 3000);
       });
       
-      // Auto-recovery after 12s
+      // Marvin Core Fix: UI recovery timeout must be > Service latency (10s + 5s = 15s)
+      // Setting to 18s for safety buffer
       const recoveryTimer = setTimeout(() => {
         if (!isAuthReady) {
-          setAuthError("Authentication is taking longer than expected...");
+          setAuthError("Authentication is taking longer than expected. Retrying...");
           setTimeout(() => { if (!isAuthReady) window.location.href = '/'; }, 3000);
         }
-      }, 12000);
+      }, 18000);
 
       return () => clearTimeout(recoveryTimer);
     };
@@ -257,7 +261,7 @@ export default function Dashboard() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.5.0"
+        version="v1.5.1"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
