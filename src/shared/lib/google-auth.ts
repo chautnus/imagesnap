@@ -8,76 +8,101 @@ const getGoogleClientId = () => {
 export const GOOGLE_CLIENT_ID = getGoogleClientId();
 export const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
+// Marvin Core: Deterministic Auth State Management
 let tokenClient: any = null;
 let accessToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('ps_access_token') : null;
-const successListeners = new Set<(token: string) => void>();
 
-export const initGis = (onSuccess: (token: string) => void, retries = 0) => {
-  if (typeof window === 'undefined') return;
+// Callback queue to handle multiple concurrent auth requests
+interface AuthCallback {
+  resolve: (token: string) => void;
+  reject: (error: Error) => void;
+}
+let authQueue: AuthCallback[] = [];
 
-  // Add to listeners FIRST
-  successListeners.add(onSuccess);
+/**
+ * Ensures Google GSI script is loaded with a hard 10s timeout
+ */
+const ensureGsiScript = (): Promise<void> => {
+  if (typeof window === 'undefined') return Promise.reject(new Error('Window undefined'));
+  if ((window as any).google?.accounts?.oauth2) return Promise.resolve();
 
-  // Extension Check
-  // @ts-ignore
-  if (window.chrome && window.chrome.identity) {
-    if (accessToken) onSuccess(accessToken);
-    return;
-  }
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('GSI_LOAD_TIMEOUT'));
+    }, 10000);
 
-  const google = (window as any).google;
-  
-  // Manual script injection fallback if script is missing or blocked
-  if (!google && retries === 0) {
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
+    script.onload = () => {
+      clearTimeout(timeout);
+      resolve();
+    };
+    script.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error('GSI_LOAD_FAILED'));
+    };
     document.head.appendChild(script);
-  }
+  });
+};
 
-  if (!google) {
-    if (retries < 30) {
-      setTimeout(() => initGis(onSuccess, retries + 1), 500);
-    } else {
-      console.error('Google GSI script failed to load after 30 retries');
+export const initGis = async (onSuccess: (token: string) => void) => {
+  if (typeof window === 'undefined') return;
+
+  // Add to queue
+  const authPromise = new Promise<string>((resolve, reject) => {
+    authQueue.push({ resolve, reject });
+  });
+
+  // Link the caller's callback to this promise
+  authPromise.then(onSuccess).catch((err) => {
+    console.error('Deterministic Auth Failure:', err.message);
+    // Force cleanup and redirect if needed
+    if (err.message === 'GSI_LOAD_TIMEOUT' || err.message === 'GSI_LOAD_FAILED') {
+      localStorage.removeItem('ps_access_token');
+      window.location.href = '/?error=auth_timeout';
     }
-    return;
-  }
-
-  // Singleton pattern for tokenClient
-  if (tokenClient) {
-    if (accessToken) onSuccess(accessToken);
-    return;
-  }
+  });
 
   try {
-    // @ts-ignore
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: SCOPES,
-      callback: (response: any) => {
-        if (response.error !== undefined) {
-          console.error('GIS Error:', response);
-          return;
-        }
-        accessToken = response.access_token;
-        localStorage.setItem('ps_access_token', response.access_token);
-        successListeners.forEach(listener => listener(response.access_token));
-      },
-    });
+    await ensureGsiScript();
+    
+    const google = (window as any).google;
+    if (!tokenClient) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: SCOPES,
+        callback: (response: any) => {
+          if (response.error !== undefined) {
+            const err = new Error(`GIS_ERROR: ${response.error}`);
+            authQueue.forEach(q => q.reject(err));
+            authQueue = [];
+            return;
+          }
+          accessToken = response.access_token;
+          localStorage.setItem('ps_access_token', response.access_token);
+          authQueue.forEach(q => q.resolve(response.access_token));
+          authQueue = [];
+        },
+      });
+    }
 
     if (accessToken) {
-      onSuccess(accessToken);
+      // Flush current queue with existing token
+      authQueue.forEach(q => q.resolve(accessToken!));
+      authQueue = [];
     }
-  } catch (err) {
-    console.error('GIS Init Failed:', err);
+  } catch (err: any) {
+    // Flush queue with error
+    authQueue.forEach(q => q.reject(err));
+    authQueue = [];
   }
 };
 
 export async function getUserInfo(token: string) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // Marvin Core: 5s Hard Timeout
 
   try {
     const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -94,7 +119,7 @@ export async function getUserInfo(token: string) {
     }
     return response.json();
   } catch (e) {
-    console.warn('User info fetch failed or timed out:', e);
+    console.warn('Userinfo fetch terminated:', (e as Error).message);
     return null;
   }
 }
