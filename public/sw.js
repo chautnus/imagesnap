@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.1 - Secure Migration Edition
-const CACHE_NAME = 'imagesnap-v8.1';
+// ImageSnap Service Worker v8.2 - Schema Sync Edition
+const CACHE_NAME = 'imagesnap-v8.2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -62,29 +62,35 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// IndexedDB helper for shared data
+// IndexedDB helper for shared data (v2 Sync)
 async function saveSharedData(data) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('ImageSnapSharing', 1);
+    const DB_NAME = 'imagesnap-pwa-db';
+    const DB_VERSION = 2;
+    const STORE_NAME = 'shares';
+
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
     
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      if (!db.objectStoreNames.contains('sharedContent')) {
-        db.createObjectStore('sharedContent', { keyPath: 'id', autoIncrement: true });
+      // Schema Version Router: Cleanup legacy structures
+      if (db.objectStoreNames.contains('sharedContent')) db.deleteObjectStore('sharedContent');
+      if (db.objectStoreNames.contains('share-target')) db.deleteObjectStore('share-target');
+      if (db.objectStoreNames.contains('latest')) db.deleteObjectStore('latest');
+      
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
       }
     };
 
     request.onsuccess = (event) => {
       const db = event.target.result;
-      const transaction = db.transaction('sharedContent', 'readwrite');
-      const store = transaction.objectStore('sharedContent');
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
       
-      // Clear old shared content first to keep it simple (one shared item at a time)
-      store.clear();
-      store.add({ ...data, id: 'latest' });
+      store.put(data, 'latest');
       
       transaction.oncomplete = () => {
-        // Only broadcast once transaction is fully committed to disk
         const channel = new BroadcastChannel('imagesnap-share-target');
         channel.postMessage({ type: 'NEW_SHARE_DATA' });
         channel.close();

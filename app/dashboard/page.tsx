@@ -201,39 +201,74 @@ function DashboardContent() {
     if (isConsumingRef.current) return;
     isConsumingRef.current = true;
 
-    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Checking IndexedDB for shared data...');
+    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Checking IndexedDB v2 (Schema Sync)...');
 
-    try {
-      const { openDB } = await import('idb');
-      const db = await openDB('imagesnap-pwa-db', 1);
-      const data = await db.get('share-target', 'latest');
+    return new Promise<void>((resolve) => {
+      const DB_NAME = 'imagesnap-pwa-db';
+      const DB_VERSION = 2;
+      const STORE_NAME = 'shares';
 
-      if (data) {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Latency check starting...');
-        const bStart = Date.now();
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        if (data.file) {
-          // O(1) Memory Pointer Implementation
-          if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-          const pointer = URL.createObjectURL(data.file);
-          objectUrlRef.current = pointer;
-          setImportedImages([pointer]);
-          if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_B] Memory Latch Successful: ${Date.now() - bStart}ms`);
+      request.onupgradeneeded = (event: any) => {
+        const db = event.target.result;
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Upgrading IDB Schema to v2...');
+        
+        if (db.objectStoreNames.contains('sharedContent')) db.deleteObjectStore('sharedContent');
+        if (db.objectStoreNames.contains('share-target')) db.deleteObjectStore('share-target');
+        if (db.objectStoreNames.contains('latest')) db.deleteObjectStore('latest');
+        
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
         }
-        
-        if (data.url) setImportedUrl(data.url);
-        if (data.title) setImportedMetadata(prev => ({ ...prev, title: data.title }));
-        
-        // Clean up IDB immediately (Idempotency)
-        await db.delete('share-target', 'latest');
-      } else {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] No shared data found in IDB');
-      }
-    } catch (error: any) {
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[FATAL_ERROR] IDB Failure: ${error.message}`);
-    } finally {
-      isConsumingRef.current = false;
-    }
+      };
+
+      request.onsuccess = (event: any) => {
+        const db = event.target.result;
+        try {
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(STORE_NAME);
+          const getReq = store.get('latest');
+
+          getReq.onsuccess = () => {
+            const data = getReq.result;
+            if (data) {
+              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found in v2 Store!');
+              if (data.image || data.file) {
+                const blob = data.image || data.file;
+                if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+                const pointer = URL.createObjectURL(blob);
+                objectUrlRef.current = pointer;
+                setImportedImages([pointer]);
+              }
+              if (data.url) setImportedUrl(data.url);
+              if (data.title) setImportedMetadata(prev => ({ ...prev, title: data.title }));
+              
+              store.delete('latest');
+            } else {
+              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] No data in v2 Store');
+            }
+          };
+
+          transaction.oncomplete = () => {
+            db.close();
+            isConsumingRef.current = false;
+            resolve();
+          };
+        } catch (e: any) {
+          if ((window as any)._pushDebug) (window as any)._pushDebug(`[SOFT_FALLBACK] IDB Transaction Error: ${e.message}`);
+          db.close();
+          isConsumingRef.current = false;
+          resolve();
+        }
+      };
+
+      request.onerror = () => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[SOFT_FALLBACK] IDB Open Failed');
+        isConsumingRef.current = false;
+        resolve();
+      };
+    });
   };
 
   const consumeSharedDataFromDB = (): Promise<any> => {
@@ -331,10 +366,10 @@ function DashboardContent() {
               {!isTooLarge && !authError && (
                 <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
                   <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'DATA_READ' ? '●' : '○'} A. Memory Latching (O1)
+                    {initStage === 'DATA_READ' ? '●' : '○'} A. IDB Schema Sync (v2)
                   </span>
                   <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google GSI Handshake
+                    {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
                   </span>
                   <span className={isAuthReady ? 'text-accent font-bold' : ''}>
                     {isAuthReady ? '●' : '○'} C. Encrypted Session Established
@@ -353,7 +388,7 @@ function DashboardContent() {
             
             <div className="pt-4 animate-pulse">
               <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                Build v1.7.0
+                Build v1.7.1
               </div>
             </div>
           </div>
@@ -409,7 +444,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.7.0"
+        version="v1.7.1"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
