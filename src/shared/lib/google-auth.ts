@@ -24,7 +24,10 @@ let authQueue: AuthCallback[] = [];
  */
 const ensureGsiScript = (): Promise<void> => {
   if (typeof window === 'undefined') return Promise.reject(new Error('Window undefined'));
-  if ((window as any).google?.accounts?.oauth2) return Promise.resolve();
+  if ((window as any).google?.accounts?.oauth2) {
+    if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GSI] Script already present');
+    return Promise.resolve();
+  }
 
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -36,10 +39,12 @@ const ensureGsiScript = (): Promise<void> => {
     script.async = true;
     script.defer = true;
     script.onload = () => {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GSI] Script loaded successfully');
       clearTimeout(timeout);
       resolve();
     };
     script.onerror = () => {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GSI] Script load failed');
       clearTimeout(timeout);
       reject(new Error('GSI_LOAD_FAILED'));
     };
@@ -65,20 +70,24 @@ export const initGis = async (onSuccess: (token: string) => void) => {
   });
 
   try {
+    if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Ensuring GSI Script...');
     await ensureGsiScript();
     
     const google = (window as any).google;
     if (!tokenClient) {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Initializing Token Client...');
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: SCOPES,
         callback: (response: any) => {
           if (response.error !== undefined) {
             const err = new Error(`GIS_ERROR: ${response.error}`);
+            if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug(`[GIS] Handshake Error: ${response.error}`);
             authQueue.forEach(q => q.reject(err));
             authQueue = [];
             return;
           }
+          if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Handshake Success');
           accessToken = response.access_token;
           localStorage.setItem('ps_access_token', response.access_token);
           authQueue.forEach(q => q.resolve(response.access_token));

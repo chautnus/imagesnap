@@ -14,6 +14,45 @@ import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
 import { SubscriptionStatus } from '@shared/lib/types';
 
+function DebugOverlay() {
+  const [logs, setLogs] = useState<string[]>([]);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const syncLogs = () => {
+      setLogs([...((window as any)._debugLogs || [])]);
+    };
+
+    window.addEventListener('SYS_DEBUG_UPDATE', syncLogs);
+    syncLogs(); // Initial sync
+    
+    return () => window.removeEventListener('SYS_DEBUG_UPDATE', syncLogs);
+  }, []);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed bottom-4 left-4 z-[9999] max-w-[90vw] max-h-[200px] overflow-y-auto bg-black/90 border border-white/10 rounded-lg p-3 shadow-2xl backdrop-blur-xl">
+      <div className="flex justify-between items-center mb-2 border-bottom border-white/5 pb-1">
+        <span className="text-[10px] font-bold text-accent uppercase tracking-widest">Diagnostic Telemetry</span>
+        <button onClick={() => setIsVisible(false)} className="text-[10px] text-white/40 hover:text-white uppercase font-bold">Hide</button>
+      </div>
+      <div className="space-y-1">
+        {logs.map((log, i) => (
+          <div key={i} className="text-[9px] font-mono leading-tight break-all">
+            <span className={log.includes('FATAL') ? 'text-red-400' : (log.includes('STAGE') ? 'text-accent' : 'text-white/60')}>
+              {log}
+            </span>
+          </div>
+        ))}
+        {logs.length === 0 && <div className="text-[9px] text-white/20 italic">Waiting for logs...</div>}
+      </div>
+    </div>
+  );
+}
+
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings' | 'help'>('capture');
   const [authError, setAuthError] = useState<string | null>(null);
@@ -29,6 +68,8 @@ function DashboardContent() {
   const [importedUrl, setImportedUrl] = useState<string>('');
   const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
   const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
+  const objectUrlRef = useRef<string | null>(null);
+  const startTimeRef = useRef<number>(Date.now());
 
   const { lang, t, toggleLang } = useI18n();
   const { 
@@ -43,7 +84,10 @@ function DashboardContent() {
 
   useEffect(() => {
     const runInitialization = async () => {
-      // Phase 1: Data-First Retrieval
+      startTimeRef.current = Date.now();
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.7.0 Sequential Init');
+
+      // Phase 1: Data-First Retrieval ($O(1)$ Architecture)
       setInitStage('DATA_READ');
       await handleShareTarget();
       
@@ -52,9 +96,11 @@ function DashboardContent() {
       await handleInit();
       
       setInitStage('COMPLETED');
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] Init Completed in ${Date.now() - startTimeRef.current}ms`);
     };
 
     const handleInit = async () => {
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_C] Verifying Google Identity Session...');
       const storedToken = localStorage.getItem('ps_access_token');
       const isStaff = localStorage.getItem('ps_is_staff') === 'true';
 
@@ -151,35 +197,40 @@ function DashboardContent() {
   }, []);
 
   // Removed redundant dependency effect to maintain sequential flow
-
   const handleShareTarget = async () => {
     if (isConsumingRef.current) return;
     isConsumingRef.current = true;
 
-    try {
-      // Mutating Read: Get and Delete in one go (conceptually atomic via IDB transaction)
-      const data = await consumeSharedDataFromDB();
-      
-      if (data) {
-        const images: string[] = [];
-        if (data.image) {
-          const reader = new FileReader();
-          const dataUrl = await new Promise<string>((resolve) => {
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(data.image);
-          });
-          images.push(dataUrl);
-        }
+    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Checking IndexedDB for shared data...');
 
-        if (images.length > 0) setImportedImages(images);
-        if (data.url || data.text) setImportedUrl(data.url || data.text);
-        if (data.title) setImportedMetadata({ t: data.title });
+    try {
+      const { openDB } = await import('idb');
+      const db = await openDB('imagesnap-pwa-db', 1);
+      const data = await db.get('share-target', 'latest');
+
+      if (data) {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Latency check starting...');
+        const bStart = Date.now();
+
+        if (data.file) {
+          // O(1) Memory Pointer Implementation
+          if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+          const pointer = URL.createObjectURL(data.file);
+          objectUrlRef.current = pointer;
+          setImportedImages([pointer]);
+          if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_B] Memory Latch Successful: ${Date.now() - bStart}ms`);
+        }
         
-        // Ensure we are on the capture tab
-        setActiveTab('capture');
+        if (data.url) setImportedUrl(data.url);
+        if (data.title) setImportedMetadata(prev => ({ ...prev, title: data.title }));
+        
+        // Clean up IDB immediately (Idempotency)
+        await db.delete('share-target', 'latest');
+      } else {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] No shared data found in IDB');
       }
-    } catch (e) {
-      console.error("Failed to consume shared data", e);
+    } catch (error: any) {
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[FATAL_ERROR] IDB Failure: ${error.message}`);
     } finally {
       isConsumingRef.current = false;
     }
@@ -274,19 +325,19 @@ function DashboardContent() {
             <div className="space-y-4">
             <div className="space-y-1">
               <div className="text-xs font-black tracking-widest uppercase opacity-60">
-                {isTooLarge ? "File Too Large" : (authError ? "Critical Error" : "System Initializing")}
+                {isTooLarge ? "File Too Large" : (authError ? "Critical Error" : "System Diagnostics")}
               </div>
               
               {!isTooLarge && !authError && (
                 <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
                   <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'DATA_READ' ? '●' : '○'} 1. Retrieving Shared Data
+                    {initStage === 'DATA_READ' ? '●' : '○'} A. Memory Latching (O1)
                   </span>
                   <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'AUTH_PROCESS' ? '●' : '○'} 2. Connecting to Google Identity
+                    {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google GSI Handshake
                   </span>
                   <span className={isAuthReady ? 'text-accent font-bold' : ''}>
-                    {isAuthReady ? '●' : '○'} 3. Verifying Security Token
+                    {isAuthReady ? '●' : '○'} C. Encrypted Session Established
                   </span>
                 </div>
               )}
@@ -302,7 +353,7 @@ function DashboardContent() {
             
             <div className="pt-4 animate-pulse">
               <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                System v1.6.4
+                Build v1.7.0
               </div>
             </div>
           </div>
@@ -358,7 +409,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.6.4"
+        version="v1.7.0"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
@@ -444,6 +495,7 @@ export default function Dashboard() {
       </div>
     }>
       <DashboardContent />
+      <DebugOverlay />
     </Suspense>
   );
 }
