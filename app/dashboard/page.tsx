@@ -65,8 +65,6 @@ function DashboardContent() {
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
   const isConsumingRef = useRef(false);
   const [shareTargetNonce, setShareTargetNonce] = useState(0);
-  const [importedUrl, setImportedUrl] = useState<string>('');
-  const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
   const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
   const objectUrlRef = useRef<string | null>(null);
   const startTimeRef = useRef<number>(Date.now());
@@ -248,14 +246,8 @@ function DashboardContent() {
           const processData = (data: any, key: string) => {
             if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Signaling CaptureTab...');
             
-            if (data.url) setImportedUrl(data.url);
-            if (data.title) setImportedMetadata(prev => ({ ...prev, title: data.title }));
-            
             // Increment nonce to trigger CaptureTab pull
             setShareTargetNonce(prev => prev + 1);
-            
-            // Cleanup: Record is now handled by CaptureTab to prevent race conditions
-            // store.delete(key); 
           };
 
           if (sid) {
@@ -376,7 +368,7 @@ function DashboardContent() {
               
               <div className="pt-4 animate-pulse">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  Build v1.8.7
+                  Build v1.8.8
                 </div>
               </div>
             </div>
@@ -421,7 +413,7 @@ function DashboardContent() {
                 {!isTooLarge && (
                   <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
                     <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                      {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync (v1.8.7)
+                      {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync (v1.8.8)
                     </span>
                     <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
                       {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
@@ -435,7 +427,7 @@ function DashboardContent() {
               
               <div className="pt-4 animate-pulse">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  Build v1.8.7
+                  Build v1.8.8
                 </div>
               </div>
             </div>
@@ -486,7 +478,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.7"
+        version="v1.8.8"
         dataStatus={dataStatus}
       />
  
@@ -509,10 +501,6 @@ function DashboardContent() {
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
             shareTargetNonce={shareTargetNonce}
-            importedUrl={importedUrl}
-            importedMetadata={importedMetadata}
-            onClearImportedUrl={() => setImportedUrl('')}
-            onClearImportedMetadata={() => setImportedMetadata({})}
             onSaveCategory={handleSaveCategory}
             onSwitchToHelp={() => setActiveTab('help')}
           />

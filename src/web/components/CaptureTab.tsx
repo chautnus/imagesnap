@@ -24,18 +24,13 @@ interface CaptureTabProps {
   subStatus: { isPro: boolean; limit: number; usage: number; userEmail?: string; isAdmin?: boolean };
   onUpgrade: () => Promise<void>;
   shareTargetNonce: number;
-  importedUrl?: string;
-  importedMetadata?: ProductMetadata;
-  onClearImportedUrl?: () => void;
-  onClearImportedMetadata: () => void;
   onSaveCategory?: (cat: Category) => Promise<void>;
   onSwitchToHelp: () => void;
 }
 
 export const CaptureTab: React.FC<CaptureTabProps> = ({
   categories, onSave, productNames, t, lang, subStatus, onUpgrade,
-  shareTargetNonce, importedUrl = '', importedMetadata = {} as ProductMetadata,
-  onClearImportedUrl, onClearImportedMetadata,
+  shareTargetNonce,
   onSaveCategory, onSwitchToHelp
 }) => {
   const [images, setImages] = useState<string[]>([]);
@@ -85,19 +80,47 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             const cursor = e.target.result;
             if (cursor) {
               const data = cursor.value;
-              const rawImages = (data.images && Array.isArray(data.images)) ? data.images : (data.image ? [data.image] : []);
-              
-              if (rawImages.length > 0) {
-                const pointers = rawImages.map((blob: Blob) => {
-                  const url = URL.createObjectURL(blob);
-                  blobUrlsRef.current.push(url);
-                  return url;
+              if (data) {
+                if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Shared Record Found: ${JSON.stringify(data).substring(0, 50)}...`);
+                
+                // 1. Process Images
+                if (data.images && Array.isArray(data.images)) {
+                  const newBlobUrls = data.images.map((b: Blob) => URL.createObjectURL(b));
+                  setImages(prev => [...prev, ...newBlobUrls]);
+                  blobUrlsRef.current.push(...newBlobUrls);
+                } else if (data.image) {
+                  const blobUrl = URL.createObjectURL(data.image);
+                  setImages(prev => [...prev, blobUrl]);
+                  blobUrlsRef.current.push(blobUrl);
+                }
+
+                // 2. Process Metadata (URL & Title)
+                setFormData(prev => {
+                  const next = { ...prev };
+                  const cat = categories.find(c => c.id === selectedCategoryId);
+                  if (cat) {
+                    cat.fields.forEach(f => {
+                      const label = translate(f.label, lang).toLowerCase();
+                      // Auto-fill Title
+                      if (data.title && !next[f.id] && (f.type === 'key' || label.includes('tên') || label.includes('name') || label.includes('title'))) {
+                        next[f.id] = data.title;
+                      }
+                      // Auto-fill URL
+                      if (data.url && !next[f.id] && (f.type === 'url')) {
+                        next[f.id] = data.url;
+                      }
+                      // Auto-fill Description/Text
+                      if (data.text && !next[f.id] && (label.includes('mô tả') || label.includes('description'))) {
+                        next[f.id] = data.text;
+                      }
+                    });
+                  }
+                  return next;
                 });
-                setImages(prev => [...new Set([...prev, ...pointers])]);
-                if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Pulled ${pointers.length} images from IDB`);
+                
+                // Cleanup: Delete from IDB after successful consumption
+                store.delete(cursor.key);
               }
-              
-              store.delete(cursor.key);
             }
           };
         } catch (e) {
@@ -118,45 +141,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (importedUrl && selectedCategoryId && categories.length > 0) {
-      const cat = categories.find(c => c.id === selectedCategoryId);
-      if (cat) {
-        const urlFields = cat.fields.filter(f => f.type === 'url');
-        if (urlFields.length > 0) {
-          setFormData(prev => {
-            const next = { ...prev };
-            urlFields.forEach(f => { if (!next[f.id]) next[f.id] = importedUrl; });
-            return next;
-          });
-        }
-        onClearImportedUrl?.();
-      }
-    }
-  }, [importedUrl, selectedCategoryId, categories]);
 
-  useEffect(() => {
-    const { t: importTitle, p: importPrice, d: importDesc } = importedMetadata;
-    if ((importTitle || importPrice || importDesc) && selectedCategoryId && categories.length > 0) {
-      const cat = categories.find(c => c.id === selectedCategoryId);
-      if (cat) {
-        setFormData(prev => {
-          const next = { ...prev };
-          cat.fields.forEach(f => {
-            const label = translate(f.label, lang).toLowerCase();
-            if (importTitle && !next[f.id] && (f.type === 'key' || label.includes('tên') || label.includes('name') || label.includes('title'))) next[f.id] = importTitle;
-            if (importPrice && !next[f.id] && (f.type === 'number' || label.includes('giá') || label.includes('price'))) {
-              const m = importPrice.match(/[\d.]+/);
-              next[f.id] = m ? m[0] : importPrice;
-            }
-            if (importDesc && !next[f.id] && (label.includes('mô tả') || label.includes('description') || label.includes('desc'))) next[f.id] = importDesc;
-          });
-          return next;
-        });
-        onClearImportedMetadata?.();
-      }
-    }
-  }, [importedMetadata, selectedCategoryId, categories, lang]);
 
   const isAtLimit = !subStatus.isPro && subStatus.usage >= subStatus.limit;
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
@@ -257,7 +242,9 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       const cat = categories.find(c => c.id === selectedCategoryId);
       if (cat) {
         cat.fields.forEach(f => {
-          if (f.keepValue) keptData[f.id] = formData[f.id];
+          if ((f.type === 'select' || f.type === 'date') && formData[f.id]) {
+            keptData[f.id] = formData[f.id];
+          }
         });
       }
       setFormData(keptData);

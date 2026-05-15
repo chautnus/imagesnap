@@ -75,7 +75,7 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
 
       <div className="flex justify-center mt-4">
         <span className="text-[10px] font-black text-muted tracking-widest uppercase opacity-30">
-          ImageSnap v1.8.7 • Documentation Snapshot
+          ImageSnap v1.8.8 • Documentation Snapshot
         </span>
       </div>
     </div>

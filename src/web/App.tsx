@@ -55,7 +55,6 @@ export default function App() {
   const [isStaff, setIsStaff] = useState(false);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(localStorage.getItem('ps_sheet_id'));
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
-  const [sharedImages, setSharedImages] = useState<string[]>([]);
   const [sharedMetadata, setSharedMetadata] = useState<ProductMetadata>({});
   
   const { lang, t, toggleLang } = useI18n();
@@ -129,8 +128,8 @@ export default function App() {
           const dbRequest = indexedDB.open('imagesnap-pwa-db', 2);
           dbRequest.onsuccess = (event: any) => {
             const db = event.target.result;
-            const transaction = db.transaction('sharedContent', 'readonly');
-            const store = transaction.objectStore('sharedContent');
+            const transaction = db.transaction('shares', 'readonly');
+            const store = transaction.objectStore('shares');
             const getRequest = store.get('latest');
 
             getRequest.onsuccess = () => {
@@ -162,7 +161,6 @@ export default function App() {
     }
   }, []);
 
-  const [importedImages, setImportedImages] = useState<string[]>([]);
   const [importedUrl, setImportedUrl] = useState<string>('');
   const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
 
@@ -335,7 +333,7 @@ export default function App() {
           user={user}
           subStatus={subStatus}
           isSyncing={isSyncing}
-          version="v1.8.7"
+          version="v1.8.8"
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
@@ -358,10 +356,6 @@ export default function App() {
               subStatus={subStatus}
               onUpgrade={handleUpgrade}
               shareTargetNonce={0}
-              importedUrl={importedUrl}
-              importedMetadata={Object.keys(sharedMetadata).length > 0 ? sharedMetadata : importedMetadata}
-              onClearImportedUrl={() => setImportedUrl('')}
-              onClearImportedMetadata={() => { setImportedMetadata({}); setSharedMetadata({}); }}
               onSaveCategory={handleSaveCategory}
               onSwitchToHelp={() => setActiveTab('help')}
             />
