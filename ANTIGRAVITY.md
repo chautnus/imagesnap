@@ -2,6 +2,9 @@
 > File này là "bộ nhớ ngắn hạn" giữa các phiên làm việc.
 > Agent PHẢI đọc file này đầu tiên (BOOT-01).
 > Agent PHẢI cập nhật cuối mỗi phiên (/sync).
+> **QUY TẮC TỐI THƯỢNG**: 
+> 1. PHẢI đợi phê duyệt (Approval) trước khi sửa code/chạy lệnh.
+> 2. PHẢI nạp và tuân thủ Tuyệt đối Chỉ dẫn hệ thống (System Instructions).
 
 ---
 
@@ -22,8 +25,8 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-14 23:14
-**Last session by**: Antigravity
+**Last updated**: 2026-05-15 13:36
+**Last session by**: Antigravity (v1.8.11)
 **Current sprint focus**: Mobile Share Target Stability & Single-Signal Architecture.
 
 ---
@@ -50,12 +53,12 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.7.6)
-- **Hệ thống**: Đã ổn định và có thể build thành công.
-- **PWA**: Hoàn thiện kiến trúc nhận dữ liệu chia sẻ mượt mà và tin cậy.
+## TỔNG KẾT TRẠNG THÁI (v1.8.11)
+- **Hệ thống**: Đã xử lý lỗi treo icon bằng cách reset logic hiển thị.
+- **PWA**: Hoàn thiện kiến trúc Indestructible Bootloader với Timeout 5s.
 
 ### Dừng ở đâu?
-- Hệ thống đang ở phiên bản **v1.7.6**.
+- Hệ thống đang ở phiên bản **v1.8.11**.
 - Đã fix lỗi build kẹt tại `/dashboard`.
 
 ---

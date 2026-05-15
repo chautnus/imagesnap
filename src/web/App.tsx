@@ -300,7 +300,7 @@ export default function App() {
           user={user}
           subStatus={subStatus}
           isSyncing={isSyncing}
-          version="v1.8.10"
+          version="v1.8.11"
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

@@ -409,9 +409,8 @@ function DashboardContent() {
       );
     }
 
-    // If we have images, don't show the blocking loading screen, 
-    // unless it's the very first load and we haven't finished Stage A
-    if (shareTargetNonce === 0 || initStage === 'IDLE') {
+    // If we haven't finished Stage A (Initialization), show the loading screen
+    if (initStage !== 'COMPLETED') {
       const isTooLarge = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('error') === 'file_too_large';
       return (
         <div className="min-h-screen flex items-center justify-center bg-bg text-white">
@@ -501,7 +500,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.10"
+        version="v1.8.11"
         dataStatus={dataStatus}
       />
  
