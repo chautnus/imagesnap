@@ -17,17 +17,15 @@ export default function HomeClient() {
         return;
       }
 
-      initGis(async (token) => {
-        setAccessToken(token);
-        try {
-          const profile = await getUserInfo(token);
-          if (profile && window.location.pathname === '/') {
-            window.location.href = '/dashboard';
-          }
-        } catch (e) {
-          console.warn("Silent auth failed, staying on landing.");
+      try {
+        const res = await fetch('/api/auth/session');
+        const sessionData = await res.json();
+        if (sessionData.authenticated && window.location.pathname === '/') {
+          window.location.href = '/dashboard';
         }
-      });
+      } catch (e) {
+        console.warn("Session check failed, staying on landing.");
+      }
     };
     
     checkAuth();
