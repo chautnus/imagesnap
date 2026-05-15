@@ -94,3 +94,4 @@
 | 2026-05-14 | v1.7.0 | RELEASE | Deep Debug & Event-Driven Diagnostics (O1 Memory) | Antigravity | Critical |
 | 2026-05-14 | v1.7.1 | RELEASE | IDB Schema Sync (v2) & Persistent Session | Antigravity | Critical |
 | 2026-05-14 | v1.7.2 | RELEASE | ControllerShift & IDB Deadlock Resolution | Antigravity | Critical |
+| 2026-05-14 | v1.7.3 | RELEASE | Ironclad Idempotency & Blob Persistence | Antigravity | Critical |

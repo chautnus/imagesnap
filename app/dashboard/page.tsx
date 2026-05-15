@@ -93,7 +93,16 @@ function DashboardContent() {
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.7.2 Breakthrough Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.7.3 Ironclad Init');
+
+      // Add Document-level Cleanup for Blob URLs
+      const handleUnload = () => {
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+          if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] Blob URL Revoked on Unload');
+        }
+      };
+      window.addEventListener('beforeunload', handleUnload);
 
       // Phase 1: Data-First Retrieval ($O(1)$ Architecture)
       setInitStage('DATA_READ');
@@ -105,6 +114,8 @@ function DashboardContent() {
       
       setInitStage('COMPLETED');
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] Init Completed in ${Date.now() - startTimeRef.current}ms`);
+      
+      return () => window.removeEventListener('beforeunload', handleUnload);
     };
 
     const handleInit = async () => {
@@ -206,10 +217,14 @@ function DashboardContent() {
 
   // Removed redundant dependency effect to maintain sequential flow
   const handleShareTarget = async () => {
-    if (isConsumingRef.current) return;
+    // DUAL-LOCK SYSTEM: Synchronous Ref + Asynchronous SessionStorage
+    if (isConsumingRef.current || sessionStorage.getItem('imagesnap_share_processed')) {
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[IDEMPOTENCY] Blocked duplicate ingestion attempt');
+      return;
+    }
     isConsumingRef.current = true;
 
-    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Checking IndexedDB v2 (Schema Sync)...');
+    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Checking IndexedDB v2 (Ironclad Lock)...');
 
     return new Promise<void>((resolve) => {
       const DB_NAME = 'imagesnap-pwa-db';
@@ -247,9 +262,14 @@ function DashboardContent() {
           getReq.onsuccess = () => {
             const data = getReq.result;
             if (data) {
-              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found in v2 Store!');
+              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Committing to session storage...');
+              
+              // Set Asynchronous Lock immediately after reading
+              sessionStorage.setItem('imagesnap_share_processed', 'true');
+
               if (data.image || data.file) {
                 const blob = data.image || data.file;
+                // Persistent Blob Pointer: Do NOT revoke automatically in React Cleanup
                 if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
                 const pointer = URL.createObjectURL(blob);
                 objectUrlRef.current = pointer;
@@ -355,89 +375,118 @@ function DashboardContent() {
   };
 
   if (!user || !isAuthReady) {
-    const isTooLarge = searchParams.get('error') === 'file_too_large';
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg text-white">
-        <div className="flex flex-col items-center gap-6 p-8 text-center">
-          {!isTooLarge ? (
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
-              <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
+    // DATA-CONTROL DECOUPLING: Soft Auth Ejection
+    // Allow UI access if shared images exist in RAM even if Auth fails
+    if (authError && importedImages.length === 0) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-bg text-white">
+          <div className="flex flex-col items-center gap-6 p-8 text-center">
             <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
               <span className="text-2xl text-accent">⚠️</span>
             </div>
-          )}
-          
+            
             <div className="space-y-4">
-            <div className="space-y-1">
-              <div className="text-xs font-black tracking-widest uppercase opacity-60">
-                {isTooLarge ? "File Too Large" : (authError ? "Critical Error" : "System Diagnostics")}
+              <div className="space-y-1">
+                <div className="text-xs font-black tracking-widest uppercase opacity-60">
+                  Critical Error
+                </div>
+                <p className="text-[10px] text-accent mt-2 max-w-[220px] mx-auto leading-relaxed">
+                  {authError}
+                </p>
               </div>
               
-              {!isTooLarge && !authError && (
-                <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
-                  <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'DATA_READ' ? '●' : '○'} A. IDB Schema Sync (v1.7.2)
-                  </span>
-                  <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
-                  </span>
-                  <span className={isAuthReady ? 'text-accent font-bold' : ''}>
-                    {isAuthReady ? '●' : '○'} C. Encrypted Session Established
-                  </span>
+              <div className="pt-4 animate-pulse">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
+                  Build v1.7.3
                 </div>
-              )}
-
-              {(authError || isTooLarge) && (
-                <p className="text-[10px] text-accent mt-2 max-w-[220px] mx-auto leading-relaxed">
-                  {isTooLarge 
-                    ? "The shared image exceeds the 20MB limit. Please try a smaller file for smooth performance."
-                    : authError}
-                </p>
-              )}
-            </div>
-            
-            <div className="pt-4 animate-pulse">
-              <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                Build v1.7.2
               </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={() => window.location.href = '/'}
-              className="px-8 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
-            >
-              Back to Home
-            </button>
-            <button 
-              onClick={async () => {
-                if ('serviceWorker' in navigator) {
-                  try {
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    for(let reg of regs) await reg.unregister();
-                    if ('caches' in window) {
-                      const keys = await caches.keys();
-                      for(let key of keys) await caches.delete(key);
-                    }
-                    window.location.reload();
-                  } catch (e) {
-                    window.location.reload();
-                  }
-                }
-              }}
-              className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4 hover:text-white transition-colors"
-            >
-              Hard Reset & Update
-            </button>
+            
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => window.location.href = '/'}
+                className="px-8 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
+              >
+                Back to Home
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    // If we have images, don't show the blocking loading screen, 
+    // unless it's the very first load and we haven't finished Stage A
+    if (importedImages.length === 0 || initStage === 'IDLE') {
+      const isTooLarge = searchParams.get('error') === 'file_too_large';
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-bg text-white">
+          <div className="flex flex-col items-center gap-6 p-8 text-center">
+            {!isTooLarge ? (
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
+                <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
+                <span className="text-2xl text-accent">⚠️</span>
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <div className="text-xs font-black tracking-widest uppercase opacity-60">
+                  {isTooLarge ? "File Too Large" : "System Diagnostics"}
+                </div>
+                
+                {!isTooLarge && (
+                  <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
+                    <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
+                      {initStage === 'DATA_READ' ? '●' : '○'} A. Ironclad Data Sync (v1.7.3)
+                    </span>
+                    <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
+                      {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
+                    </span>
+                    <span className={isAuthReady ? 'text-accent font-bold' : ''}>
+                      {isAuthReady ? '●' : '○'} C. Encrypted Session Established
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="pt-4 animate-pulse">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
+                  Build v1.7.3
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={async () => {
+                  if ('serviceWorker' in navigator) {
+                    try {
+                      const regs = await navigator.serviceWorker.getRegistrations();
+                      for(let reg of regs) await reg.unregister();
+                      if ('caches' in window) {
+                        const keys = await caches.keys();
+                        for(let key of keys) await caches.delete(key);
+                      }
+                      window.location.reload();
+                    } catch (e) {
+                      window.location.reload();
+                    }
+                  }
+                }}
+                className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4 hover:text-white transition-colors"
+              >
+                Hard Reset & Update
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
   }
 
   const accessibleCategories = appData.categories.filter(cat => {
@@ -458,7 +507,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.7.2"
+        version="1.7.3"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
