@@ -4,7 +4,7 @@ import { fetchAllAppData } from '../services/dataService';
 import { saveProduct, deleteProduct } from '../services/productService';
 import { saveCategory, deleteCategory } from '../services/categoryService';
 import { appendRow } from '../lib/sheets';
-import { apiClient } from './api-client';
+import { apiClient } from '../lib/api-client';
 
 const API_BASE_URL = (typeof window !== 'undefined' && 
   (window.location.protocol === 'extension:' || 
