@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.1 - Secure Migration Edition
-const CACHE_NAME = 'imagesnap-v8.1';
+// ImageSnap Service Worker v8.2 - Multi-Image Share Fix
+const CACHE_NAME = 'imagesnap-v8.2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -30,24 +30,25 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         try {
           const formData = await event.request.formData();
-          const imageFile = formData.get('images');
+          const imageFiles = formData.getAll('images'); // getAll() for multi-image share
           const title = formData.get('title') || '';
           const text = formData.get('text') || '';
           const link = formData.get('url') || '';
 
-          // 20MB Safety Check
-          if (imageFile && imageFile.size > 20 * 1024 * 1024) {
-             return Response.redirect('/dashboard?error=file_too_large', 303);
+          // 20MB Safety Check (total across all files)
+          const totalSize = imageFiles.reduce((sum, f) => sum + (f.size || 0), 0);
+          if (totalSize > 20 * 1024 * 1024) {
+            return Response.redirect('/dashboard?error=file_too_large', 303);
           }
 
           // Atomic write to IndexedDB
-          if (imageFile) {
-            await saveSharedData({ 
-              image: imageFile, 
-              title, 
-              text, 
+          if (imageFiles.length > 0) {
+            await saveSharedData({
+              images: imageFiles,
+              title,
+              text,
               url: link,
-              timestamp: Date.now() 
+              timestamp: Date.now()
             });
           }
 
@@ -63,6 +64,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 // IndexedDB helper for shared data
+// IndexedDB helper — stores { images: File[], title, text, url, timestamp }
 async function saveSharedData(data) {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('ImageSnapSharing', 1);
