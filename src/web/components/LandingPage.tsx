@@ -288,7 +288,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
       {/* FOOTER */}
       <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-white/5 text-center">
           <p className="text-muted text-sm font-bold uppercase tracking-widest">
-            © 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED. <span className="ml-4 opacity-50">v1.8.8</span>
+            © 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED. <span className="ml-4 opacity-50">v1.8.9</span>
           </p>
       </footer>
     </div>
