@@ -210,17 +210,19 @@ function DashboardContent() {
 
     if ((window as any)._pushDebug) (window as any)._pushDebug(`[IDEMPOTENCY] Check: sid=${sid}, last=${lastProcessedId}, isLocked=${isConsumingRef.current}`);
 
-    if (isConsumingRef.current || !sid || sid === lastProcessedId) {
+    if (isConsumingRef.current || (sid && sid === lastProcessedId)) {
       if ((window as any)._pushDebug && sid && sid === lastProcessedId) (window as any)._pushDebug('[IDEMPOTENCY] Share already processed');
       return;
     }
     
     isConsumingRef.current = true;
 
-    // Consumed! Update ID immediately to block race conditions during async IDB read
-    sessionStorage.setItem('imagesnap_last_share_id', sid);
-    window.history.replaceState(null, '', window.location.pathname);
-    if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Share ID ${sid} scrubbed from URL`);
+    if (sid) {
+      // Consumed! Update ID immediately to block race conditions during async IDB read
+      sessionStorage.setItem('imagesnap_last_share_id', sid);
+      window.history.replaceState(null, '', window.location.pathname);
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Share ID ${sid} scrubbed from URL`);
+    }
 
     if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Querying IDB v2 sid Storage...');
 
@@ -243,49 +245,45 @@ function DashboardContent() {
           const transaction = db.transaction(STORE_NAME, 'readwrite');
           const store = transaction.objectStore(STORE_NAME);
           
-          // Deterministic Read: Get specific record by sid
-          const getReq = store.get(sid);
-
-          getReq.onsuccess = () => {
-            const data = getReq.result;
-            if (data) {
-              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Latching to RAM...');
-              
-              if (data.image) {
-                const blob = data.image;
-                if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-                const pointer = URL.createObjectURL(blob);
-                objectUrlRef.current = pointer;
-                setImportedImages([pointer]);
-                if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Image latch successful');
-              }
-              if (data.url) {
-                setImportedUrl(data.url);
-                if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_B] URL latch: ${data.url.substring(0, 20)}...`);
-              }
-              if (data.title) setImportedMetadata(prev => ({ ...prev, title: data.title }));
-              
-              // Clean up specific sid
-              store.delete(sid);
-            } else {
-              // Fallback to 'latest' for transitional support
-              const fallbackReq = store.get('latest');
-              fallbackReq.onsuccess = () => {
-                const fData = fallbackReq.result;
-                if (fData) {
-                  if (fData.image) {
-                    const pointer = URL.createObjectURL(fData.image);
-                    objectUrlRef.current = pointer;
-                    setImportedImages([pointer]);
-                  }
-                  if (fData.url) setImportedUrl(fData.url);
-                  store.delete('latest');
-                } else {
-                  if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] No data for sid in Store');
-                }
-              };
+          const processData = (data: any, key: string) => {
+            if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Latching to RAM...');
+            if (data.image) {
+              const blob = data.image;
+              if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+              const pointer = URL.createObjectURL(blob);
+              objectUrlRef.current = pointer;
+              setImportedImages([pointer]);
             }
+            if (data.url) setImportedUrl(data.url);
+            if (data.title) setImportedMetadata(prev => ({ ...prev, title: data.title }));
+            store.delete(key);
           };
+
+          if (sid) {
+            // Deterministic Read: Get specific record by sid
+            const getReq = store.get(sid);
+            getReq.onsuccess = () => {
+              if (getReq.result) processData(getReq.result, sid);
+            };
+          } else {
+            // Full Scan Fallback for Latest Unconsumed
+            const cursorReq = store.openCursor(null, 'prev');
+            let found = false;
+            cursorReq.onsuccess = (e: any) => {
+              const cursor = e.target.result;
+              if (cursor && !found) {
+                if (cursor.key !== lastProcessedId && cursor.key !== 'latest') {
+                  found = true;
+                  sessionStorage.setItem('imagesnap_last_share_id', cursor.key as string);
+                  processData(cursor.value, cursor.key as string);
+                } else {
+                  // Legacy cleanup or already consumed
+                  if (cursor.key === 'latest') store.delete('latest');
+                  cursor.continue();
+                }
+              }
+            };
+          }
 
           transaction.oncomplete = () => {
             db.close();

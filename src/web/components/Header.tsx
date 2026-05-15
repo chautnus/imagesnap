@@ -60,8 +60,8 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             )}
             {dataStatus === 'error' && (
-              <span className="text-[9px] text-red-500 font-mono font-bold flex items-center gap-1" title="Failed to load usage data">
-                ⚠️ ERR • {version}
+              <span className="text-[9px] text-yellow-500 font-mono font-bold flex items-center gap-1" title="Usage unavailable - using safe fallback">
+                ?/{subStatus.limit} • {version}
               </span>
             )}
             {(dataStatus === 'success' || dataStatus === 'idle') && (

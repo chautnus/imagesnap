@@ -144,41 +144,62 @@ export async function getUserInfo(token: string) {
 export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {
   if (onSuccess) authQueue.push({ resolve: onSuccess, reject: () => {} });
 
-  // Extension Check: Use chrome.identity
-  // @ts-ignore
-  if (window.chrome && window.chrome.identity) {
-    const redirectUri = 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
+  const getRedirectUri = () => {
+    if (typeof window !== 'undefined') {
+      const isExtension = window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension');
+      if (isExtension) {
+        return 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
+      }
+      return `${window.location.origin}/auth/callback`;
+    }
+    return '';
+  };
+
+  const redirectUri = getRedirectUri();
+  
+  // Universal Redirect Flow (Web & Extension)
+  if (prompt === 'consent') {
+    // Standard OAuth2 Redirect to bypass mobile pop-up blockers
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${GOOGLE_CLIENT_ID}&` +
       `response_type=token&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `scope=${encodeURIComponent(SCOPES)}&` +
-      `prompt=${prompt}`;
+      `prompt=consent`;
 
-    window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl: string | undefined) => {
-      if (redirectUrl) {
-        const url = new URL(redirectUrl.replace('#', '?'));
-        const token = url.searchParams.get('access_token');
-        if (token) {
-          accessToken = token;
-          authQueue.forEach(q => q.resolve(token));
-          authQueue = [];
+    // Extension Check: Use chrome.identity if available
+    // @ts-ignore
+    if (window.chrome && window.chrome.identity) {
+      window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl: string | undefined) => {
+        if (redirectUrl) {
+          const url = new URL(redirectUrl.replace('#', '?'));
+          const token = url.searchParams.get('access_token');
+          if (token) {
+            accessToken = token;
+            authQueue.forEach(q => q.resolve(token));
+            authQueue = [];
+          }
         }
-      }
-    });
+      });
+      return;
+    }
+
+    // Web Fallback: Direct Redirect
+    window.location.href = authUrl;
     return;
   }
 
+  // Silent Prompt (prompt: 'none') - Keep using GIS for background refresh
   if (!tokenClient) {
     initGis((token) => {
       if (tokenClient) {
-        tokenClient.requestAccessToken({ prompt });
+        tokenClient.requestAccessToken({ prompt: 'none' });
       }
     });
     return;
   }
   
-  tokenClient.requestAccessToken({ prompt });
+  tokenClient.requestAccessToken({ prompt: 'none' });
 };
 
 export const getAccessToken = () => accessToken;
