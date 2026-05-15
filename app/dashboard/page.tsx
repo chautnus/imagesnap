@@ -86,7 +86,7 @@ function DashboardContent() {
     // Breakout: Controller Shift Mechanism
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.7.2...');
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.1...');
         window.location.reload();
       });
     }
@@ -105,7 +105,7 @@ function DashboardContent() {
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.7.6 Ironclad Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.1 Ironclad Init');
 
       // Add Document-level Cleanup for Blob URLs
       const handleUnload = () => {
@@ -498,7 +498,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.0"
+        version="v1.8.1"
         dataStatus={dataStatus}
       />
  
