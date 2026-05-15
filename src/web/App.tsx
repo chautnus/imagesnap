@@ -126,6 +126,14 @@ export default function App() {
       const loadSharedData = async () => {
         try {
           const dbRequest = indexedDB.open('imagesnap-pwa-db', 2);
+          
+          dbRequest.onupgradeneeded = (event: any) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('shares')) {
+              db.createObjectStore('shares');
+            }
+          };
+
           dbRequest.onsuccess = (event: any) => {
             const db = event.target.result;
             const transaction = db.transaction('shares', 'readwrite');
@@ -292,7 +300,7 @@ export default function App() {
           user={user}
           subStatus={subStatus}
           isSyncing={isSyncing}
-          version="v1.8.9"
+          version="v1.8.10"
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

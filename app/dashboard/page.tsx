@@ -231,13 +231,36 @@ function DashboardContent() {
 
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
+      // Safety Timeout: Force resolve after 5s to prevent "Icon Stuck"
+      const timeoutId = setTimeout(() => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Force-Timeout Triggered!');
+        isConsumingRef.current = false;
+        resolve();
+      }, 5000);
+
+      request.onupgradeneeded = (event: any) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+
+      request.onerror = () => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB Open Failed!');
+        clearTimeout(timeoutId);
+        isConsumingRef.current = false;
+        resolve();
+      };
+
       request.onblocked = () => {
         if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB Blocked!');
+        clearTimeout(timeoutId);
         isConsumingRef.current = false;
         resolve();
       };
 
       request.onsuccess = (event: any) => {
+        clearTimeout(timeoutId);
         const db = event.target.result;
         try {
           const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -478,7 +501,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.9"
+        version="v1.8.10"
         dataStatus={dataStatus}
       />
  
