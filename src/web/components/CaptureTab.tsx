@@ -223,6 +223,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     } finally {
       setIsExtracting(false);
     }
+  };
+
   const compressImage = async (dataUrl: string): Promise<string> => {
     return new Promise((resolve) => {
       const img = new Image();
