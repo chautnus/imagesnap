@@ -1,51 +1,61 @@
-# ImageSnap Variables Audit (v1.8.8 Ultimate Sync)
+# ImageSnap Global Variables Audit (v1.8.9)
 
-This document catalogs the primary state variables, props, and constants used across the ImageSnap Web App and Chrome Extension.
-
-## 1. Global & Shared State (Dashboard / App)
-
-| Variable | Type | Source | Description |
-| --- | --- | --- | --- |
-| `user` | `User | null` | `page.tsx` / `App.tsx` | Current authenticated user profile from Google/Session. |
-| `accessToken` | `string | null` | `google-auth.ts` | Bearer token for Google Sheets API interactions. |
-| `spreadsheetId` | `string | null` | `localStorage` / `state` | ID of the linked Google Sheet (Workspace). |
-| `activeTab` | `'capture' | 'data' | 'settings' | 'help'` | `page.tsx` / `App.tsx` | Controls the main UI navigation state. |
-| `subStatus` | `SubscriptionStatus` | `useAppData` / `page.tsx` | Quota, usage, and Pro status info. |
-| `shareTargetNonce` | `number` | `page.tsx` | Signals CaptureTab to pull shared data from IDB. |
-| `isSyncing` | `boolean` | `useAppData` | Indicates active background sync with Google Sheets. |
-
-## 2. Ingestion & Sharing Variables (Centralized in CaptureTab)
-
-*Note: In v1.8.8, these variables are pulled directly from IDB by CaptureTab, not passed as props.*
-
-| Variable | Type | Location | Description |
-| --- | --- | --- | --- |
-| `data.url` | `string` | `CaptureTab.tsx` | URL from a shared web page (extracted from IDB). |
-| `data.title` | `string` | `CaptureTab.tsx` | Title from a shared page (extracted from IDB). |
-| `data.text` | `string` | `CaptureTab.tsx` | Description/Text from a shared page (extracted from IDB). |
-| `blobUrlsRef` | `MutableRefObject` | `CaptureTab.tsx` | Tracks all `blob:` URLs for memory cleanup. |
-| `isSaving` | `boolean` | `CaptureTab.tsx` | UI lock state during API/Sheet submission. |
-
-## 3. Component-Specific Variables (CaptureTab)
-
-| Variable | Type | Description |
-| --- | --- | --- |
-| `images` | `string[]` | Local state of images being captured/imported in current session. |
-| `formData` | `Record<string, any>`| Key-value store for metadata fields of the selected category. |
-| `keyFieldId` | `string` | The ID of the field marked as 'key' for the active category. |
-
-## 4. Service Worker (sw.js)
-
-| Variable | Type | Description |
-| --- | --- | --- |
-| `DB_NAME` | `string` | `imagesnap-pwa-db` - Primary DB for cross-process image transfer. |
-| `STORE_NAME` | `string` | `shares` - Object store for shared content. |
-
-## 5. Storage Keys (localStorage / sessionStorage)
-
-- `ps_access_token`: Google OAuth token.
-- `ps_sheet_id`: Google Sheet ID.
-- `ps_recent_cats`: JSON array of recently used category IDs.
+This document provides a full audit of variables used across the platform, divided into Declarations (Part 1) and Usage (Part 2) to ensure architectural integrity.
 
 ---
-*Last Updated: 2026-05-15 (v1.8.8)*
+
+## Part 1: Declared Variables (Definitions)
+
+### 1. Dashboard (page.tsx)
+- `shareTargetNonce`: (State) Signals CaptureTab to pull shared data.
+- `initStage`: (State) Tracks boot sequence (IDLE, DATA_READ, etc.).
+- `user`, `isAuthReady`, `spreadsheetId`, `subStatus`: (State) Core auth/quota states.
+- `logs`, `isVisible`: (State) Debug overlay controls.
+- `dataStatus`, `isOffline`: (State) Network/Sync status.
+
+### 2. CaptureTab (CaptureTab.tsx)
+- `images`: (State) Current batch of captured/imported images.
+- `formData`: (State) Metadata for the active category.
+- `selectedCategoryId`: (State) Active category ID.
+- `searchTerm`, `recentCatIds`: (State) Category selection helpers.
+- `isSaving`, `isExtracting`: (State) UI lock flags.
+- `keySearchFocus`, `showPicker`, `extractedImages`: (State) Web extraction UI states.
+- `blobUrlsRef`: (Ref) Memory management for blob: URLs.
+
+### 3. Extension Entry (App.tsx)
+- `shareTargetNonce`: (State) **(New in v1.8.9)** Syncs with CaptureTab.
+- `activeTab`, `isAuthReady`, `view`, `user`, `isStaff`, `spreadsheetId`, `subStatus`: (State) Core platform states.
+- `sharedMetadata`: (State) Legacy metadata buffer.
+
+### 4. Service Worker (sw.js)
+- `CACHE_NAME`: (Const) PWA Cache versioning.
+- `DB_NAME`, `STORE_NAME`, `DB_VERSION`: (Const) IndexedDB configuration.
+
+---
+
+## Part 2: Used Variables (Call Sites)
+
+### 1. Successful Matches (Declared & Used)
+- `shareTargetNonce` -> Used in `page.tsx`, `App.tsx`, and `CaptureTab.tsx`.
+- `images`, `formData` -> Used throughout `CaptureTab.tsx`.
+- `user`, `spreadsheetId` -> Used in `page.tsx` and passed to `useAppData`.
+
+### 2. Discrepancies (The "Call Site" Audit)
+
+| Variable | Status | Source | Resolution |
+| --- | --- | --- | --- |
+| `setSharedImages` | **ORPHAN** | `App.tsx` (L141) | **Removed in v1.8.9**. Logic moved to IDB. |
+| `setImportedImages` | **ORPHAN** | `App.tsx` (L199, L234) | **Removed in v1.8.9**. Logic moved to IDB. |
+| `setImportedUrl` | **ORPHAN** | `App.tsx` (L201, L237) | **Removed in v1.8.9**. Logic moved to IDB. |
+| `setImportedMetadata` | **ORPHAN** | `App.tsx` (L204, L241) | **Removed in v1.8.9**. Logic moved to IDB. |
+| `sharedMetadata` | **REDUNDANT** | `App.tsx` | Removed from Prop chain; internal to CaptureTab. |
+
+---
+
+## Part 3: Discrepancy Resolution Log
+
+- **Build Stability**: All "Orphan" calls in `App.tsx` have been replaced with a unified `saveToIDB` and `setShareTargetNonce` signal.
+- **Type Safety**: `FieldDefinition.keepValue` usage in `CaptureTab.tsx` reverted to type-based check to match `src/shared/lib/types.ts`.
+- **Database Consistency**: All modules now use `imagesnap-pwa-db` (v2) and store `shares`.
+
+*Last Audit: 2026-05-15 (v1.8.9)*

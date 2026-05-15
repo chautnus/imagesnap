@@ -55,7 +55,7 @@ export default function App() {
   const [isStaff, setIsStaff] = useState(false);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(localStorage.getItem('ps_sheet_id'));
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
-  const [sharedMetadata, setSharedMetadata] = useState<ProductMetadata>({});
+  const [shareTargetNonce, setShareTargetNonce] = useState(0);
   
   const { lang, t, toggleLang } = useI18n();
   const { 
@@ -128,92 +128,31 @@ export default function App() {
           const dbRequest = indexedDB.open('imagesnap-pwa-db', 2);
           dbRequest.onsuccess = (event: any) => {
             const db = event.target.result;
-            const transaction = db.transaction('shares', 'readonly');
+            const transaction = db.transaction('shares', 'readwrite');
             const store = transaction.objectStore('shares');
-            const getRequest = store.get('latest');
-
-            getRequest.onsuccess = () => {
-              const data = getRequest.result;
-              if (data) {
-                console.log('Retrieved shared data:', data);
-                if (data.image) {
-                  const blobUrl = URL.createObjectURL(data.image);
-                  setSharedImages([blobUrl]);
-                }
-                setSharedMetadata({
-                  t: data.title || '',
-                  d: data.text || '',
-                  url: data.url || ''
-                });
-                
-                // If logged in, go straight to app
-                if (localStorage.getItem('ps_access_token')) {
-                  setView('app');
-                }
-              }
-            };
+            
+            // If we have sharing=1, we just trigger the pull from existing 'latest' if any
+            setShareTargetNonce(prev => prev + 1);
+            
+            // If logged in, go straight to app
+            if (localStorage.getItem('ps_access_token')) {
+              setView('app');
+            }
           };
         } catch (err) {
-          console.error('Error loading shared data:', err);
+          console.error('Error signaling shared data:', err);
         }
       };
       loadSharedData();
     }
   }, []);
 
-  const [importedUrl, setImportedUrl] = useState<string>('');
-  const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
 
   useEffect(() => {
     const checkImport = async () => {
       let hash = window.location.hash;
-      let search = window.location.search;
-      const searchParams = new URLSearchParams(search);
-
-      // 1. Handle Web Share Target (from Service Worker cache)
-      if (searchParams.get('share-target') === 'true') {
-        try {
-          const cache = await caches.open('shared-data');
-          const metaRes = await cache.match('/shared-metadata');
-          
-          if (metaRes) {
-            const metadata = await metaRes.json();
-            const images: string[] = [];
-            
-            // Load images from cache as Data URLs
-            for (let i = 0; i < metadata.imageCount; i++) {
-              const imgRes = await cache.match(`/shared-image-${i}`);
-              if (imgRes) {
-                const blob = await imgRes.blob();
-                const reader = new FileReader();
-                const dataUrl = await new Promise<string>((resolve) => {
-                  reader.onloadend = () => resolve(reader.result as string);
-                  reader.readAsDataURL(blob);
-                });
-                images.push(dataUrl);
-              }
-            }
-
-            if (images.length > 0) setImportedImages(images);
-            if (metadata.url || metadata.text) {
-              setImportedUrl(metadata.url || metadata.text);
-            }
-            if (metadata.title) {
-              setImportedMetadata(prev => ({ ...prev, title: metadata.title }));
-            }
-
-            // Clean up cache
-            await caches.delete('shared-data');
-            // Clean up URL
-            window.history.replaceState({}, document.title, "/");
-          }
-        } catch (e) {
-          console.error("Failed to load shared data", e);
-        }
-        return;
-      }
-
-      // 2. Handle hash-based import (from Extension)
+      
+      // 1. Handle privacy/staff routes
       if (hash === '#privacy') {
         setView('privacy');
         return;
@@ -222,25 +161,45 @@ export default function App() {
         setView('landing');
         return;
       }
+
+      // 2. Handle hash-based import (from Extension)
       if (hash.startsWith('#import=')) {
         const params = new URLSearchParams(hash.substring(1));
         const imgs = params.get('import');
         const sourceUrl = params.get('url');
         const metaStr = params.get('metadata');
         
-        if (imgs) {
-          setImportedImages(imgs.split(','));
-        }
-        if (sourceUrl) {
-          setImportedUrl(sourceUrl);
-        }
+        let metadata = {};
         if (metaStr) {
-          try {
-            setImportedMetadata(JSON.parse(decodeURIComponent(metaStr)));
-          } catch(e) {
-            console.error("Failed to parse metadata", e);
-          }
+          try { metadata = JSON.parse(decodeURIComponent(metaStr)); } catch(e) {}
         }
+
+        // Write to IDB to unify with PWA flow
+        try {
+          const dbRequest = indexedDB.open('imagesnap-pwa-db', 2);
+          dbRequest.onsuccess = (event: any) => {
+            const db = event.target.result;
+            const transaction = db.transaction('shares', 'readwrite');
+            const store = transaction.objectStore('shares');
+            
+            const sid = Date.now().toString();
+            store.put({
+              images: imgs ? imgs.split(',') : [],
+              url: sourceUrl || '',
+              title: (metadata as any).t || (metadata as any).title || '',
+              text: (metadata as any).d || (metadata as any).description || '',
+              timestamp: parseInt(sid)
+            }, sid);
+
+            transaction.oncomplete = () => {
+              setShareTargetNonce(prev => prev + 1);
+              if (localStorage.getItem('ps_access_token')) setView('app');
+            };
+          };
+        } catch (e) {
+          console.error("Hash import failed", e);
+        }
+
         window.history.replaceState({}, document.title, "/");
       }
     };
@@ -333,7 +292,7 @@ export default function App() {
           user={user}
           subStatus={subStatus}
           isSyncing={isSyncing}
-          version="v1.8.8"
+          version="v1.8.9"
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
@@ -355,7 +314,7 @@ export default function App() {
               lang={lang}
               subStatus={subStatus}
               onUpgrade={handleUpgrade}
-              shareTargetNonce={0}
+              shareTargetNonce={shareTargetNonce}
               onSaveCategory={handleSaveCategory}
               onSwitchToHelp={() => setActiveTab('help')}
             />
