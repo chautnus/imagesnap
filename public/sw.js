@@ -1,4 +1,4 @@
-// ImageSnap Service Worker v8.6 - Single-Signal (v1.8.1)
+// ImageSnap Service Worker v8.6 - Single-Signal (v1.8.2)
 const CACHE_NAME = 'imagesnap-v8.6';
 
 self.addEventListener('install', (event) => {
