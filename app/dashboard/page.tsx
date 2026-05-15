@@ -198,9 +198,9 @@ function DashboardContent() {
     };
   }, []);
 
-  const handleShareTarget = async (sidFromBroadcast?: string) => {
+  const handleShareTarget = async (providedSid?: string) => {
     const urlParams = new URLSearchParams(window.location.search);
-    const sid = sidFromBroadcast || urlParams.get('share_id');
+    const sid = providedSid || urlParams.get('share_id');
     const lastProcessedId = sessionStorage.getItem('imagesnap_last_share_id');
 
     if ((window as any)._pushDebug) (window as any)._pushDebug(`[IDEMPOTENCY] Check: sid=${sid}, last=${lastProcessedId}, isLocked=${isConsumingRef.current}`);

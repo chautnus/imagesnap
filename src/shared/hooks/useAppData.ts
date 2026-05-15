@@ -95,6 +95,15 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
           })
         });
         if (!res.ok) throw new Error("Staff Proxy save failed");
+        
+        const response = await res.json();
+        const kv = response.keyValue;
+
+        // Also handle product naming suggestions
+        const existsInNames = appData.productNames.some(pn => pn.categoryId === product.categoryId && pn.name === kv);
+        if (!existsInNames && kv) {
+          await appendRow(spreadsheetId, 'ProductNames!A2:B', [product.categoryId, kv]);
+        }
       } else {
         // Admin Direct Save
         const { keyValue } = await saveProduct(
@@ -108,7 +117,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
 
         // Also handle product naming suggestions
         const existsInNames = appData.productNames.some(pn => pn.categoryId === product.categoryId && pn.name === keyValue);
-        if (!existsInNames) {
+        if (!existsInNames && keyValue) {
           await appendRow(spreadsheetId, 'ProductNames!A2:B', [product.categoryId, keyValue]);
         }
       }

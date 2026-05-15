@@ -229,7 +229,10 @@ export const establishSession = async (token: string, email: string, isStaff: bo
 
 export const reauthenticate = (): Promise<string> => {
   return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => reject(new Error("Re-authentication timed out")), 10000);
+
     requestToken('none', async (token) => {
+      clearTimeout(timeoutId);
       try {
         const profile = await getUserInfo(token);
         if (profile?.email) {

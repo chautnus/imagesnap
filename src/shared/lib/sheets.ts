@@ -72,11 +72,11 @@ export async function findOrCreateWorkspace() {
     headers: { 'Authorization': `Bearer ${token}` }
   });
 
-  await initWorkspaceHeaders(spreadsheetId);
+  await initWorkspaceHeaders(spreadsheetId, token);
   return spreadsheetId;
 }
 
-async function initWorkspaceHeaders(spreadsheetId: string) {
+async function initWorkspaceHeaders(spreadsheetId: string, providedToken?: string) {
   const updates = [
     { range: 'Categories!A1:F1', values: [['ID', 'Name', 'Icon', 'Fields JSON', 'Updated At', '_deleted']] },
     { range: 'Users!A1:E1', values: [['ID', 'Username', 'Password', 'Role', 'Created At']] },
@@ -87,7 +87,7 @@ async function initWorkspaceHeaders(spreadsheetId: string) {
     await sheetsRequest(`${spreadsheetId}/values/${update.range}?valueInputOption=USER_ENTERED`, {
       method: 'PUT',
       body: JSON.stringify({ values: update.values })
-    });
+    }, providedToken);
   }
 }
 
@@ -139,14 +139,14 @@ export async function ensureSheetExists(spreadsheetId: string, sheetName: string
   }
 }
 
-export async function deleteRowBySearch(spreadsheetId: string, sheetName: string, id: string) {
-  const rows = await getSheetRows(spreadsheetId, `${sheetName}!A:A`);
+export async function deleteRowBySearch(spreadsheetId: string, sheetName: string, id: string, providedToken?: string) {
+  const rows = await getSheetRows(spreadsheetId, `${sheetName}!A:A`, providedToken);
   const rowIndex = rows.findIndex((r: any) => r[0] === id);
   if (rowIndex === -1) return; // Already gone
 
   // To delete a row in v4, we use batchUpdate with deleteDimension
   // But wait, it's easier to just find the sheet ID first.
-  const metadata = await sheetsRequest(`${spreadsheetId}`);
+  const metadata = await sheetsRequest(`${spreadsheetId}`, {}, providedToken);
   const sheet = metadata.sheets.find((s: any) => s.properties.title === sheetName);
   const sheetId = sheet.properties.sheetId;
 
@@ -166,12 +166,12 @@ export async function deleteRowBySearch(spreadsheetId: string, sheetName: string
         }
       ]
     })
-  });
+  }, providedToken);
 }
 
-export async function updateRowBySearch(spreadsheetId: string, sheetName: string, id: string, values: any[]) {
+export async function updateRowBySearch(spreadsheetId: string, sheetName: string, id: string, values: any[], providedToken?: string) {
   // Find current rows
-  const rows = await getSheetRows(spreadsheetId, `${sheetName}!A:A`);
+  const rows = await getSheetRows(spreadsheetId, `${sheetName}!A:A`, providedToken);
   const rowIndex = rows.findIndex((r: any) => r[0] === id);
   if (rowIndex === -1) throw new Error(`Row with ID ${id} not found in ${sheetName}`);
 
@@ -179,5 +179,5 @@ export async function updateRowBySearch(spreadsheetId: string, sheetName: string
   return sheetsRequest(`${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`, {
     method: 'PUT',
     body: JSON.stringify({ values: [values] })
-  });
+  }, providedToken);
 }
