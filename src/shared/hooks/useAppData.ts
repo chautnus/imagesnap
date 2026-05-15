@@ -79,7 +79,8 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     setIsSyncing(true);
     try {
       // Check if user is staff (staff email format)
-      const isStaff = user?.email?.endsWith('@staff.imagesnap');
+      const STAFF_DOMAIN = '@staff.imagesnap';
+      const isStaff = user?.email?.endsWith(STAFF_DOMAIN);
 
       if (isStaff) {
         // Staff Proxy Save

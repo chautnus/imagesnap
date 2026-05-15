@@ -96,9 +96,10 @@ export async function getConfig(key: string) {
 }
 
 export async function setConfig(key: string, value: any) {
+  const finalValue = typeof value === 'string' ? value : JSON.stringify(value);
   await pool.query(
     'INSERT INTO config (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
-    [key, JSON.stringify(value)]
+    [key, finalValue]
   );
 }
 

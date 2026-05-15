@@ -111,14 +111,6 @@ const translations: Record<string, Record<Lang, string>> = {
     en: 'Date To',
     vi: 'Đến ngày'
   },
-  bulkImport: {
-    en: 'Bulk URL Import',
-    vi: 'Nhập URL hàng loạt'
-  },
-  pasteUrls: {
-    en: 'Paste image URLs (one per line)',
-    vi: 'Dán link ảnh (mỗi dòng một link)'
-  },
   import: {
     en: 'Import',
     vi: 'Nhập'

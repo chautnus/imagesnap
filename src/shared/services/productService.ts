@@ -8,9 +8,10 @@ export async function saveProduct(
   base64Images: string[],
   categories: Category[],
   userSub?: string,
-  userName?: string
+  userName?: string,
+  providedToken?: string
 ) {
-  const rootFolderId = await findOrCreateFolder('ImageSnap');
+  const rootFolderId = await findOrCreateFolder('ImageSnap', undefined, providedToken);
   const cat = categories.find(c => c.id === product.categoryId);
   if (!cat) throw new Error("Category not found");
 
@@ -18,8 +19,8 @@ export async function saveProduct(
   const keyValue = keyField ? (product.data?.[keyField.id] || 'Unnamed') : (product.name || 'Unnamed');
 
   // Ensure Drive folders exist
-  const catFolderId = await findOrCreateFolder(cat.name || 'Other', rootFolderId);
-  const keyFolderId = await findOrCreateFolder(keyValue.toString(), catFolderId);
+  const catFolderId = await findOrCreateFolder(cat.name || 'Other', rootFolderId, providedToken);
+  const keyFolderId = await findOrCreateFolder(keyValue.toString(), catFolderId, providedToken);
 
   const imageUrls = [];
   for (let i = 0; i < base64Images.length; i++) {
@@ -28,11 +29,11 @@ export async function saveProduct(
     
     try {
       if (img.startsWith('data:')) {
-        const url = await uploadBase64Image(img, fileName, keyFolderId);
+        const url = await uploadBase64Image(img, fileName, keyFolderId, providedToken);
         imageUrls.push(url);
       } else if (img.startsWith('http')) {
         // Attempt to upload remote URL. If CORS fails, it returns original URL.
-        const url = await uploadUrlImage(img, fileName, keyFolderId);
+        const url = await uploadUrlImage(img, fileName, keyFolderId, providedToken);
         imageUrls.push(url);
       } else {
         imageUrls.push(img);
@@ -45,7 +46,7 @@ export async function saveProduct(
 
   const sheetTitle = cat.name.substring(0, 31);
   const headers = ['ID', 'Created At', 'Images', 'Name', 'Tags', 'Author ID', 'Author Name', ...cat.fields.map(f => f.label)];
-  await ensureSheetExists(spreadsheetId, sheetTitle, headers);
+  await ensureSheetExists(spreadsheetId, sheetTitle, headers, providedToken);
 
   const id = `prod_${Date.now()}`;
   const createdAt = new Date().toISOString();
@@ -62,7 +63,7 @@ export async function saveProduct(
     ...fieldValues
   ];
 
-  await appendRow(spreadsheetId, `${sheetTitle}!A2`, row);
+  await appendRow(spreadsheetId, `${sheetTitle}!A2`, row, providedToken);
 
   return { id, keyValue };
 }

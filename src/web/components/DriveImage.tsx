@@ -123,6 +123,13 @@ export const DriveImage: React.FC<DriveImageProps> = ({ url, className, alt }) =
     };
 
     fetchImage();
+
+    return () => {
+      if (src && src.startsWith('blob:')) {
+        URL.revokeObjectURL(src);
+        delete blobCache[url];
+      }
+    };
   }, [url]);
 
   if (loading) {

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { getConfig } from "@src/db";
+import { saveProduct } from "@shared/services/productService";
+import { fetchAllAppData } from "@shared/services/dataService";
 
 export async function POST(request: Request) {
   try {
-    const { spreadsheetId, product, adminAccessToken } = await request.json();
+    const { spreadsheetId, product, base64Images, adminAccessToken } = await request.json();
     const masterToken = await getConfig('adminAccessToken');
     const token = adminAccessToken || masterToken;
 
@@ -11,35 +13,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Admin must be active to proxy saves" }, { status: 401 });
     }
 
-    // Google Sheets API URL
-    // Standard ImageSnap save format: [ID, CreatedAt, Images, Name, Tags, AuthID, AuthName, ...dataFields]
-    const rowValues = [
-      product.id,
-      product.createdAt || new Date().toISOString(),
-      (product.images || []).join(','),
-      product.name,
-      (product.tags || []).join(','),
-      product.authorId || '',
-      product.authorName || '',
-      ...Object.values(product.data || {})
-    ];
+    // Fetch categories to get field mapping
+    // We pass the token to ensure we can read the spreadsheet
+    const appData = await fetchAllAppData(spreadsheetId, token);
+    
+    const result = await saveProduct(
+      spreadsheetId,
+      product,
+      base64Images || [],
+      appData.categories,
+      product.authorId,
+      product.authorName,
+      token
+    );
 
-    const range = `${product.categoryName || 'Data'}!A2`;
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`, {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${token}`, 
-        'Content-Type': 'application/json' 
-      },
-      body: JSON.stringify({ values: [rowValues] })
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error((result as any).error?.message || "Proxy error");
-    }
-
-    return NextResponse.json(result);
+    return NextResponse.json({ success: true, ...result });
   } catch (err: any) {
     console.error("Proxy save error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });

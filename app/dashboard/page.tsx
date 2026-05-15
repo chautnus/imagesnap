@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Navigation } from '@web/components/Navigation';
 import { CaptureTab, ProductMetadata } from '@web/components/CaptureTab';
 import { DataTab } from '@web/components/DataTab';
@@ -17,7 +17,13 @@ import { apiClient } from '@shared/lib/api-client';
 
 function DebugOverlay() {
   const [logs, setLogs] = useState<string[]>([]);
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('debug') === '1') setIsVisible(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -55,6 +61,7 @@ function DebugOverlay() {
 }
 
 function DashboardContent() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings' | 'help'>('capture');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -80,6 +87,15 @@ function DashboardContent() {
     handleDeleteCategory 
   } = useAppData(spreadsheetId, user);
 
+  // Reactive Share Signal
+  useEffect(() => {
+    const sid = searchParams.get('share_id');
+    if (sid) {
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_D] Reactive Signal Received: ${sid}`);
+      handleShareTarget(sid);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     // Breakout: Controller Shift Mechanism
     if ('serviceWorker' in navigator) {
@@ -89,21 +105,12 @@ function DashboardContent() {
       });
     }
 
-    // BroadcastChannel Subscription
-    let channel: BroadcastChannel | null = null;
-    if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
-      channel = new BroadcastChannel('imagesnap-share');
-      channel.onmessage = (event) => {
-        if (event.data?.type === 'SHARE_COMMITTED' && event.data?.share_id) {
-          if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Broadcast Received for Share ID: ${event.data.share_id}`);
-          handleShareTarget(event.data.share_id);
-        }
-      };
-    }
+    // BroadcastChannel logic removed in favor of reactive searchParams (v1.8.12 Architecture)
+
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.9 Ironclad Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.12 Ironclad Init');
 
       // Add Document-level Cleanup for Blob URLs
       const handleUnload = () => {
@@ -188,7 +195,7 @@ function DashboardContent() {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      if (channel) channel.close();
+      if (channel) (channel as any).close();
     };
   }, []);
 
@@ -382,7 +389,7 @@ function DashboardContent() {
               
               <div className="pt-4 animate-pulse">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  Build v1.8.9
+                  Build v1.8.12
                 </div>
               </div>
             </div>
@@ -440,7 +447,7 @@ function DashboardContent() {
               
               <div className="pt-4 animate-pulse">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  Build v1.8.9
+                  Build v1.8.12
                 </div>
               </div>
             </div>
@@ -491,7 +498,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.11"
+        version="v1.8.12"
         dataStatus={dataStatus}
       />
  

@@ -63,10 +63,6 @@ export const initGis = async (onSuccess: (token: string) => void) => {
   // Link the caller's callback to this promise
   authPromise.then(onSuccess).catch((err) => {
     console.error('Deterministic Auth Failure:', err.message);
-    // Static Halt: Clear token but do NOT redirect automatically
-    if (err.message === 'GSI_LOAD_TIMEOUT' || err.message === 'GSI_LOAD_FAILED') {
-      localStorage.removeItem('ps_access_token');
-    }
   });
 
   try {
@@ -102,14 +98,8 @@ export const initGis = async (onSuccess: (token: string) => void) => {
       return;
     }
 
-    const storedToken = localStorage.getItem('ps_access_token');
-    if (storedToken) {
-      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Attempting silent recovery (prompt: none)...');
-      tokenClient.requestAccessToken({ prompt: 'none', hint: localStorage.getItem('ps_user_email') || undefined });
-    } else {
-      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Requesting fresh token (interactive)...');
-      tokenClient.requestAccessToken();
-    }
+    if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Requesting fresh token (interactive)...');
+    tokenClient.requestAccessToken();
   } catch (err: any) {
     // Flush queue with error
     authQueue.forEach(q => q.reject(err));
@@ -129,9 +119,6 @@ export async function getUserInfo(token: string) {
     clearTimeout(timeoutId);
     
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        localStorage.removeItem('ps_access_token');
-      }
       return null;
     }
     return response.json();
@@ -211,7 +198,6 @@ export const setAccessToken = (token: string | null) => {
 export const revokeToken = () => {
   const currentToken = accessToken;
   accessToken = null;
-  localStorage.removeItem('ps_access_token');
   localStorage.removeItem('ps_staff_token');
   localStorage.removeItem('ps_staff_email');
   localStorage.removeItem('ps_is_staff');

@@ -131,11 +131,22 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
               }
             }
           };
+
+          transaction.oncomplete = () => {
+            db.close();
+            if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] IDB Connection Closed (Nonce: ${shareTargetNonce})`);
+          };
+          transaction.onerror = () => {
+            db.close();
+          };
         } catch (e) {
+          db.close();
           console.error("IDB Pull Error", e);
         }
       };
-    }
+      request.onerror = () => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] IDB Open Failed`);
+      };
   }, [shareTargetNonce]);
 
   // Memory Management: Revoke all blob URLs on unmount
@@ -214,6 +225,38 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     } finally {
       setIsExtracting(false);
     }
+  const compressImage = async (dataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Target max 1600px width/height for Staff flow to stay under 4.5MB
+        const MAX_SIZE = 1600;
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        // Use 0.7 quality to significantly reduce file size
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
   };
 
   const handleSave = async () => {
@@ -223,23 +266,30 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     try {
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Preparing to save ${images.length} images...`);
       
+      const isStaff = subStatus.userEmail?.endsWith('@staff.imagesnap');
+
       // Convert all blob URLs to Base64 to ensure server-side saving works
       const processedImages = await Promise.all(images.map(async (img) => {
+        let base64 = img;
         if (img.startsWith('blob:')) {
           try {
             const res = await fetch(img);
             const blob = await res.blob();
-            return new Promise<string>((resolve) => {
+            base64 = await new Promise<string>((resolve) => {
               const reader = new FileReader();
               reader.onloadend = () => resolve(reader.result as string);
               reader.readAsDataURL(blob);
             });
           } catch (e) {
             console.error("Blob conversion failed", e);
-            return img;
           }
         }
-        return img;
+        
+        // Compress for Staff users to stay under Vercel payload limit
+        if (isStaff && base64.startsWith('data:')) {
+          return await compressImage(base64);
+        }
+        return base64;
       }));
 
       await onSave({ categoryId: selectedCategoryId, name: formData[keyFieldId], tags: [], data: { ...formData } }, processedImages);

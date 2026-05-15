@@ -3,8 +3,8 @@ import { findOrCreateFolder } from './drive';
 
 const BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
 
-export async function sheetsRequest(path: string, options: any = {}) {
-  const token = getAccessToken();
+export async function sheetsRequest(path: string, options: any = {}, providedToken?: string) {
+  const token = providedToken || getAccessToken();
   if (!token) throw new Error('No access token');
 
   const url = path.startsWith('http') ? path : `${BASE_URL}/${path}`;
@@ -91,9 +91,9 @@ async function initWorkspaceHeaders(spreadsheetId: string) {
   }
 }
 
-export async function getSheetRows(spreadsheetId: string, range: string) {
+export async function getSheetRows(spreadsheetId: string, range: string, providedToken?: string) {
   try {
-    const data = await sheetsRequest(`${spreadsheetId}/values/${range}`);
+    const data = await sheetsRequest(`${spreadsheetId}/values/${range}`, {}, providedToken);
     return data.values || [];
   } catch (err) {
     // If sheet doesn't exist, return empty
@@ -101,23 +101,23 @@ export async function getSheetRows(spreadsheetId: string, range: string) {
   }
 }
 
-export async function getSpreadsheetMetadata(spreadsheetId: string) {
-  return sheetsRequest(`${spreadsheetId}`);
+export async function getSpreadsheetMetadata(spreadsheetId: string, providedToken?: string) {
+  return sheetsRequest(`${spreadsheetId}`, {}, providedToken);
 }
 
-export async function appendRow(spreadsheetId: string, range: string, values: any[]) {
+export async function appendRow(spreadsheetId: string, range: string, values: any[], providedToken?: string) {
   return sheetsRequest(`${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`, {
     method: 'POST',
     body: JSON.stringify({ values: [values] })
-  });
+  }, providedToken);
 }
 
 /**
  * Ensures a sheet exists with the given name and headers.
  * If header counts don't match, we assume the sheet might need updating or is new.
  */
-export async function ensureSheetExists(spreadsheetId: string, sheetName: string, headers: string[]) {
-  const metadata = await sheetsRequest(`${spreadsheetId}`);
+export async function ensureSheetExists(spreadsheetId: string, sheetName: string, headers: string[], providedToken?: string) {
+  const metadata = await sheetsRequest(`${spreadsheetId}`, {}, providedToken);
   const sheet = metadata.sheets.find((s: any) => s.properties.title === sheetName);
 
   if (!sheet) {
@@ -129,13 +129,13 @@ export async function ensureSheetExists(spreadsheetId: string, sheetName: string
           { addSheet: { properties: { title: sheetName } } }
         ]
       })
-    });
+    }, providedToken);
 
     // Add headers
     await sheetsRequest(`${spreadsheetId}/values/${sheetName}!A1:${String.fromCharCode(64 + headers.length)}1?valueInputOption=USER_ENTERED`, {
       method: 'PUT',
       body: JSON.stringify({ values: [headers] })
-    });
+    }, providedToken);
   }
 }
 

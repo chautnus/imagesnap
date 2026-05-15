@@ -3,8 +3,8 @@ import { getAccessToken } from './google-auth';
 /**
  * Ensures a folder exists and returns its ID.
  */
-export async function findOrCreateFolder(name: string, parentId?: string) {
-  const token = getAccessToken();
+export async function findOrCreateFolder(name: string, parentId?: string, providedToken?: string) {
+  const token = providedToken || getAccessToken();
   let query = `name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
   if (parentId) {
     query += ` and '${parentId}' in parents`;
@@ -40,8 +40,8 @@ export async function findOrCreateFolder(name: string, parentId?: string) {
 /**
  * Upload base64 image to Google Drive.
  */
-export async function uploadBase64Image(base64: string, name: string, parentId: string) {
-  const token = getAccessToken();
+export async function uploadBase64Image(base64: string, name: string, parentId: string, providedToken?: string) {
+  const token = providedToken || getAccessToken();
   
   // Strip metadata from base64 string
   const base64Data = base64.split(',')[1] || base64;
@@ -88,8 +88,8 @@ export async function uploadBase64Image(base64: string, name: string, parentId: 
 /**
  * Download a remote image and upload it to Google Drive.
  */
-export async function uploadUrlImage(url: string, name: string, parentId: string) {
-  const token = getAccessToken();
+export async function uploadUrlImage(url: string, name: string, parentId: string, providedToken?: string) {
+  const token = providedToken || getAccessToken();
   
   try {
     let response;

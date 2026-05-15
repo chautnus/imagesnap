@@ -1,12 +1,12 @@
 import { getSheetRows, getSpreadsheetMetadata } from '../lib/sheets';
 import { Category, Product, AppData } from '../lib/types';
 
-export async function fetchAllAppData(spreadsheetId: string): Promise<AppData> {
+export async function fetchAllAppData(spreadsheetId: string, providedToken?: string): Promise<AppData> {
   try {
     const [catRows, nameRows, metadata] = await Promise.all([
-      getSheetRows(spreadsheetId, 'Categories!A2:F'),
-      getSheetRows(spreadsheetId, 'ProductNames!A2:B'),
-      getSpreadsheetMetadata(spreadsheetId)
+      getSheetRows(spreadsheetId, 'Categories!A2:F', providedToken),
+      getSheetRows(spreadsheetId, 'ProductNames!A2:B', providedToken),
+      getSpreadsheetMetadata(spreadsheetId, providedToken)
     ]);
 
     const categories: Category[] = catRows.map((r: any) => {
@@ -34,7 +34,7 @@ export async function fetchAllAppData(spreadsheetId: string): Promise<AppData> {
       const exists = metadata.sheets.some((s: any) => s.properties.title === sheetTitle);
       if (!exists) return;
 
-      const rows = await getSheetRows(spreadsheetId, `${sheetTitle}!A2:Z`);
+      const rows = await getSheetRows(spreadsheetId, `${sheetTitle}!A2:Z`, providedToken);
       const catProds: Product[] = rows.map((r: any) => {
         const productData: Record<string, any> = {};
         cat.fields.forEach((field, fIdx) => {

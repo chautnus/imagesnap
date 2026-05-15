@@ -1,24 +1,69 @@
-// ImageSnap Service Worker v8.6 - Single-Signal (v1.8.10)
-const CACHE_NAME = 'imagesnap-v8.6';
+// ImageSnap Service Worker v8.7 - Ironclad Reliability (v1.8.12)
+const CACHE_NAME = 'imagesnap-v1.8.12';
+
+// Assets to precache
+const PRECACHE_ASSETS = [
+  '/dashboard',
+  '/manifest.json',
+  '/icons/icon-192x192.png'
+];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_ASSETS))
+  );
 });
 
 self.addEventListener('activate', (event) => {
-  // Clear old caches from v1.5.x
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
+    (async () => {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map(name => {
+          if (name !== CACHE_NAME) return caches.delete(name);
         })
       );
-    }).then(() => clients.claim())
+      await clients.claim();
+      // Prune old shares (24h)
+      await pruneOldShares();
+    })()
   );
 });
+
+async function pruneOldShares() {
+  const DB_NAME = 'imagesnap-pwa-db';
+  const STORE_NAME = 'shares';
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+
+  return new Promise((resolve) => {
+    const request = indexedDB.open(DB_NAME);
+    request.onsuccess = (event) => {
+      const db = (event.target as any).result;
+      try {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const cursorReq = store.openCursor();
+        cursorReq.onsuccess = (e: any) => {
+          const cursor = e.target.result;
+          if (cursor) {
+            const timestamp = cursor.value.timestamp || 0;
+            if (timestamp < cutoff) store.delete(cursor.key);
+            cursor.continue();
+          }
+        };
+        transaction.oncomplete = () => {
+          db.close();
+          resolve(true);
+        };
+      } catch (e) {
+        db.close();
+        resolve(false);
+      }
+    };
+    request.onerror = () => resolve(false);
+  });
+}
 
 // Handle Web Share Target with Absolute Interception (POST -> 303 -> GET)
 self.addEventListener('fetch', (event) => {
@@ -30,52 +75,23 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         try {
           const formData = await event.request.formData();
-          const allEntries = Array.from(formData.entries());
           const sid = Date.now().toString();
           
           let imageFiles = formData.getAll('images');
-          let imageFile = imageFiles.length > 0 ? imageFiles[0] : null;
           const title = formData.get('title') || '';
           const text = formData.get('text') || '';
           const link = formData.get('url') || '';
 
-          // Deterministic File Discovery (Robust Fallback without instanceof File)
-          if (!imageFile) {
-            for (const [key, value] of allEntries) {
-              if (value instanceof Blob || (value && typeof value === 'object' && typeof value.name === 'string')) {
-                imageFile = value;
-                break;
-              }
-            }
-          }
-
-          // 20MB Safety Check
-          if (imageFile && imageFile.size > 20 * 1024 * 1024) {
-             return Response.redirect('/dashboard?error=file_too_large', 303);
-          }
-
-          // Atomic write to IndexedDB with sid as Primary Key
-          if (imageFile || title || text || link) {
+          if (imageFiles.length > 0 || title || text || link) {
             await saveSharedData(sid, { 
-              image: imageFile, 
-              images: imageFiles, // save all if multiple
+              images: imageFiles, 
               title, 
               text, 
               url: link,
               timestamp: parseInt(sid)
             });
-            
-            // Broadcast the successful commit to any active clients
-            try {
-              const channel = new BroadcastChannel('imagesnap-share');
-              channel.postMessage({ type: 'SHARE_COMMITTED', share_id: sid });
-              channel.close();
-            } catch (err) {
-              console.error('SW Broadcast Failed:', err);
-            }
           }
 
-          // Single Deterministic Signal: 303 Redirect with sid (Fallback/Trigger)
           return Response.redirect(`/dashboard?share_id=${sid}`, 303);
         } catch (err) {
           console.error('SW Interception Failed:', err);
@@ -83,41 +99,51 @@ self.addEventListener('fetch', (event) => {
         }
       })()
     );
+    return;
+  }
+
+  // Runtime Caching for static assets
+  if (event.request.method === 'GET' && 
+     (url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.pathname.includes('/fonts/'))) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        return cached || fetch(event.request).then(response => {
+          if (response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          }
+          return response;
+        });
+      })
+    );
   }
 });
 
-// IndexedDB helper for shared data (v2 sid Architecture)
 async function saveSharedData(sid, data) {
   return new Promise((resolve, reject) => {
     const DB_NAME = 'imagesnap-pwa-db';
-    const DB_VERSION = 2;
     const STORE_NAME = 'shares';
-
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = indexedDB.open(DB_NAME, 2);
     
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = (event: any) => {
       const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
+      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
     };
 
-    request.onsuccess = (event) => {
+    request.onsuccess = (event: any) => {
       const db = event.target.result;
-      db.onversionchange = () => db.close();
-
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
-      
       store.put(data, sid);
-      
       transaction.oncomplete = () => {
         db.close();
-        resolve();
+        resolve(true);
       };
-      transaction.onerror = () => reject(transaction.error);
+      transaction.onerror = () => {
+        db.close();
+        reject(transaction.error);
+      };
     };
-
     request.onerror = () => reject(request.error);
   });
 }
