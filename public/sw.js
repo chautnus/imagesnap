@@ -39,12 +39,12 @@ async function pruneOldShares() {
   return new Promise((resolve) => {
     const request = indexedDB.open(DB_NAME);
     request.onsuccess = (event) => {
-      const db = (event.target as any).result;
+      const db = event.target.result;
       try {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
         const cursorReq = store.openCursor();
-        cursorReq.onsuccess = (e: any) => {
+        cursorReq.onsuccess = (e) => {
           const cursor = e.target.result;
           if (cursor) {
             const timestamp = cursor.value.timestamp || 0;
@@ -125,12 +125,12 @@ async function saveSharedData(sid, data) {
     const STORE_NAME = 'shares';
     const request = indexedDB.open(DB_NAME, 2);
     
-    request.onupgradeneeded = (event: any) => {
+    request.onupgradeneeded = (event) => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
     };
 
-    request.onsuccess = (event: any) => {
+    request.onsuccess = (event) => {
       const db = event.target.result;
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
