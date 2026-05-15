@@ -498,7 +498,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.7.6"
+        version="v1.8.0"
         dataStatus={dataStatus}
       />
  
