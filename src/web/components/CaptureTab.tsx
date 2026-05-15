@@ -39,9 +39,10 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   onClearInitialImages, onClearImportedUrl, onClearImportedMetadata,
   onSaveCategory, onSwitchToHelp
 }) => {
-  const [images, setImages] = useState<string[]>(initialImages || []);
+  const [images, setImages] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [recentCatIds, setRecentCatIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
     const saved = localStorage.getItem('ps_recent_cats');
     return saved ? JSON.parse(saved) : [];
   });
@@ -66,7 +67,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
   useEffect(() => {
     if (initialImages.length > 0) {
-      setImages(prev => [...prev, ...initialImages]);
+      setImages(prev => [...new Set([...prev, ...initialImages])]);
       onClearInitialImages?.();
     }
   }, [initialImages]);

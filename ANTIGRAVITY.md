@@ -22,50 +22,51 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-07 10:05
+**Last updated**: 2026-05-14 23:14
 **Last session by**: Antigravity
-**Current sprint focus**: Next.js Migration, SEO Optimization & Chrome Store Preparation.
+**Current sprint focus**: Mobile Share Target Stability & Single-Signal Architecture.
+
+---
+
+## ⚠️ PROTOCOL QUAN TRỌNG (DÀNH CHO AGENT)
+- **LUÔN LUÔN** trình bày kế hoạch (Implementation Plan) trước khi sửa code.
+- **TUYỆT ĐỐI KHÔNG** tự ý thực hiện (Execute) khi chưa nhận được sự phê duyệt rõ ràng (ví dụ: "Approve", "Đồng ý", v.v.) từ User.
+- **KIẾN TRÚC TÍN HIỆU ĐƠN (SINGLE-SIGNAL)**: Luôn ưu tiên dùng URL `share_id` làm tín hiệu duy nhất cho luồng Share Target, tránh dùng song song `BroadcastChannel` gây tranh chấp.
 
 ---
 
 ## Context tóm tắt
 
 ### Đang làm gì?
-Đã hoàn thành việc chuyển đổi toàn bộ ứng dụng sang **Next.js (App Router)** để tối ưu hóa SEO. Toàn bộ hệ thống đã được nâng cấp lên phiên bản **v1.4.0**.
+Đã triển khai kiến trúc **Single-Signal (Tín hiệu Đơn)** và sửa lỗi build SSR (window is not defined) để ổn định hệ thống (v1.7.6).
 
 ### Đã làm gì trong phiên trước?
-- **Next.js Migration (v1.4.0)**: Chuyển đổi từ Vite SPA sang Next.js App Router. Port thành công các trang Landing, Pricing, Dashboard và API routes.
-- **SEO Optimization**: Tự động hóa `sitemap.xml` và `robots.txt`. Thêm Google Analytics và thẻ meta Open Graph branded.
-- **Accessibility**: Bật lại tính năng zoom cho người dùng di động (`user-scalable=yes`).
-- **Railway Compatibility**: Sửa lỗi Healthcheck bằng cách bind host `0.0.0.0` và thêm endpoint `/api/health`.
-- **UX Improvement**: Giữ nguyên giá trị của các trường `select` và `date` sau khi lưu để thuận tiện cho việc nhập liệu hàng loạt.
-- **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.5.6**.
-- **Mobile & PWA Sync**: Rà soát và sửa lỗi Web Share Target API cho thiết bị di động, chuyển đổi lưu trữ từ Cache sang IndexedDB.
-- **Deterministic Auth Flow**: Triển khai Hard Timeout (10s Script, 5s API), Callback Queue Flush, và đồng bộ hóa độ trễ UI/Service 18s (v1.5.1).
-- **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.7.3).
-- **Absolute Interception**: Thực thi cơ chế đánh chặn tuyệt đối (POST -> 303 Redirect) để vượt qua giới hạn payload 4.5MB của Vercel (v1.7.3).
-- **Dynamic Nonce System**: Phát hành `share_id` động từ SW để phân biệt các phiên chia sẻ liên tiếp, ngăn chặn khóa chết (v1.7.3).
-- **URL Scrubbing**: Xóa tham số định danh khỏi URL sau khi xử lý (history.replaceState) để tránh lỗi kẹt dữ liệu khi tải lại trang (v1.7.3).
-- **BOM Integration**: Sử dụng trực tiếp `window.location.search` để trích xuất tham số, loại bỏ sự phụ thuộc vào SSR và Suspense của Next.js (v1.7.3).
+- **Next.js Migration (v1.4.0)**: Chuyển đổi thành công sang Next.js App Router.
+- **Single-Signal Architecture (v1.7.5)**: 
+    - Loại bỏ `BroadcastChannel` cho luồng nhận dữ liệu mới, chuyển hoàn toàn sang dùng `share_id` trên URL điều hướng 303.
+    - Cập nhật `sw.js` sử dụng `sid` (Share ID) làm Primary Key trong IndexedDB.
+    - Sửa lỗi nhân đôi ảnh trong `CaptureTab.tsx` bằng cơ chế lọc trùng `Set`.
+- **SSR Fixes (v1.7.6)**:
+    - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
+    - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.7.3)
-- **Hệ thống**: Đã ổn định trên Next.js App Router.
-- **PWA**: Share Target hoạt động tốt trên Android, có hướng dẫn bù đắp cho iOS.
-- **Auth**: Đã fix triệt để lỗi kẹt màn hình logo và thiếu script GSI.
-- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.7.3).
+## TỔNG KẾT TRẠNG THÁI (v1.7.6)
+- **Hệ thống**: Đã ổn định và có thể build thành công.
+- **PWA**: Hoàn thiện kiến trúc nhận dữ liệu chia sẻ mượt mà và tin cậy.
 
 ### Dừng ở đâu?
-- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.7.3.
-- Tính năng Share Target đã được sửa lỗi logic và sẵn sàng cho việc cài đặt PWA trên điện thoại.
+- Hệ thống đang ở phiên bản **v1.7.6**.
+- Đã fix lỗi build kẹt tại `/dashboard`.
 
 ---
 
 ## Open Items cần attention
 
 ```
-[x] [DEV-2026W19-10] Final QA & Extension Submission.
-[x] [DEV-2026W19-11] Documentation Audit & Mobile PWA Guide.
-[ ] [DEV-2026W19-12] Promote PWA installation to mobile users via UI banner.
+[x] [DEV-2026W19-12] Implement Single-Signal Architecture for Share Target.
+[x] [DEV-2026W19-12-FIX] Resolve SSR build errors (window/localStorage).
+[ ] [DEV-2026W19-13] Verify PWA sharing reliability on multiple devices (Android/iOS).
+[ ] [DEV-2026W19-14] Promote PWA installation to mobile users via UI banner.
 ```
 
 ---
@@ -77,16 +78,13 @@
 node:     >=18.0.0
 next:     ^16.2.4
 react:    ^19.0.0
-pg:       ^8.20.0
+pg:     ^8.20.0
 ```
-
-### Environment notes
-- Dự án hiện đã chuyển sang Next.js App Router hoàn toàn.
-- Server API được tích hợp trực tiếp vào Next.js API Routes.
 
 ---
 
 ## Agent notes (phiên này để lại cho phiên sau)
 
-- Metadata đã nhất quán và chuẩn SEO.
-- Phiên sau nên tập trung vào việc đóng gói extension và chuẩn bị ảnh chụp màn hình mới cho Store (do UI Next.js có thay đổi nhẹ).
+- **QUY TẮC PHÊ DUYỆT**: Luôn đợi user gõ "Approve" mới được sửa file.
+- Luồng Share Target hiện tại dựa hoàn toàn vào `share_id` từ URL. Không được thêm lại `BroadcastChannel` cho tín hiệu này.
+- Khi thêm logic client-side mới, luôn chú ý kiểm tra `typeof window !== 'undefined'` để tránh lỗi build SSR.

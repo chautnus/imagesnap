@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.4 - Dynamic Nonce (v1.7.3)
-const CACHE_NAME = 'imagesnap-v8.4';
+// ImageSnap Service Worker v8.6 - Single-Signal (v1.7.6)
+const CACHE_NAME = 'imagesnap-v8.6';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -30,31 +30,53 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         try {
           const formData = await event.request.formData();
-          const imageFile = formData.get('images');
+          const allEntries = Array.from(formData.entries());
+          const sid = Date.now().toString();
+          
+          let imageFile = formData.get('images');
           const title = formData.get('title') || '';
           const text = formData.get('text') || '';
           const link = formData.get('url') || '';
+
+          // Deterministic File Discovery (Robust Fallback)
+          if (!imageFile) {
+            for (const [key, value] of allEntries) {
+              if (value instanceof File || (value && typeof value === 'object' && value.name)) {
+                imageFile = value;
+                break;
+              }
+            }
+          }
 
           // 20MB Safety Check
           if (imageFile && imageFile.size > 20 * 1024 * 1024) {
              return Response.redirect('/dashboard?error=file_too_large', 303);
           }
 
-          // Atomic write to IndexedDB
-          if (imageFile) {
-            await saveSharedData({ 
+          // Atomic write to IndexedDB with sid as Primary Key
+          if (imageFile || title || text || link) {
+            await saveSharedData(sid, { 
               image: imageFile, 
               title, 
               text, 
               url: link,
-              timestamp: Date.now() 
+              timestamp: parseInt(sid)
             });
+            
+            // Broadcast the successful commit to any active clients
+            try {
+              const channel = new BroadcastChannel('imagesnap-share');
+              channel.postMessage({ type: 'SHARE_COMMITTED', share_id: sid });
+              channel.close();
+            } catch (err) {
+              console.error('SW Broadcast Failed:', err);
+            }
           }
 
-          // Return 303 See Other with a unique share_id to enable dynamic idempotency
-          return Response.redirect(`/dashboard?share_id=${Date.now()}`, 303);
+          // Single Deterministic Signal: 303 Redirect with sid (Fallback/Trigger)
+          return Response.redirect(`/dashboard?share_id=${sid}`, 303);
         } catch (err) {
-          console.error('SW v8 Interception Failed:', err);
+          console.error('SW Interception Failed:', err);
           return Response.redirect('/dashboard?error=share_failed', 303);
         }
       })()
@@ -62,8 +84,8 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// IndexedDB helper for shared data (v2 Sync)
-async function saveSharedData(data) {
+// IndexedDB helper for shared data (v2 sid Architecture)
+async function saveSharedData(sid, data) {
   return new Promise((resolve, reject) => {
     const DB_NAME = 'imagesnap-pwa-db';
     const DB_VERSION = 2;
@@ -73,11 +95,6 @@ async function saveSharedData(data) {
     
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      // Schema Version Router: Cleanup legacy structures
-      if (db.objectStoreNames.contains('sharedContent')) db.deleteObjectStore('sharedContent');
-      if (db.objectStoreNames.contains('share-target')) db.deleteObjectStore('share-target');
-      if (db.objectStoreNames.contains('latest')) db.deleteObjectStore('latest');
-      
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME);
       }
@@ -85,22 +102,14 @@ async function saveSharedData(data) {
 
     request.onsuccess = (event) => {
       const db = event.target.result;
-      
-      // Mandatory: Close connection if a new version is requested (e.g., from Dashboard)
-      db.onversionchange = () => {
-        db.close();
-        if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[SW_IDB] Connection closed due to version change');
-      };
+      db.onversionchange = () => db.close();
 
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
       
-      store.put(data, 'latest');
+      store.put(data, sid);
       
       transaction.oncomplete = () => {
-        const channel = new BroadcastChannel('imagesnap-share-target');
-        channel.postMessage({ type: 'NEW_SHARE_DATA' });
-        channel.close();
         db.close();
         resolve();
       };

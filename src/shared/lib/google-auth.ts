@@ -10,7 +10,7 @@ export const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.
 
 // Marvin Core: Deterministic Auth State Management
 let tokenClient: any = null;
-let accessToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('ps_access_token') : null;
+let accessToken: string | null = null; // Removed localStorage sync for security
 
 // Callback queue to handle multiple concurrent auth requests
 interface AuthCallback {
@@ -89,7 +89,6 @@ export const initGis = async (onSuccess: (token: string) => void) => {
           }
           if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Handshake Success');
           accessToken = response.access_token;
-          localStorage.setItem('ps_access_token', response.access_token);
           authQueue.forEach(q => q.resolve(response.access_token));
           authQueue = [];
         },
@@ -162,7 +161,6 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
         const token = url.searchParams.get('access_token');
         if (token) {
           accessToken = token;
-          localStorage.setItem('ps_access_token', token);
           authQueue.forEach(q => q.resolve(token));
           authQueue = [];
         }
@@ -206,4 +204,36 @@ export const revokeToken = () => {
       });
     }
   }
+
+  fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
+};
+
+export const establishSession = async (token: string, email: string, isStaff: boolean = false) => {
+  try {
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, email, isStaff })
+    });
+  } catch (e) {
+    console.error('Failed to establish secure session', e);
+  }
+};
+
+export const reauthenticate = (): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    requestToken('none', async (token) => {
+      try {
+        const profile = await getUserInfo(token);
+        if (profile?.email) {
+          await establishSession(token, profile.email);
+          resolve(token);
+        } else {
+          reject(new Error("Profile fetch failed during reauth"));
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
 };
