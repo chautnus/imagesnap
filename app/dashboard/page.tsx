@@ -71,6 +71,7 @@ function DashboardContent() {
   const [dataStatus, setDataStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
   const isConsumingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [shareTargetNonce, setShareTargetNonce] = useState(0);
   const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
   const objectUrlRef = useRef<string | null>(null);
@@ -137,15 +138,21 @@ function DashboardContent() {
 
     const handleInit = async () => {
       if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_C] Verifying Secure Session...');
-      
+
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       try {
-        const res = await apiClient('/api/auth/session');
+        const res = await apiClient('/api/auth/session', { signal: controller.signal });
+        clearTimeout(timeoutId);
         const sessionData = await res.json();
 
         if (sessionData.authenticated && sessionData.user) {
           const profile = sessionData.user;
           setUser(profile);
-          setAccessToken(profile.token); // Keep token in RAM for sheets API
+          setAccessToken(profile.token);
           setIsAuthReady(true);
           fetchSubStatus(profile.email);
 
@@ -168,17 +175,16 @@ function DashboardContent() {
         } else {
           setAuthError("Session Expired - Verification failed on new infrastructure.");
         }
-      } catch (e) {
-        setAuthError("Session Expired - Identity service error.");
-      }
-      
-      const recoveryTimer = setTimeout(() => {
-        if (!isAuthReady) {
+      } catch (e: any) {
+        clearTimeout(timeoutId);
+        if (e.name === 'AbortError') {
+          if ((window as any)._pushDebug) (window as any)._pushDebug('[AUTH_TIMEOUT_ABORTED] 8s timeout hit — releasing init lock');
           setAuthError("Authentication Timed Out - Check your connection.");
+        } else {
+          setAuthError("Session Expired - Identity service error.");
         }
-      }, 18000);
-
-      return () => clearTimeout(recoveryTimer);
+        // Always returns normally so runInitialization can proceed to COMPLETED
+      }
     };
 
     const handleOnline = () => setIsOffline(false);
@@ -366,9 +372,8 @@ function DashboardContent() {
   };
 
   if (!user || !isAuthReady) {
-    // DATA-CONTROL DECOUPLING: Soft Auth Ejection
-    // Allow UI access if shared images exist in RAM even if Auth fails
-    if (authError && shareTargetNonce === 0) {
+    // Show error once init is done (regardless of nonce — no blank screen)
+    if (authError && initStage === 'COMPLETED') {
       return (
         <div className="min-h-screen flex items-center justify-center bg-bg text-white">
           <div className="flex flex-col items-center gap-6 p-8 text-center">
@@ -477,6 +482,16 @@ function DashboardContent() {
         </div>
       );
     }
+
+    // Fallback: init done, no auth error, but user still null — show spinner briefly
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg">
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 border-4 border-white/5 rounded-full" />
+          <div className="absolute inset-0 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
   }
 
   const accessibleCategories = appData.categories.filter(cat => {
