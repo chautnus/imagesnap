@@ -33,15 +33,16 @@ self.addEventListener('fetch', (event) => {
           const allEntries = Array.from(formData.entries());
           const sid = Date.now().toString();
           
-          let imageFile = formData.get('images');
+          let imageFiles = formData.getAll('images');
+          let imageFile = imageFiles.length > 0 ? imageFiles[0] : null;
           const title = formData.get('title') || '';
           const text = formData.get('text') || '';
           const link = formData.get('url') || '';
 
-          // Deterministic File Discovery (Robust Fallback)
+          // Deterministic File Discovery (Robust Fallback without instanceof File)
           if (!imageFile) {
             for (const [key, value] of allEntries) {
-              if (value instanceof File || (value && typeof value === 'object' && value.name)) {
+              if (value instanceof Blob || (value && typeof value === 'object' && typeof value.name === 'string')) {
                 imageFile = value;
                 break;
               }
@@ -57,6 +58,7 @@ self.addEventListener('fetch', (event) => {
           if (imageFile || title || text || link) {
             await saveSharedData(sid, { 
               image: imageFile, 
+              images: imageFiles, // save all if multiple
               title, 
               text, 
               url: link,

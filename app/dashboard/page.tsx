@@ -247,12 +247,23 @@ function DashboardContent() {
           
           const processData = (data: any, key: string) => {
             if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Latching to RAM...');
-            if (data.image) {
-              const blob = data.image;
+            
+            // Handle Multiple Images or Single Image
+            const rawImages = (data.images && Array.isArray(data.images)) ? data.images : (data.image ? [data.image] : []);
+            
+            if (rawImages.length > 0) {
               if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-              const pointer = URL.createObjectURL(blob);
-              objectUrlRef.current = pointer;
-              setImportedImages([pointer]);
+              
+              const pointers = rawImages.map((blob: Blob) => {
+                const url = URL.createObjectURL(blob);
+                return url;
+              });
+
+              // For now, we only support revoking the last one in this ref, 
+              // but we'll set all pointers to importedImages
+              objectUrlRef.current = pointers[pointers.length - 1];
+              setImportedImages(pointers);
+              if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_B] ${pointers.length} image(s) latched successful`);
             }
             if (data.url) setImportedUrl(data.url);
             if (data.title) setImportedMetadata(prev => ({ ...prev, title: data.title }));
