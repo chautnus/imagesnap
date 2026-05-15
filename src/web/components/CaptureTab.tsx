@@ -144,9 +144,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           console.error("IDB Pull Error", e);
         }
       };
-      request.onerror = () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] IDB Open Failed`);
-      };
+    }
   }, [shareTargetNonce]);
 
   // Memory Management: Revoke all blob URLs on unmount
