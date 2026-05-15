@@ -220,8 +220,10 @@ function DashboardContent() {
     const currentShareId = urlParams.get('share_id');
     const lastProcessedId = sessionStorage.getItem('imagesnap_last_share_id');
 
+    if ((window as any)._pushDebug) (window as any)._pushDebug(`[IDEMPOTENCY] Check: current=${currentShareId}, last=${lastProcessedId}, isLocked=${isConsumingRef.current}`);
+
     if (isConsumingRef.current || (currentShareId && currentShareId === lastProcessedId)) {
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[IDEMPOTENCY] Blocked duplicate or stale share_id');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[IDEMPOTENCY] Ingestion skipped');
       return;
     }
     
@@ -231,10 +233,10 @@ function DashboardContent() {
     if (currentShareId) {
       sessionStorage.setItem('imagesnap_last_share_id', currentShareId);
       window.history.replaceState(null, '', window.location.pathname);
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Share Nonce ${currentShareId} consumed & scrubbed`);
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Share Nonce ${currentShareId} scrubbed`);
     }
 
-    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Checking IndexedDB v2 (Dynamic Lock)...');
+    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Querying IDB v2 Storage...');
 
     return new Promise<void>((resolve) => {
       const DB_NAME = 'imagesnap-pwa-db';
@@ -287,7 +289,9 @@ function DashboardContent() {
               
               store.delete('latest');
             } else {
-              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] No data in v2 Store');
+              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] No data in v2 Store');
+              isConsumingRef.current = false;
+              resolve();
             }
           };
 
@@ -296,9 +300,15 @@ function DashboardContent() {
             isConsumingRef.current = false;
             resolve();
           };
+          
+          transaction.onerror = (e: any) => {
+            if ((window as any)._pushDebug) (window as any)._pushDebug(`[ERROR] IDB Transaction failed: ${e.target?.error?.message}`);
+            db.close();
+            isConsumingRef.current = false;
+            resolve();
+          };
         } catch (e: any) {
-          if ((window as any)._pushDebug) (window as any)._pushDebug(`[SOFT_FALLBACK] IDB Transaction Error: ${e.message}`);
-          db.close();
+          if ((window as any)._pushDebug) (window as any)._pushDebug(`[SOFT_FALLBACK] IDB Error: ${e.message}`);
           isConsumingRef.current = false;
           resolve();
         }
