@@ -93,3 +93,4 @@
 | 2026-05-14 | v1.6.4 | RELEASE | Data-First Architecture & Sequential Initialization | Antigravity | Critical |
 | 2026-05-14 | v1.7.0 | RELEASE | Deep Debug & Event-Driven Diagnostics (O1 Memory) | Antigravity | Critical |
 | 2026-05-14 | v1.7.1 | RELEASE | IDB Schema Sync (v2) & Persistent Session | Antigravity | Critical |
+| 2026-05-14 | v1.7.2 | RELEASE | ControllerShift & IDB Deadlock Resolution | Antigravity | Critical |

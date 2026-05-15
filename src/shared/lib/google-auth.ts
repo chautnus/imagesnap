@@ -97,9 +97,19 @@ export const initGis = async (onSuccess: (token: string) => void) => {
     }
 
     if (accessToken) {
-      // Flush current queue with existing token
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Using existing RAM token');
       authQueue.forEach(q => q.resolve(accessToken!));
       authQueue = [];
+      return;
+    }
+
+    const storedToken = localStorage.getItem('ps_access_token');
+    if (storedToken) {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Attempting silent recovery (prompt: none)...');
+      tokenClient.requestAccessToken({ prompt: 'none', hint: localStorage.getItem('ps_user_email') || undefined });
+    } else {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Requesting fresh token (interactive)...');
+      tokenClient.requestAccessToken();
     }
   } catch (err: any) {
     // Flush queue with error

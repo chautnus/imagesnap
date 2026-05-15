@@ -42,20 +42,20 @@
 - **Đồng bộ phiên bản**: Cập nhật toàn bộ hệ thống lên bản **v1.5.6**.
 - **Mobile & PWA Sync**: Rà soát và sửa lỗi Web Share Target API cho thiết bị di động, chuyển đổi lưu trữ từ Cache sang IndexedDB.
 - **Deterministic Auth Flow**: Triển khai Hard Timeout (10s Script, 5s API), Callback Queue Flush, và đồng bộ hóa độ trễ UI/Service 18s (v1.5.1).
-- **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.7.1).
-- **Absolute Interception**: Thực thi cơ chế đánh chặn tuyệt đối (POST -> 303 Redirect) để vượt qua giới hạn payload 4.5MB của Vercel (v1.7.1).
-- **IDB Schema Sync (v2)**: Nâng cấp và thống nhất lược đồ IndexedDB v2 giữa SW và Dashboard, xử lý triệt để lỗi NotFoundError (v1.7.1).
-- **Persistent Session**: Triển khai OAuth Handshake Bypass bằng cách tái sử dụng Token hợp lệ từ localStorage (v1.7.1).
-- **Soft Fallback**: Chuyển đổi từ Hard Halt sang Soft Fallback cho các lỗi IDB để duy trì khả năng render UI (v1.7.1).
+- **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.7.2).
+- **Absolute Interception**: Thực thi cơ chế đánh chặn tuyệt đối (POST -> 303 Redirect) để vượt qua giới hạn payload 4.5MB của Vercel (v1.7.2).
+- **ControllerShift Mechanism**: Triển khai bộ lắng nghe `controllerchange` để tự động nạp lại trang khi có Service Worker mới, phá vỡ rào cản Stale Cache (v1.7.2).
+- **IDB Deadlock Resolution**: Ép đóng kết nối IDB khi phát hiện thay đổi phiên bản (onversionchange/onblocked), đảm bảo đồng bộ hóa lược đồ v2 (v1.7.2).
+- **Silent Auth Recovery**: Tối ưu hóa luồng xác thực bằng `prompt: 'none'` để khôi phục phiên ngầm, giảm thiểu phiền hà cho người dùng (v1.7.2).
 
-## TỔNG KẾT TRẠNG THÁI (v1.7.1)
+## TỔNG KẾT TRẠNG THÁI (v1.7.2)
 - **Hệ thống**: Đã ổn định trên Next.js App Router.
 - **PWA**: Share Target hoạt động tốt trên Android, có hướng dẫn bù đắp cho iOS.
 - **Auth**: Đã fix triệt để lỗi kẹt màn hình logo và thiếu script GSI.
-- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.7.1).
+- **Tài liệu**: Đã rà soát và cập nhật toàn bộ (v1.7.2).
 
 ### Dừng ở đâu?
-- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.7.1.
+- Toàn bộ tài liệu dự án đã được cập nhật đến phiên bản v1.7.2.
 - Tính năng Share Target đã được sửa lỗi logic và sẵn sàng cho việc cài đặt PWA trên điện thoại.
 
 ---

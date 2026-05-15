@@ -83,9 +83,17 @@ function DashboardContent() {
   } = useAppData(spreadsheetId, user);
 
   useEffect(() => {
+    // Breakout: Controller Shift Mechanism
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.7.2...');
+        window.location.reload();
+      });
+    }
+
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.7.0 Sequential Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.7.2 Breakthrough Init');
 
       // Phase 1: Data-First Retrieval ($O(1)$ Architecture)
       setInitStage('DATA_READ');
@@ -209,6 +217,12 @@ function DashboardContent() {
       const STORE_NAME = 'shares';
 
       const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      request.onblocked = () => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB v2 Blocked! Old SW is holding the connection. Please hard reload.');
+        isConsumingRef.current = false;
+        resolve();
+      };
 
       request.onupgradeneeded = (event: any) => {
         const db = event.target.result;
@@ -366,7 +380,7 @@ function DashboardContent() {
               {!isTooLarge && !authError && (
                 <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
                   <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'DATA_READ' ? '●' : '○'} A. IDB Schema Sync (v2)
+                    {initStage === 'DATA_READ' ? '●' : '○'} A. IDB Schema Sync (v1.7.2)
                   </span>
                   <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
                     {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
@@ -388,7 +402,7 @@ function DashboardContent() {
             
             <div className="pt-4 animate-pulse">
               <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                Build v1.7.1
+                Build v1.7.2
               </div>
             </div>
           </div>
@@ -444,7 +458,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.7.1"
+        version="v1.7.2"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

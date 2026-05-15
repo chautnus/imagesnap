@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.2 - Schema Sync Edition
-const CACHE_NAME = 'imagesnap-v8.2';
+// ImageSnap Service Worker v8.3 - Breakthrough Edition
+const CACHE_NAME = 'imagesnap-v8.3';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -85,6 +85,13 @@ async function saveSharedData(data) {
 
     request.onsuccess = (event) => {
       const db = event.target.result;
+      
+      // Mandatory: Close connection if a new version is requested (e.g., from Dashboard)
+      db.onversionchange = () => {
+        db.close();
+        if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[SW_IDB] Connection closed due to version change');
+      };
+
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
       
