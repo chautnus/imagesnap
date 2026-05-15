@@ -114,13 +114,13 @@ function DashboardContent() {
       };
       window.addEventListener('beforeunload', handleUnload);
 
-      // Phase 1: Data-First Retrieval ($O(1)$ Architecture)
-      setInitStage('DATA_READ');
-      await handleShareTarget();
-      
-      // Phase 2: Sequential Authentication
+      // Phase 1: Authentication first — shared images must not be lost on auth failure
       setInitStage('AUTH_PROCESS');
       await handleInit();
+
+      // Phase 2: Consume shared data after auth is confirmed
+      setInitStage('DATA_READ');
+      await handleShareTarget();
       
       setInitStage('COMPLETED');
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] Init Completed in ${Date.now() - startTimeRef.current}ms`);
@@ -182,17 +182,8 @@ function DashboardContent() {
 
     runInitialization();
 
-    // Background Migration Cleanup (Idle Phase)
-    if (typeof window !== 'undefined' && (window as any).requestIdleCallback) {
-      (window as any).requestIdleCallback(() => {
-        if ('serviceWorker' in navigator && !localStorage.getItem('migration_v1_6_1')) {
-          navigator.serviceWorker.getRegistrations().then(regs => {
-            for(let r of regs) r.unregister();
-            localStorage.setItem('migration_v1_6_1', 'true');
-          });
-        }
-      });
-    }
+    // P-1 FIX: migration_v1_6_1 unregister block removed — was deleting Share Target SW
+    // on every new device. Migration complete; SW v8.6 is the baseline.
 
     return () => {
       window.removeEventListener('online', handleOnline);
