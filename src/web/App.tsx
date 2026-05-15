@@ -126,7 +126,7 @@ export default function App() {
     if (params.get('sharing') === '1') {
       const loadSharedData = async () => {
         try {
-          const dbRequest = indexedDB.open('ImageSnapSharing', 1);
+          const dbRequest = indexedDB.open('imagesnap-pwa-db', 2);
           dbRequest.onsuccess = (event: any) => {
             const db = event.target.result;
             const transaction = db.transaction('sharedContent', 'readonly');
@@ -335,7 +335,7 @@ export default function App() {
           user={user}
           subStatus={subStatus}
           isSyncing={isSyncing}
-          version="v1.8.6"
+          version="v1.8.7"
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

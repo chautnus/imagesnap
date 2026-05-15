@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RefreshCw, X, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, Plus } from 'lucide-react';
 import { Camera } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
@@ -69,7 +69,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     if (shareTargetNonce > 0) {
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Pulling Shared Data (Nonce: ${shareTargetNonce})...`);
       
-      const DB_NAME = 'ImageSnapSharing';
+      const DB_NAME = 'imagesnap-pwa-db';
       const STORE_NAME = 'shares';
       const DB_VERSION = 2;
       
@@ -224,19 +224,40 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   };
 
   const handleSave = async () => {
+    if (isSaving) return;
     if (!selectedCategoryId || !formData[keyFieldId] || images.length === 0) return;
     setIsSaving(true);
     try {
-      await onSave({ categoryId: selectedCategoryId, name: formData[keyFieldId], tags: [], data: { ...formData } }, images);
-      setImages([]);
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Preparing to save ${images.length} images...`);
       
-      // Retain select and date values for convenience
-      const keptData: Record<string, any> = {};
-      if (activeCategory) {
-        activeCategory.fields.forEach(f => {
-          if ((f.type === 'select' || f.type === 'date') && formData[f.id]) {
-            keptData[f.id] = formData[f.id];
+      // Convert all blob URLs to Base64 to ensure server-side saving works
+      const processedImages = await Promise.all(images.map(async (img) => {
+        if (img.startsWith('blob:')) {
+          try {
+            const res = await fetch(img);
+            const blob = await res.blob();
+            return new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+          } catch (e) {
+            console.error("Blob conversion failed", e);
+            return img;
           }
+        }
+        return img;
+      }));
+
+      await onSave({ categoryId: selectedCategoryId, name: formData[keyFieldId], tags: [], data: { ...formData } }, processedImages);
+      
+      // Cleanup local images and keep data for next snap if needed
+      setImages([]);
+      const keptData: Record<string, any> = {};
+      const cat = categories.find(c => c.id === selectedCategoryId);
+      if (cat) {
+        cat.fields.forEach(f => {
+          if (f.keepValue) keptData[f.id] = formData[f.id];
         });
       }
       setFormData(keptData);

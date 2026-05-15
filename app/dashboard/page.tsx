@@ -86,7 +86,7 @@ function DashboardContent() {
     // Breakout: Controller Shift Mechanism
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.6...');
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.7...');
         window.location.reload();
       });
     }
@@ -105,7 +105,7 @@ function DashboardContent() {
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.6 Ironclad Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.7 Ironclad Init');
 
       // Add Document-level Cleanup for Blob URLs
       const handleUnload = () => {
@@ -134,7 +134,7 @@ function DashboardContent() {
       if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_C] Verifying Secure Session...');
       
       try {
-        const res = await fetch('/api/auth/session');
+        const res = await apiClient('/api/auth/session');
         const sessionData = await res.json();
 
         if (sessionData.authenticated && sessionData.user) {
@@ -254,8 +254,8 @@ function DashboardContent() {
             // Increment nonce to trigger CaptureTab pull
             setShareTargetNonce(prev => prev + 1);
             
-            // Cleanup: Record is now "In Transit" or consumed
-            store.delete(key);
+            // Cleanup: Record is now handled by CaptureTab to prevent race conditions
+            // store.delete(key); 
           };
 
           if (sid) {
@@ -376,7 +376,7 @@ function DashboardContent() {
               
               <div className="pt-4 animate-pulse">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  Build v1.8.6
+                  Build v1.8.7
                 </div>
               </div>
             </div>
@@ -421,7 +421,7 @@ function DashboardContent() {
                 {!isTooLarge && (
                   <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
                     <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                      {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync (v1.8.6)
+                      {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync (v1.8.7)
                     </span>
                     <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
                       {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
@@ -435,7 +435,7 @@ function DashboardContent() {
               
               <div className="pt-4 animate-pulse">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  Build v1.8.6
+                  Build v1.8.7
                 </div>
               </div>
             </div>
@@ -486,7 +486,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.6"
+        version="v1.8.7"
         dataStatus={dataStatus}
       />
  
