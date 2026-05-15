@@ -86,7 +86,7 @@ function DashboardContent() {
     // Breakout: Controller Shift Mechanism
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.4...');
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.5...');
         window.location.reload();
       });
     }
@@ -105,7 +105,7 @@ function DashboardContent() {
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.4 Ironclad Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.5 Ironclad Init');
 
       // Add Document-level Cleanup for Blob URLs
       const handleUnload = () => {
@@ -396,7 +396,7 @@ function DashboardContent() {
 
     // If we have images, don't show the blocking loading screen, 
     // unless it's the very first load and we haven't finished Stage A
-    if (importedImages.length === 0 || initStage === 'IDLE') {
+    if (shareTargetNonce === 0 || initStage === 'IDLE') {
       const isTooLarge = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('error') === 'file_too_large';
       return (
         <div className="min-h-screen flex items-center justify-center bg-bg text-white">
@@ -486,7 +486,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.4"
+        version="v1.8.5"
         dataStatus={dataStatus}
       />
  
