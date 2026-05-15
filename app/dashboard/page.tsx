@@ -86,7 +86,7 @@ function DashboardContent() {
     // Breakout: Controller Shift Mechanism
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.3...');
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.4...');
         window.location.reload();
       });
     }
@@ -105,7 +105,7 @@ function DashboardContent() {
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.3 Ironclad Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.4 Ironclad Init');
 
       // Add Document-level Cleanup for Blob URLs
       const handleUnload = () => {
@@ -356,7 +356,7 @@ function DashboardContent() {
   if (!user || !isAuthReady) {
     // DATA-CONTROL DECOUPLING: Soft Auth Ejection
     // Allow UI access if shared images exist in RAM even if Auth fails
-    if (authError && importedImages.length === 0) {
+    if (authError && shareTargetNonce === 0) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-bg text-white">
           <div className="flex flex-col items-center gap-6 p-8 text-center">
@@ -486,7 +486,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.3"
+        version="v1.8.4"
         dataStatus={dataStatus}
       />
  
