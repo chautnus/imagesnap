@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Navigation } from '@web/components/Navigation';
 import { CaptureTab, ProductMetadata } from '@web/components/CaptureTab';
 import { DataTab } from '@web/components/DataTab';
@@ -62,8 +62,6 @@ function DashboardContent() {
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
   const isConsumingRef = useRef(false);
-  const searchParams = useSearchParams();
-  
   const [importedImages, setImportedImages] = useState<string[]>([]);
   const [importedUrl, setImportedUrl] = useState<string>('');
   const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
@@ -217,14 +215,26 @@ function DashboardContent() {
 
   // Removed redundant dependency effect to maintain sequential flow
   const handleShareTarget = async () => {
-    // DUAL-LOCK SYSTEM: Synchronous Ref + Asynchronous SessionStorage
-    if (isConsumingRef.current || sessionStorage.getItem('imagesnap_share_processed')) {
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[IDEMPOTENCY] Blocked duplicate ingestion attempt');
+    // DYNAMIC NONCE SYSTEM: BOM Access + URL Scrubbing
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentShareId = urlParams.get('share_id');
+    const lastProcessedId = sessionStorage.getItem('imagesnap_last_share_id');
+
+    if (isConsumingRef.current || (currentShareId && currentShareId === lastProcessedId)) {
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[IDEMPOTENCY] Blocked duplicate or stale share_id');
       return;
     }
+    
     isConsumingRef.current = true;
 
-    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Checking IndexedDB v2 (Ironclad Lock)...');
+    // Consumed! Scrub URL to prevent re-triggering on F5
+    if (currentShareId) {
+      sessionStorage.setItem('imagesnap_last_share_id', currentShareId);
+      window.history.replaceState(null, '', window.location.pathname);
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Share Nonce ${currentShareId} consumed & scrubbed`);
+    }
+
+    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Checking IndexedDB v2 (Dynamic Lock)...');
 
     return new Promise<void>((resolve) => {
       const DB_NAME = 'imagesnap-pwa-db';
@@ -262,11 +272,8 @@ function DashboardContent() {
           getReq.onsuccess = () => {
             const data = getReq.result;
             if (data) {
-              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Committing to session storage...');
+              if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Latching to RAM...');
               
-              // Set Asynchronous Lock immediately after reading
-              sessionStorage.setItem('imagesnap_share_processed', 'true');
-
               if (data.image || data.file) {
                 const blob = data.image || data.file;
                 // Persistent Blob Pointer: Do NOT revoke automatically in React Cleanup
@@ -418,7 +425,8 @@ function DashboardContent() {
     // If we have images, don't show the blocking loading screen, 
     // unless it's the very first load and we haven't finished Stage A
     if (importedImages.length === 0 || initStage === 'IDLE') {
-      const isTooLarge = searchParams.get('error') === 'file_too_large';
+      const urlParams = new URLSearchParams(window.location.search);
+      const isTooLarge = urlParams.get('error') === 'file_too_large';
       return (
         <div className="min-h-screen flex items-center justify-center bg-bg text-white">
           <div className="flex flex-col items-center gap-6 p-8 text-center">
@@ -442,7 +450,7 @@ function DashboardContent() {
                 {!isTooLarge && (
                   <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
                     <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                      {initStage === 'DATA_READ' ? '●' : '○'} A. Ironclad Data Sync (v1.7.3)
+                      {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync (v1.7.3)
                     </span>
                     <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
                       {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
@@ -507,7 +515,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="1.7.3"
+        version="v1.7.3"
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

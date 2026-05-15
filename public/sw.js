@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.3 - Breakthrough Edition
-const CACHE_NAME = 'imagesnap-v8.3';
+// ImageSnap Service Worker v8.4 - Dynamic Nonce (v1.7.3)
+const CACHE_NAME = 'imagesnap-v8.4';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -51,8 +51,8 @@ self.addEventListener('fetch', (event) => {
             });
           }
 
-          // Return 303 See Other to force the browser to reload using GET
-          return Response.redirect('/dashboard', 303);
+          // Return 303 See Other with a unique share_id to enable dynamic idempotency
+          return Response.redirect(`/dashboard?share_id=${Date.now()}`, 303);
         } catch (err) {
           console.error('SW v8 Interception Failed:', err);
           return Response.redirect('/dashboard?error=share_failed', 303);

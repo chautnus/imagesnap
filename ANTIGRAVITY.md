@@ -44,9 +44,9 @@
 - **Deterministic Auth Flow**: Triển khai Hard Timeout (10s Script, 5s API), Callback Queue Flush, và đồng bộ hóa độ trễ UI/Service 18s (v1.5.1).
 - **Vercel Migration**: Chuyển đổi nền tảng deploy sang Vercel để tối ưu hóa hiệu năng SSR/PWA (v1.7.3).
 - **Absolute Interception**: Thực thi cơ chế đánh chặn tuyệt đối (POST -> 303 Redirect) để vượt qua giới hạn payload 4.5MB của Vercel (v1.7.3).
-- **Dual-Lock Idempotency**: Kết hợp `useRef` và `sessionStorage` để ngăn chặn triệt để việc nhân bản hình ảnh khi chia sẻ (v1.7.3).
-- **Blob Persistence**: Chuyển quản lý Blob URL sang vòng đời Document (beforeunload), loại bỏ lỗi mất Thumbnail khi chuyển tab (v1.7.3).
-- **Data-Control Decoupling**: Tách biệt luồng dữ liệu và xác thực, cho phép xem ảnh ngay cả khi Google Auth bị chậm (v1.7.3).
+- **Dynamic Nonce System**: Phát hành `share_id` động từ SW để phân biệt các phiên chia sẻ liên tiếp, ngăn chặn khóa chết (v1.7.3).
+- **URL Scrubbing**: Xóa tham số định danh khỏi URL sau khi xử lý (history.replaceState) để tránh lỗi kẹt dữ liệu khi tải lại trang (v1.7.3).
+- **BOM Integration**: Sử dụng trực tiếp `window.location.search` để trích xuất tham số, loại bỏ sự phụ thuộc vào SSR và Suspense của Next.js (v1.7.3).
 
 ## TỔNG KẾT TRẠNG THÁI (v1.7.3)
 - **Hệ thống**: Đã ổn định trên Next.js App Router.
