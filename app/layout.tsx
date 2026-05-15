@@ -49,6 +49,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={outfit.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          window._debugLogs = [];
+          window._pushDebug = function(msg) {
+            var log = '[' + new Date().toISOString().split('T')[1].split('Z')[0] + '] ' + msg;
+            window._debugLogs.push(log);
+            console.log(log);
+            window.dispatchEvent(new CustomEvent('SYS_DEBUG_UPDATE'));
+          };
+          window.onerror = function(msg, url, line, col, error) {
+            window._pushDebug('[FATAL_ERROR] ' + msg + ' (' + url + ':' + line + ')');
+          };
+          window.onunhandledrejection = function(event) {
+            window._pushDebug('[UNHANDLED_PROMISE] ' + (event.reason ? event.reason.message || event.reason : 'Unknown'));
+          };
+          window._pushDebug('[KERNEL] Diagnostic Layer Initialized');
+        `}} />
+      </head>
       <body className="antialiased">
         {children}
         <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />

@@ -9,21 +9,17 @@ if (!DATABASE_URL) {
 
 export const pool = new Pool({
   connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 1,          // Serverless: giữ tối đa 1 connection mỗi instance
-  idleTimeoutMillis: 10000,
-  connectionTimeoutMillis: 10000,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-let dbInitialized = false;
-
 export async function initDb() {
-  if (!DATABASE_URL || dbInitialized) return;
+  if (!DATABASE_URL) return;
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
+    // Users table
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         email TEXT PRIMARY KEY,
@@ -41,6 +37,7 @@ export async function initDb() {
       )
     `);
 
+    // Config table (for masterSpreadsheetId, etc.)
     await client.query(`
       CREATE TABLE IF NOT EXISTS config (
         key TEXT PRIMARY KEY,
@@ -49,7 +46,6 @@ export async function initDb() {
     `);
 
     await client.query('COMMIT');
-    dbInitialized = true;
     console.log(">>> PostgreSQL Database initialized successfully.");
   } catch (e) {
     await client.query('ROLLBACK');
@@ -59,3 +55,5 @@ export async function initDb() {
     client.release();
   }
 }
+
+initDb().catch(err => console.error('Immediate initDb failed:', err));

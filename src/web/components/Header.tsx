@@ -8,6 +8,7 @@ interface HeaderProps {
   subStatus: SubscriptionStatus;
   isSyncing: boolean;
   version: string;
+  dataStatus?: 'idle' | 'loading' | 'success' | 'error';
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -15,7 +16,8 @@ export const Header: React.FC<HeaderProps> = ({
   user, 
   subStatus, 
   isSyncing, 
-  version 
+  version,
+  dataStatus = 'idle'
 }) => {
   return (
     <header className="px-4 py-5 flex bg-bg items-center justify-between border-b border-white/5 shadow-xl">
@@ -51,9 +53,23 @@ export const Header: React.FC<HeaderProps> = ({
                 <Crown size={8} /> PRO
               </span>
             )}
-            <span className="text-[9px] text-muted font-mono font-bold">
-              {subStatus.usage}/{subStatus.limit} • {version}
-            </span>
+            
+            {dataStatus === 'loading' && (
+              <span className="text-[9px] text-muted font-mono font-bold animate-pulse">
+                .../{subStatus.limit} • {version}
+              </span>
+            )}
+            {dataStatus === 'error' && (
+              <span className="text-[9px] text-yellow-500 font-mono font-bold flex items-center gap-1" title="Usage unavailable - using safe fallback">
+                ?/{subStatus.limit} • {version}
+              </span>
+            )}
+            {(dataStatus === 'success' || dataStatus === 'idle') && (
+              <span className="text-[9px] text-muted font-mono font-bold">
+                {subStatus.usage}/{subStatus.limit} • {version}
+              </span>
+            )}
+
             <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-muted animate-pulse' : 'bg-accent shadow-[0_0_8px_var(--accent)]'}`} />
           </div>
         </div>

@@ -10,7 +10,7 @@ export const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.
 
 // Marvin Core: Deterministic Auth State Management
 let tokenClient: any = null;
-let accessToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('ps_access_token') : null;
+let accessToken: string | null = null; // Removed localStorage sync for security
 
 // Callback queue to handle multiple concurrent auth requests
 interface AuthCallback {
@@ -24,7 +24,10 @@ let authQueue: AuthCallback[] = [];
  */
 const ensureGsiScript = (): Promise<void> => {
   if (typeof window === 'undefined') return Promise.reject(new Error('Window undefined'));
-  if ((window as any).google?.accounts?.oauth2) return Promise.resolve();
+  if ((window as any).google?.accounts?.oauth2) {
+    if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GSI] Script already present');
+    return Promise.resolve();
+  }
 
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -36,10 +39,12 @@ const ensureGsiScript = (): Promise<void> => {
     script.async = true;
     script.defer = true;
     script.onload = () => {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GSI] Script loaded successfully');
       clearTimeout(timeout);
       resolve();
     };
     script.onerror = () => {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GSI] Script load failed');
       clearTimeout(timeout);
       reject(new Error('GSI_LOAD_FAILED'));
     };
@@ -65,22 +70,25 @@ export const initGis = async (onSuccess: (token: string) => void) => {
   });
 
   try {
+    if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Ensuring GSI Script...');
     await ensureGsiScript();
     
     const google = (window as any).google;
     if (!tokenClient) {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Initializing Token Client...');
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: SCOPES,
         callback: (response: any) => {
           if (response.error !== undefined) {
             const err = new Error(`GIS_ERROR: ${response.error}`);
+            if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug(`[GIS] Handshake Error: ${response.error}`);
             authQueue.forEach(q => q.reject(err));
             authQueue = [];
             return;
           }
+          if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Handshake Success');
           accessToken = response.access_token;
-          localStorage.setItem('ps_access_token', response.access_token);
           authQueue.forEach(q => q.resolve(response.access_token));
           authQueue = [];
         },
@@ -88,9 +96,19 @@ export const initGis = async (onSuccess: (token: string) => void) => {
     }
 
     if (accessToken) {
-      // Flush current queue with existing token
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Using existing RAM token');
       authQueue.forEach(q => q.resolve(accessToken!));
       authQueue = [];
+      return;
+    }
+
+    const storedToken = localStorage.getItem('ps_access_token');
+    if (storedToken) {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Attempting silent recovery (prompt: none)...');
+      tokenClient.requestAccessToken({ prompt: 'none', hint: localStorage.getItem('ps_user_email') || undefined });
+    } else {
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GIS] Requesting fresh token (interactive)...');
+      tokenClient.requestAccessToken();
     }
   } catch (err: any) {
     // Flush queue with error
@@ -126,42 +144,62 @@ export async function getUserInfo(token: string) {
 export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {
   if (onSuccess) authQueue.push({ resolve: onSuccess, reject: () => {} });
 
-  // Extension Check: Use chrome.identity
-  // @ts-ignore
-  if (window.chrome && window.chrome.identity) {
-    const redirectUri = 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
+  const getRedirectUri = () => {
+    if (typeof window !== 'undefined') {
+      const isExtension = window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension');
+      if (isExtension) {
+        return 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
+      }
+      return `${window.location.origin}/auth/callback`;
+    }
+    return '';
+  };
+
+  const redirectUri = getRedirectUri();
+  
+  // Universal Redirect Flow (Web & Extension)
+  if (prompt === 'consent') {
+    // Standard OAuth2 Redirect to bypass mobile pop-up blockers
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${GOOGLE_CLIENT_ID}&` +
       `response_type=token&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `scope=${encodeURIComponent(SCOPES)}&` +
-      `prompt=${prompt}`;
+      `prompt=consent`;
 
-    window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl: string | undefined) => {
-      if (redirectUrl) {
-        const url = new URL(redirectUrl.replace('#', '?'));
-        const token = url.searchParams.get('access_token');
-        if (token) {
-          accessToken = token;
-          localStorage.setItem('ps_access_token', token);
-          authQueue.forEach(q => q.resolve(token));
-          authQueue = [];
+    // Extension Check: Use chrome.identity if available
+    // @ts-ignore
+    if (window.chrome && window.chrome.identity) {
+      window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl: string | undefined) => {
+        if (redirectUrl) {
+          const url = new URL(redirectUrl.replace('#', '?'));
+          const token = url.searchParams.get('access_token');
+          if (token) {
+            accessToken = token;
+            authQueue.forEach(q => q.resolve(token));
+            authQueue = [];
+          }
         }
-      }
-    });
+      });
+      return;
+    }
+
+    // Web Fallback: Direct Redirect
+    window.location.href = authUrl;
     return;
   }
 
+  // Silent Prompt (prompt: 'none') - Keep using GIS for background refresh
   if (!tokenClient) {
     initGis((token) => {
       if (tokenClient) {
-        tokenClient.requestAccessToken({ prompt });
+        tokenClient.requestAccessToken({ prompt: 'none' });
       }
     });
     return;
   }
   
-  tokenClient.requestAccessToken({ prompt });
+  tokenClient.requestAccessToken({ prompt: 'none' });
 };
 
 export const getAccessToken = () => accessToken;
@@ -187,4 +225,36 @@ export const revokeToken = () => {
       });
     }
   }
+
+  fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
+};
+
+export const establishSession = async (token: string, email: string, isStaff: boolean = false) => {
+  try {
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, email, isStaff })
+    });
+  } catch (e) {
+    console.error('Failed to establish secure session', e);
+  }
+};
+
+export const reauthenticate = (): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    requestToken('none', async (token) => {
+      try {
+        const profile = await getUserInfo(token);
+        if (profile?.email) {
+          await establishSession(token, profile.email);
+          resolve(token);
+        } else {
+          reject(new Error("Profile fetch failed during reauth"));
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
 };

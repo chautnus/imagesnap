@@ -1,0 +1,33 @@
+import { reauthenticate } from './google-auth';
+
+interface FetchOptions extends RequestInit {
+  // Custom options if needed
+}
+
+/**
+ * Global API Client Interceptor
+ * Replaces standard fetch for protected routes on the client side.
+ */
+export async function apiClient(url: string, options: FetchOptions = {}): Promise<Response> {
+  const response = await fetch(url, options);
+
+  // Global 401 Interceptor
+  if (response.status === 401) {
+    if (typeof window !== 'undefined') {
+      console.warn('[API_CLIENT] 401 Unauthorized detected. Triggering passive re-authentication...');
+      
+      try {
+        await reauthenticate();
+        
+        // Optionally retry the original request here
+        // For now, returning the response and letting the caller handle the UI state
+      } catch (e) {
+        console.error('[API_CLIENT] Re-authentication failed:', e);
+        // If re-auth completely fails, redirect to home
+        window.location.href = '/?auth=expired';
+      }
+    }
+  }
+
+  return response;
+}

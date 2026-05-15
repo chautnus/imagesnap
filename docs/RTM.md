@@ -20,4 +20,4 @@
 | BR-5.1 | Chrome Store Compliance | ARCH-5 | `manifest.json`, `index.html` | N/A | High | 2026-04-28 | Passed | Active |
 | BR-5.2 | Automated Testing | ARCH-5 | `playwright.config.ts`, `tests/*` | `npm test` | Low | 2026-04-27 | Passed | Active |
 | BR-6.1 | SEO Optimization | ARCH-4 | `app/layout.tsx`, `robots.ts`, `sitemap.ts` | N/A | Med | 2026-05-08 | Passed | Active |
-
+| BR-6.2 | PWA Share Target | ARCH-4 | `public/sw.js`, `app/dashboard/page.tsx` | N/A | High | 2026-05-15 | Passed | Active (v1.8.0 Ironclad Idempotency, IDB Schema Sync) |

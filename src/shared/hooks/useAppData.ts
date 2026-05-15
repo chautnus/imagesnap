@@ -4,6 +4,7 @@ import { fetchAllAppData } from '../services/dataService';
 import { saveProduct, deleteProduct } from '../services/productService';
 import { saveCategory, deleteCategory } from '../services/categoryService';
 import { appendRow } from '../lib/sheets';
+import { apiClient } from '../lib/api-client';
 
 const API_BASE_URL = (typeof window !== 'undefined' && 
   (window.location.protocol === 'extension:' || 
@@ -116,9 +117,8 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       // Increment usage on server
       if (user?.email) {
         try {
-          await fetch(`${API_BASE_URL}/api/increment-usage`, {
+          await apiClient(`${API_BASE_URL}/api/increment-usage`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: user.email })
           });
         } catch (e) { console.error("Failed to increment usage", e); }

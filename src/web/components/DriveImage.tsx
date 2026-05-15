@@ -13,15 +13,16 @@ const blobCache: Record<string, string> = {};
 
 export const DriveImage: React.FC<DriveImageProps> = ({ url, className, alt }) => {
   const isBase64 = url && url.startsWith('data:');
+  const isBlob = url && url.startsWith('blob:');
   const isDriveUrl = url && (url.includes('drive.google.com') || url.includes('id=') || /[-\w]{25,}/.test(url));
   const isNormalUrl = url && url.startsWith('http') && !url.includes('drive.google.com') && !url.includes('id=');
 
-  const [src, setSrc] = useState<string | null>( (isBase64 || isNormalUrl) ? url : (blobCache[url] || null));
-  const [loading, setLoading] = useState(!isBase64 && !isNormalUrl && !blobCache[url]);
+  const [src, setSrc] = useState<string | null>( (isBase64 || isNormalUrl || isBlob) ? url : (blobCache[url] || null));
+  const [loading, setLoading] = useState(!isBase64 && !isNormalUrl && !isBlob && !blobCache[url]);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (isBase64 || isNormalUrl) {
+    if (isBase64 || isNormalUrl || isBlob) {
       setSrc(url);
       setLoading(false);
       return;

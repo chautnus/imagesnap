@@ -12,5 +12,6 @@
 | BR-4.1   | UI Standards            | font, legibility, detail, view   | Active  |
 | BR-4.2   | Search & Filtering      | search, filter, realtime         | Active  |
 | BR-4.3   | Marketing Variants      | landing, marketing, /1, /2, /3   | Active  |
+| BR-6     | PWA Share Target        | pwa, share, indexeddb, broadcast | Active  |
 
 # Cập nhật BR_MAP mỗi khi thêm hoặc sửa BR

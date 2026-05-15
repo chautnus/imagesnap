@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Navigation } from '@web/components/Navigation';
 import { CaptureTab, ProductMetadata } from '@web/components/CaptureTab';
 import { DataTab } from '@web/components/DataTab';
@@ -13,6 +13,46 @@ import { findOrCreateWorkspace } from '@shared/lib/sheets';
 import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
 import { SubscriptionStatus } from '@shared/lib/types';
+import { apiClient } from '@shared/lib/api-client';
+
+function DebugOverlay() {
+  const [logs, setLogs] = useState<string[]>([]);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const syncLogs = () => {
+      setLogs([...((window as any)._debugLogs || [])]);
+    };
+
+    window.addEventListener('SYS_DEBUG_UPDATE', syncLogs);
+    syncLogs(); // Initial sync
+    
+    return () => window.removeEventListener('SYS_DEBUG_UPDATE', syncLogs);
+  }, []);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed bottom-4 left-4 z-[9999] max-w-[90vw] max-h-[200px] overflow-y-auto bg-black/90 border border-white/10 rounded-lg p-3 shadow-2xl backdrop-blur-xl">
+      <div className="flex justify-between items-center mb-2 border-bottom border-white/5 pb-1">
+        <span className="text-[10px] font-bold text-accent uppercase tracking-widest">Diagnostic Telemetry</span>
+        <button onClick={() => setIsVisible(false)} className="text-[10px] text-white/40 hover:text-white uppercase font-bold">Hide</button>
+      </div>
+      <div className="space-y-1">
+        {logs.map((log, i) => (
+          <div key={i} className="text-[9px] font-mono leading-tight break-all">
+            <span className={log.includes('FATAL') ? 'text-red-400' : (log.includes('STAGE') ? 'text-accent' : 'text-white/60')}>
+              {log}
+            </span>
+          </div>
+        ))}
+        {logs.length === 0 && <div className="text-[9px] text-white/20 italic">Waiting for logs...</div>}
+      </div>
+    </div>
+  );
+}
 
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings' | 'help'>('capture');
@@ -21,14 +61,13 @@ function DashboardContent() {
   const [user, setUser] = useState<any>(null);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
+  const [dataStatus, setDataStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
   const isConsumingRef = useRef(false);
-  const searchParams = useSearchParams();
-  
-  const [importedImages, setImportedImages] = useState<string[]>([]);
-  const [importedUrl, setImportedUrl] = useState<string>('');
-  const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
+  const [shareTargetNonce, setShareTargetNonce] = useState(0);
   const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
+  const objectUrlRef = useRef<string | null>(null);
+  const startTimeRef = useRef<number>(Date.now());
 
   const { lang, t, toggleLang } = useI18n();
   const { 
@@ -42,50 +81,75 @@ function DashboardContent() {
   } = useAppData(spreadsheetId, user);
 
   useEffect(() => {
+    // Breakout: Controller Shift Mechanism
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.9...');
+        window.location.reload();
+      });
+    }
+
+    // BroadcastChannel Subscription
+    let channel: BroadcastChannel | null = null;
+    if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+      channel = new BroadcastChannel('imagesnap-share');
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'SHARE_COMMITTED' && event.data?.share_id) {
+          if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Broadcast Received for Share ID: ${event.data.share_id}`);
+          handleShareTarget(event.data.share_id);
+        }
+      };
+    }
+
     const runInitialization = async () => {
-      // Phase 1: Data-First Retrieval
+      startTimeRef.current = Date.now();
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.9 Ironclad Init');
+
+      // Add Document-level Cleanup for Blob URLs
+      const handleUnload = () => {
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+          if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] Blob URL Revoked on Unload');
+        }
+      };
+      window.addEventListener('beforeunload', handleUnload);
+
+      // Phase 1: Authentication first — shared images must not be lost on auth failure
+      setInitStage('AUTH_PROCESS');
+      await handleInit();
+
+      // Phase 2: Consume shared data after auth is confirmed
       setInitStage('DATA_READ');
       await handleShareTarget();
       
-      // Phase 2: Sequential Authentication
-      setInitStage('AUTH_PROCESS');
-      await handleInit();
-      
       setInitStage('COMPLETED');
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] Init Completed in ${Date.now() - startTimeRef.current}ms`);
+      
+      return () => window.removeEventListener('beforeunload', handleUnload);
     };
 
     const handleInit = async () => {
-      const storedToken = localStorage.getItem('ps_access_token');
-      const isStaff = localStorage.getItem('ps_is_staff') === 'true';
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_C] Verifying Secure Session...');
+      
+      try {
+        const res = await apiClient('/api/auth/session');
+        const sessionData = await res.json();
 
-      if (!storedToken && !isStaff) {
-        // Static Halt instead of auto-redirect for better UX control
-        setAuthError("Session Required - Please login from the home page.");
-        return;
-      }
-
-      if (isStaff) {
-        const staffEmail = localStorage.getItem('ps_staff_email');
-        const storedId = localStorage.getItem('ps_sheet_id');
-        if (staffEmail && storedId) {
-          setUser({ email: staffEmail, role: 'staff' });
-          setSpreadsheetId(storedId);
+        if (sessionData.authenticated && sessionData.user) {
+          const profile = sessionData.user;
+          setUser(profile);
+          setAccessToken(profile.token); // Keep token in RAM for sheets API
           setIsAuthReady(true);
-          setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
-          refreshData(storedId);
-          return;
-        }
-      }
+          fetchSubStatus(profile.email);
 
-      initGis(async (token) => {
-        setAccessToken(token);
-        try {
-          const profile = await getUserInfo(token);
-          if (profile) {
-            setUser(profile);
-            setIsAuthReady(true);
-            fetchSubStatus(profile.email);
-            
+          if (profile.role === 'staff') {
+            const storedId = localStorage.getItem('ps_sheet_id');
+            if (storedId) {
+              setSpreadsheetId(storedId);
+              setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
+              refreshData(storedId);
+            }
+          } else {
             const storedId = localStorage.getItem('ps_sheet_id');
             if (storedId) {
               setSpreadsheetId(storedId);
@@ -93,23 +157,17 @@ function DashboardContent() {
             } else {
               initializeWorkspace();
             }
-          } else {
-            setAuthError("Session Expired - Verification failed on new infrastructure.");
-            localStorage.removeItem('ps_access_token');
           }
-        } catch (e) {
-          setAuthError("Session Expired - Identity service error.");
-          localStorage.removeItem('ps_access_token');
+        } else {
+          setAuthError("Session Expired - Verification failed on new infrastructure.");
         }
-      }).catch((err) => {
-        setAuthError(`Auth Service Error: ${err.message}`);
-        localStorage.removeItem('ps_access_token');
-      });
+      } catch (e) {
+        setAuthError("Session Expired - Identity service error.");
+      }
       
       const recoveryTimer = setTimeout(() => {
         if (!isAuthReady) {
           setAuthError("Authentication Timed Out - Check your connection.");
-          localStorage.removeItem('ps_access_token');
         }
       }, 18000);
 
@@ -124,97 +182,139 @@ function DashboardContent() {
 
     runInitialization();
 
-    // Background Migration Cleanup (Idle Phase)
-    if (typeof window !== 'undefined' && (window as any).requestIdleCallback) {
-      (window as any).requestIdleCallback(() => {
-        if ('serviceWorker' in navigator && !localStorage.getItem('migration_v1_6_1')) {
-          navigator.serviceWorker.getRegistrations().then(regs => {
-            for(let r of regs) r.unregister();
-            localStorage.setItem('migration_v1_6_1', 'true');
-          });
-        }
-      });
-    }
-
-    const channel = new BroadcastChannel('imagesnap-share-target');
-    channel.onmessage = (event) => {
-      if (event.data.type === 'NEW_SHARE_DATA') {
-        handleShareTarget();
-      }
-    };
+    // P-1 FIX: migration_v1_6_1 unregister block removed — was deleting Share Target SW
+    // on every new device. Migration is complete; SW v8.6 is the baseline.
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      channel.close();
+      if (channel) channel.close();
     };
   }, []);
 
-  // Removed redundant dependency effect to maintain sequential flow
+  const handleShareTarget = async (sidFromBroadcast?: string) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sid = sidFromBroadcast || urlParams.get('share_id');
+    const lastProcessedId = sessionStorage.getItem('imagesnap_last_share_id');
 
-  const handleShareTarget = async () => {
-    if (isConsumingRef.current) return;
+    if ((window as any)._pushDebug) (window as any)._pushDebug(`[IDEMPOTENCY] Check: sid=${sid}, last=${lastProcessedId}, isLocked=${isConsumingRef.current}`);
+
+    if (isConsumingRef.current || (sid && sid === lastProcessedId)) {
+      if ((window as any)._pushDebug && sid && sid === lastProcessedId) (window as any)._pushDebug('[IDEMPOTENCY] Share already processed');
+      return;
+    }
+    
     isConsumingRef.current = true;
 
-    try {
-      // Mutating Read: Get and Delete in one go (conceptually atomic via IDB transaction)
-      const data = await consumeSharedDataFromDB();
-      
-      if (data) {
-        const images: string[] = [];
-        if (data.image) {
-          const reader = new FileReader();
-          const dataUrl = await new Promise<string>((resolve) => {
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(data.image);
-          });
-          images.push(dataUrl);
-        }
-
-        if (images.length > 0) setImportedImages(images);
-        if (data.url || data.text) setImportedUrl(data.url || data.text);
-        if (data.title) setImportedMetadata({ t: data.title });
-        
-        // Ensure we are on the capture tab
-        setActiveTab('capture');
-      }
-    } catch (e) {
-      console.error("Failed to consume shared data", e);
-    } finally {
-      isConsumingRef.current = false;
+    if (sid) {
+      // Consumed! Update ID immediately to block race conditions during async IDB read
+      sessionStorage.setItem('imagesnap_last_share_id', sid);
+      window.history.replaceState(null, '', window.location.pathname);
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Share ID ${sid} scrubbed from URL`);
     }
-  };
 
-  const consumeSharedDataFromDB = (): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open('ImageSnapSharing', 1);
-      request.onsuccess = (event: any) => {
+    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Querying IDB v2 sid Storage...');
+
+    return new Promise<void>((resolve) => {
+      const DB_NAME = 'imagesnap-pwa-db';
+      const DB_VERSION = 2;
+      const STORE_NAME = 'shares';
+
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      // Safety Timeout: Force resolve after 5s to prevent "Icon Stuck"
+      const timeoutId = setTimeout(() => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Force-Timeout Triggered!');
+        isConsumingRef.current = false;
+        resolve();
+      }, 5000);
+
+      request.onupgradeneeded = (event: any) => {
         const db = event.target.result;
-        if (!db.objectStoreNames.contains('sharedContent')) {
-          resolve(null);
-          return;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
         }
-        
-        const transaction = db.transaction('sharedContent', 'readwrite');
-        const store = transaction.objectStore('sharedContent');
-        const getReq = store.get('latest');
-        
-        getReq.onsuccess = () => {
-          const result = getReq.result;
-          if (result) {
-            // Atomic delete immediately after successful read
-            store.delete('latest');
-            transaction.oncomplete = () => resolve(result);
-          } else {
-            resolve(null);
-          }
-        };
-        getReq.onerror = () => reject(getReq.error);
-        transaction.onerror = () => reject(transaction.error);
       };
-      request.onerror = () => reject(request.error);
+
+      request.onerror = () => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB Open Failed!');
+        clearTimeout(timeoutId);
+        isConsumingRef.current = false;
+        resolve();
+      };
+
+      request.onblocked = () => {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB Blocked!');
+        clearTimeout(timeoutId);
+        isConsumingRef.current = false;
+        resolve();
+      };
+
+      request.onsuccess = (event: any) => {
+        clearTimeout(timeoutId);
+        const db = event.target.result;
+        try {
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(STORE_NAME);
+          
+          const processData = (data: any, key: string) => {
+            if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Signaling CaptureTab...');
+            
+            // Increment nonce to trigger CaptureTab pull
+            setShareTargetNonce(prev => prev + 1);
+          };
+
+          if (sid) {
+            // Deterministic Read: Get specific record by sid
+            const getReq = store.get(sid);
+            getReq.onsuccess = () => {
+              if (getReq.result) processData(getReq.result, sid);
+            };
+          } else {
+            // Full Scan Fallback for Latest Unconsumed
+            const cursorReq = store.openCursor(null, 'prev');
+            let found = false;
+            cursorReq.onsuccess = (e: any) => {
+              const cursor = e.target.result;
+              if (cursor && !found) {
+                if (cursor.key !== lastProcessedId && cursor.key !== 'latest') {
+                  found = true;
+                  sessionStorage.setItem('imagesnap_last_share_id', cursor.key as string);
+                  processData(cursor.value, cursor.key as string);
+                } else {
+                  // Legacy cleanup or already consumed
+                  if (cursor.key === 'latest') store.delete('latest');
+                  cursor.continue();
+                }
+              }
+            };
+          }
+
+          transaction.oncomplete = () => {
+            db.close();
+            isConsumingRef.current = false;
+            resolve();
+          };
+          
+          transaction.onerror = () => {
+            db.close();
+            isConsumingRef.current = false;
+            resolve();
+          };
+        } catch (e) {
+          isConsumingRef.current = false;
+          resolve();
+        }
+      };
+
+      request.onerror = () => {
+        isConsumingRef.current = false;
+        resolve();
+      };
     });
   };
+
+
 
   const initializeWorkspace = async () => {
     try {
@@ -230,12 +330,17 @@ function DashboardContent() {
 
   const fetchSubStatus = async (email: string) => {
     const isAdmin = email.toLowerCase() === 'chautnus@gmail.com' || email.toLowerCase() === 'admin@imagesnap.cloud';
+    setDataStatus('loading');
     try {
-      const res = await fetch(`/api/user-status?email=${encodeURIComponent(email)}`);
+      const res = await apiClient(`/api/user-status?email=${encodeURIComponent(email)}`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setSubStatus({ ...data, isAdmin: data.isAdmin || isAdmin });
+      setDataStatus('success');
     } catch (e) { 
       setSubStatus(prev => ({ ...prev, isAdmin }));
+      setDataStatus('error');
+      console.error("fetchSubStatus failed:", e);
     }
   };
 
@@ -255,89 +360,117 @@ function DashboardContent() {
   };
 
   if (!user || !isAuthReady) {
-    const isTooLarge = searchParams.get('error') === 'file_too_large';
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg text-white">
-        <div className="flex flex-col items-center gap-6 p-8 text-center">
-          {!isTooLarge ? (
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
-              <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
+    // DATA-CONTROL DECOUPLING: Soft Auth Ejection
+    // Allow UI access if shared images exist in RAM even if Auth fails
+    if (authError && shareTargetNonce === 0) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-bg text-white">
+          <div className="flex flex-col items-center gap-6 p-8 text-center">
             <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
               <span className="text-2xl text-accent">⚠️</span>
             </div>
-          )}
-          
+            
             <div className="space-y-4">
-            <div className="space-y-1">
-              <div className="text-xs font-black tracking-widest uppercase opacity-60">
-                {isTooLarge ? "File Too Large" : (authError ? "Critical Error" : "System Initializing")}
+              <div className="space-y-1">
+                <div className="text-xs font-black tracking-widest uppercase opacity-60">
+                  Critical Error
+                </div>
+                <p className="text-[10px] text-accent mt-2 max-w-[220px] mx-auto leading-relaxed">
+                  {authError}
+                </p>
               </div>
               
-              {!isTooLarge && !authError && (
-                <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
-                  <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'DATA_READ' ? '●' : '○'} 1. Retrieving Shared Data
-                  </span>
-                  <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'AUTH_PROCESS' ? '●' : '○'} 2. Connecting to Google Identity
-                  </span>
-                  <span className={isAuthReady ? 'text-accent font-bold' : ''}>
-                    {isAuthReady ? '●' : '○'} 3. Verifying Security Token
-                  </span>
+              <div className="pt-4 animate-pulse">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
+                  Build v1.8.9
                 </div>
-              )}
-
-              {(authError || isTooLarge) && (
-                <p className="text-[10px] text-accent mt-2 max-w-[220px] mx-auto leading-relaxed">
-                  {isTooLarge 
-                    ? "The shared image exceeds the 20MB limit. Please try a smaller file for smooth performance."
-                    : authError}
-                </p>
-              )}
-            </div>
-            
-            <div className="pt-4 animate-pulse">
-              <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                System v1.6.4
               </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={() => window.location.href = '/'}
-              className="px-8 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
-            >
-              Back to Home
-            </button>
-            <button 
-              onClick={async () => {
-                if ('serviceWorker' in navigator) {
-                  try {
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    for(let reg of regs) await reg.unregister();
-                    if ('caches' in window) {
-                      const keys = await caches.keys();
-                      for(let key of keys) await caches.delete(key);
-                    }
-                    window.location.reload();
-                  } catch (e) {
-                    window.location.reload();
-                  }
-                }
-              }}
-              className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4 hover:text-white transition-colors"
-            >
-              Hard Reset & Update
-            </button>
+            
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => window.location.href = '/'}
+                className="px-8 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
+              >
+                Back to Home
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    // If we haven't finished Stage A (Initialization), show the loading screen
+    if (initStage !== 'COMPLETED') {
+      const isTooLarge = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('error') === 'file_too_large';
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-bg text-white">
+          <div className="flex flex-col items-center gap-6 p-8 text-center">
+            {!isTooLarge ? (
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
+                <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
+                <span className="text-2xl text-accent">⚠️</span>
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <div className="text-xs font-black tracking-widest uppercase opacity-60">
+                  {isTooLarge ? "File Too Large" : "System Diagnostics"}
+                </div>
+                
+                {!isTooLarge && (
+                  <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
+                    <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
+                      {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync (v1.8.9)
+                    </span>
+                    <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
+                      {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
+                    </span>
+                    <span className={isAuthReady ? 'text-accent font-bold' : ''}>
+                      {isAuthReady ? '●' : '○'} C. Encrypted Session Established
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="pt-4 animate-pulse">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
+                  Build v1.8.9
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={async () => {
+                  if ('serviceWorker' in navigator) {
+                    try {
+                      const regs = await navigator.serviceWorker.getRegistrations();
+                      for(let reg of regs) await reg.unregister();
+                      if ('caches' in window) {
+                        const keys = await caches.keys();
+                        for(let key of keys) await caches.delete(key);
+                      }
+                      window.location.reload();
+                    } catch (e) {
+                      window.location.reload();
+                    }
+                  }
+                }}
+                className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4 hover:text-white transition-colors"
+              >
+                Hard Reset & Update
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
   }
 
   const accessibleCategories = appData.categories.filter(cat => {
@@ -358,7 +491,8 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.6.4"
+        version="v1.8.11"
+        dataStatus={dataStatus}
       />
  
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
@@ -379,12 +513,7 @@ function DashboardContent() {
             lang={lang}
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
-            initialImages={importedImages}
-            importedUrl={importedUrl}
-            importedMetadata={importedMetadata}
-            onClearInitialImages={() => setImportedImages([])}
-            onClearImportedUrl={() => setImportedUrl('')}
-            onClearImportedMetadata={() => setImportedMetadata({})}
+            shareTargetNonce={shareTargetNonce}
             onSaveCategory={handleSaveCategory}
             onSwitchToHelp={() => setActiveTab('help')}
           />
@@ -444,6 +573,7 @@ export default function Dashboard() {
       </div>
     }>
       <DashboardContent />
+      <DebugOverlay />
     </Suspense>
   );
 }

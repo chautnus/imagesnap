@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RefreshCw, X, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, Plus } from 'lucide-react';
 import { Camera } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
@@ -23,25 +23,20 @@ interface CaptureTabProps {
   lang: string;
   subStatus: { isPro: boolean; limit: number; usage: number; userEmail?: string; isAdmin?: boolean };
   onUpgrade: () => Promise<void>;
-  initialImages?: string[];
-  importedUrl?: string;
-  importedMetadata?: ProductMetadata;
-  onClearInitialImages?: () => void;
-  onClearImportedUrl?: () => void;
-  onClearImportedMetadata: () => void;
+  shareTargetNonce: number;
   onSaveCategory?: (cat: Category) => Promise<void>;
   onSwitchToHelp: () => void;
 }
 
 export const CaptureTab: React.FC<CaptureTabProps> = ({
   categories, onSave, productNames, t, lang, subStatus, onUpgrade,
-  initialImages = [], importedUrl = '', importedMetadata = {} as ProductMetadata,
-  onClearInitialImages, onClearImportedUrl, onClearImportedMetadata,
+  shareTargetNonce,
   onSaveCategory, onSwitchToHelp
 }) => {
-  const [images, setImages] = useState<string[]>(initialImages || []);
+  const [images, setImages] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [recentCatIds, setRecentCatIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
     const saved = localStorage.getItem('ps_recent_cats');
     return saved ? JSON.parse(saved) : [];
   });
@@ -55,6 +50,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [keySearchFocus, setKeySearchFocus] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [extractedImages, setExtractedImages] = useState<ExtractedImage[]>([]);
+  const blobUrlsRef = useRef<string[]>([]);
 
   useEffect(() => {
     if (selectedCategoryId) {
@@ -65,51 +61,95 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   }, [selectedCategoryId]);
 
   useEffect(() => {
-    if (initialImages.length > 0) {
-      setImages(prev => [...prev, ...initialImages]);
-      onClearInitialImages?.();
-    }
-  }, [initialImages]);
-
-  useEffect(() => {
-    if (importedUrl && selectedCategoryId && categories.length > 0) {
-      const cat = categories.find(c => c.id === selectedCategoryId);
-      if (cat) {
-        const urlFields = cat.fields.filter(f => f.type === 'url');
-        if (urlFields.length > 0) {
-          setFormData(prev => {
-            const next = { ...prev };
-            urlFields.forEach(f => { if (!next[f.id]) next[f.id] = importedUrl; });
-            return next;
-          });
+    if (shareTargetNonce > 0) {
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Pulling Shared Data (Nonce: ${shareTargetNonce})...`);
+      
+      const DB_NAME = 'imagesnap-pwa-db';
+      const STORE_NAME = 'shares';
+      const DB_VERSION = 2;
+      
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      
+      request.onupgradeneeded = (event: any) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
         }
-        onClearImportedUrl?.();
-      }
-    }
-  }, [importedUrl, selectedCategoryId, categories]);
+      };
 
-  useEffect(() => {
-    const { t: importTitle, p: importPrice, d: importDesc } = importedMetadata;
-    if ((importTitle || importPrice || importDesc) && selectedCategoryId && categories.length > 0) {
-      const cat = categories.find(c => c.id === selectedCategoryId);
-      if (cat) {
-        setFormData(prev => {
-          const next = { ...prev };
-          cat.fields.forEach(f => {
-            const label = translate(f.label, lang).toLowerCase();
-            if (importTitle && !next[f.id] && (f.type === 'key' || label.includes('tên') || label.includes('name') || label.includes('title'))) next[f.id] = importTitle;
-            if (importPrice && !next[f.id] && (f.type === 'number' || label.includes('giá') || label.includes('price'))) {
-              const m = importPrice.match(/[\d.]+/);
-              next[f.id] = m ? m[0] : importPrice;
+      request.onsuccess = (event: any) => {
+        const db = event.target.result;
+        try {
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(STORE_NAME);
+          const cursorReq = store.openCursor(null, 'prev');
+          
+          cursorReq.onsuccess = (e: any) => {
+            const cursor = e.target.result;
+            if (cursor) {
+              const data = cursor.value;
+              if (data) {
+                if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Shared Record Found: ${JSON.stringify(data).substring(0, 50)}...`);
+                
+                // 1. Process Images
+                if (data.images && Array.isArray(data.images)) {
+                  const newBlobUrls = data.images.map((b: Blob) => URL.createObjectURL(b));
+                  setImages(prev => [...prev, ...newBlobUrls]);
+                  blobUrlsRef.current.push(...newBlobUrls);
+                } else if (data.image) {
+                  const blobUrl = URL.createObjectURL(data.image);
+                  setImages(prev => [...prev, blobUrl]);
+                  blobUrlsRef.current.push(blobUrl);
+                }
+
+                // 2. Process Metadata (URL & Title)
+                setFormData(prev => {
+                  const next = { ...prev };
+                  const cat = categories.find(c => c.id === selectedCategoryId);
+                  if (cat) {
+                    cat.fields.forEach(f => {
+                      const label = translate(f.label, lang).toLowerCase();
+                      // Auto-fill Title
+                      if (data.title && !next[f.id] && (f.type === 'key' || label.includes('tên') || label.includes('name') || label.includes('title'))) {
+                        next[f.id] = data.title;
+                      }
+                      // Auto-fill URL
+                      if (data.url && !next[f.id] && (f.type === 'url')) {
+                        next[f.id] = data.url;
+                      }
+                      // Auto-fill Description/Text
+                      if (data.text && !next[f.id] && (label.includes('mô tả') || label.includes('description'))) {
+                        next[f.id] = data.text;
+                      }
+                    });
+                  }
+                  return next;
+                });
+                
+                // Cleanup: Delete from IDB after successful consumption
+                store.delete(cursor.key);
+              }
             }
-            if (importDesc && !next[f.id] && (label.includes('mô tả') || label.includes('description') || label.includes('desc'))) next[f.id] = importDesc;
-          });
-          return next;
-        });
-        onClearImportedMetadata?.();
-      }
+          };
+        } catch (e) {
+          console.error("IDB Pull Error", e);
+        }
+      };
     }
-  }, [importedMetadata, selectedCategoryId, categories, lang]);
+  }, [shareTargetNonce]);
+
+  // Memory Management: Revoke all blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Cleaning up ${blobUrlsRef.current.length} blob URLs`);
+      blobUrlsRef.current.forEach(url => {
+        try { URL.revokeObjectURL(url); } catch (e) {}
+      });
+      blobUrlsRef.current = [];
+    };
+  }, []);
+
+
 
   const isAtLimit = !subStatus.isPro && subStatus.usage >= subStatus.limit;
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
@@ -177,16 +217,39 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   };
 
   const handleSave = async () => {
+    if (isSaving) return;
     if (!selectedCategoryId || !formData[keyFieldId] || images.length === 0) return;
     setIsSaving(true);
     try {
-      await onSave({ categoryId: selectedCategoryId, name: formData[keyFieldId], tags: [], data: { ...formData } }, images);
-      setImages([]);
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Preparing to save ${images.length} images...`);
       
-      // Retain select and date values for convenience
+      // Convert all blob URLs to Base64 to ensure server-side saving works
+      const processedImages = await Promise.all(images.map(async (img) => {
+        if (img.startsWith('blob:')) {
+          try {
+            const res = await fetch(img);
+            const blob = await res.blob();
+            return new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+          } catch (e) {
+            console.error("Blob conversion failed", e);
+            return img;
+          }
+        }
+        return img;
+      }));
+
+      await onSave({ categoryId: selectedCategoryId, name: formData[keyFieldId], tags: [], data: { ...formData } }, processedImages);
+      
+      // Cleanup local images and keep data for next snap if needed
+      setImages([]);
       const keptData: Record<string, any> = {};
-      if (activeCategory) {
-        activeCategory.fields.forEach(f => {
+      const cat = categories.find(c => c.id === selectedCategoryId);
+      if (cat) {
+        cat.fields.forEach(f => {
           if ((f.type === 'select' || f.type === 'date') && formData[f.id]) {
             keptData[f.id] = formData[f.id];
           }
@@ -260,9 +323,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       {images.length > 0 && (
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {images.map((img, i) => (
-            <div key={i} className="relative flex-none w-20 aspect-square rounded-lg overflow-hidden border border-line">
-              <DriveImage url={img} className="w-full h-full object-cover" />
-              <button onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1">
+            <div key={i} className="relative flex-none w-20 aspect-square rounded-lg overflow-hidden border border-line bg-white/5">
+              {img.startsWith('blob:') ? (
+                <img src={img} className="w-full h-full object-cover" alt="Imported" />
+              ) : (
+                <DriveImage url={img} className="w-full h-full object-cover" />
+              )}
+              <button onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 z-10">
                 <X size={10} />
               </button>
             </div>

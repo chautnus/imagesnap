@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.2 - Multi-Image Share Fix
-const CACHE_NAME = 'imagesnap-v8.2';
+// ImageSnap Service Worker v8.6 - Single-Signal (v1.8.10)
+const CACHE_NAME = 'imagesnap-v8.6';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -30,32 +30,55 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         try {
           const formData = await event.request.formData();
-          const imageFiles = formData.getAll('images'); // getAll() for multi-image share
+          const allEntries = Array.from(formData.entries());
+          const sid = Date.now().toString();
+          
+          let imageFiles = formData.getAll('images');
+          let imageFile = imageFiles.length > 0 ? imageFiles[0] : null;
           const title = formData.get('title') || '';
           const text = formData.get('text') || '';
           const link = formData.get('url') || '';
 
-          // 20MB Safety Check (total across all files)
-          const totalSize = imageFiles.reduce((sum, f) => sum + (f.size || 0), 0);
-          if (totalSize > 20 * 1024 * 1024) {
-            return Response.redirect('/dashboard?error=file_too_large', 303);
+          // Deterministic File Discovery (Robust Fallback without instanceof File)
+          if (!imageFile) {
+            for (const [key, value] of allEntries) {
+              if (value instanceof Blob || (value && typeof value === 'object' && typeof value.name === 'string')) {
+                imageFile = value;
+                break;
+              }
+            }
           }
 
-          // Atomic write to IndexedDB
-          if (imageFiles.length > 0) {
-            await saveSharedData({
-              images: imageFiles,
-              title,
-              text,
+          // 20MB Safety Check
+          if (imageFile && imageFile.size > 20 * 1024 * 1024) {
+             return Response.redirect('/dashboard?error=file_too_large', 303);
+          }
+
+          // Atomic write to IndexedDB with sid as Primary Key
+          if (imageFile || title || text || link) {
+            await saveSharedData(sid, { 
+              image: imageFile, 
+              images: imageFiles, // save all if multiple
+              title, 
+              text, 
               url: link,
-              timestamp: Date.now()
+              timestamp: parseInt(sid)
             });
+            
+            // Broadcast the successful commit to any active clients
+            try {
+              const channel = new BroadcastChannel('imagesnap-share');
+              channel.postMessage({ type: 'SHARE_COMMITTED', share_id: sid });
+              channel.close();
+            } catch (err) {
+              console.error('SW Broadcast Failed:', err);
+            }
           }
 
-          // Return 303 See Other to force the browser to reload using GET
-          return Response.redirect('/dashboard', 303);
+          // Single Deterministic Signal: 303 Redirect with sid (Fallback/Trigger)
+          return Response.redirect(`/dashboard?share_id=${sid}`, 303);
         } catch (err) {
-          console.error('SW v8 Interception Failed:', err);
+          console.error('SW Interception Failed:', err);
           return Response.redirect('/dashboard?error=share_failed', 303);
         }
       })()
@@ -63,33 +86,32 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// IndexedDB helper for shared data
-// IndexedDB helper — stores { images: File[], title, text, url, timestamp }
-async function saveSharedData(data) {
+// IndexedDB helper for shared data (v2 sid Architecture)
+async function saveSharedData(sid, data) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('ImageSnapSharing', 1);
+    const DB_NAME = 'imagesnap-pwa-db';
+    const DB_VERSION = 2;
+    const STORE_NAME = 'shares';
+
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
     
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      if (!db.objectStoreNames.contains('sharedContent')) {
-        db.createObjectStore('sharedContent', { keyPath: 'id', autoIncrement: true });
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
       }
     };
 
     request.onsuccess = (event) => {
       const db = event.target.result;
-      const transaction = db.transaction('sharedContent', 'readwrite');
-      const store = transaction.objectStore('sharedContent');
+      db.onversionchange = () => db.close();
+
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
       
-      // Clear old shared content first to keep it simple (one shared item at a time)
-      store.clear();
-      store.add({ ...data, id: 'latest' });
+      store.put(data, sid);
       
       transaction.oncomplete = () => {
-        // Only broadcast once transaction is fully committed to disk
-        const channel = new BroadcastChannel('imagesnap-share-target');
-        channel.postMessage({ type: 'NEW_SHARE_DATA' });
-        channel.close();
         db.close();
         resolve();
       };

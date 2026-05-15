@@ -506,7 +506,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 23 |
+| Total bugs logged | 25 |
 | Open | 0 |
-| Closed | 23 |
+| Closed | 25 |
 | Patterns extracted | 2 |

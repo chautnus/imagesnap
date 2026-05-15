@@ -1,12 +1,11 @@
 import crypto from "crypto";
-import { pool, initDb } from "./db-postgres";
+import { pool } from "./db-postgres";
 
 const ADMIN_EMAILS = ["chautnus@gmail.com", "support@imagesnap.cloud"];
 
 export async function getSubscription(email: string) {
   if (!email) return null;
-  await initDb();
-
+  
   const normalizedEmail = email.toLowerCase();
   const res = await pool.query('SELECT * FROM users WHERE email = $1', [normalizedEmail]);
   
@@ -53,7 +52,6 @@ function mapUser(dbUser: any) {
 
 // Added these for compatibility and new async flow
 export async function getAllUsers() {
-  await initDb();
   const res = await pool.query('SELECT * FROM users ORDER BY registered_at DESC');
   const users: Record<string, any> = {};
   res.rows.forEach(row => {
@@ -93,7 +91,6 @@ export async function deleteUser(email: string) {
 }
 
 export async function getConfig(key: string) {
-  await initDb();
   const res = await pool.query('SELECT value FROM config WHERE key = $1', [key]);
   return res.rows[0]?.value;
 }
