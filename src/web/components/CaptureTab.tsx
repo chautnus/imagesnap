@@ -23,10 +23,9 @@ interface CaptureTabProps {
   lang: string;
   subStatus: { isPro: boolean; limit: number; usage: number; userEmail?: string; isAdmin?: boolean };
   onUpgrade: () => Promise<void>;
-  initialImages?: string[];
+  shareTargetNonce: number;
   importedUrl?: string;
   importedMetadata?: ProductMetadata;
-  onClearInitialImages?: () => void;
   onClearImportedUrl?: () => void;
   onClearImportedMetadata: () => void;
   onSaveCategory?: (cat: Category) => Promise<void>;
@@ -35,8 +34,8 @@ interface CaptureTabProps {
 
 export const CaptureTab: React.FC<CaptureTabProps> = ({
   categories, onSave, productNames, t, lang, subStatus, onUpgrade,
-  initialImages = [], importedUrl = '', importedMetadata = {} as ProductMetadata,
-  onClearInitialImages, onClearImportedUrl, onClearImportedMetadata,
+  shareTargetNonce, importedUrl = '', importedMetadata = {} as ProductMetadata,
+  onClearImportedUrl, onClearImportedMetadata,
   onSaveCategory, onSwitchToHelp
 }) => {
   const [images, setImages] = useState<string[]>([]);
@@ -56,6 +55,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [keySearchFocus, setKeySearchFocus] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [extractedImages, setExtractedImages] = useState<ExtractedImage[]>([]);
+  const blobUrlsRef = useRef<string[]>([]);
 
   useEffect(() => {
     if (selectedCategoryId) {
@@ -66,16 +66,57 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   }, [selectedCategoryId]);
 
   useEffect(() => {
-    if (initialImages.length > 0) {
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] CaptureTab received ${initialImages.length} initial images`);
-      setImages(prev => {
-        const next = [...new Set([...prev, ...initialImages])];
-        if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Local images state updated. Count: ${next.length}`);
-        return next;
-      });
-      onClearInitialImages?.();
+    if (shareTargetNonce > 0) {
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Pulling Shared Data (Nonce: ${shareTargetNonce})...`);
+      
+      const DB_NAME = 'ImageSnapSharing';
+      const STORE_NAME = 'shares';
+      const DB_VERSION = 2;
+      
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onsuccess = (event: any) => {
+        const db = event.target.result;
+        try {
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(STORE_NAME);
+          const cursorReq = store.openCursor(null, 'prev');
+          
+          cursorReq.onsuccess = (e: any) => {
+            const cursor = e.target.result;
+            if (cursor) {
+              const data = cursor.value;
+              const rawImages = (data.images && Array.isArray(data.images)) ? data.images : (data.image ? [data.image] : []);
+              
+              if (rawImages.length > 0) {
+                const pointers = rawImages.map((blob: Blob) => {
+                  const url = URL.createObjectURL(blob);
+                  blobUrlsRef.current.push(url);
+                  return url;
+                });
+                setImages(prev => [...new Set([...prev, ...pointers])]);
+                if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Pulled ${pointers.length} images from IDB`);
+              }
+              
+              store.delete(cursor.key);
+            }
+          };
+        } catch (e) {
+          console.error("IDB Pull Error", e);
+        }
+      };
     }
-  }, [initialImages]);
+  }, [shareTargetNonce]);
+
+  // Memory Management: Revoke all blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Cleaning up ${blobUrlsRef.current.length} blob URLs`);
+      blobUrlsRef.current.forEach(url => {
+        try { URL.revokeObjectURL(url); } catch (e) {}
+      });
+      blobUrlsRef.current = [];
+    };
+  }, []);
 
   useEffect(() => {
     if (importedUrl && selectedCategoryId && categories.length > 0) {

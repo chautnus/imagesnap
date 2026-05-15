@@ -64,7 +64,7 @@ function DashboardContent() {
   const [dataStatus, setDataStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
   const isConsumingRef = useRef(false);
-  const [importedImages, setImportedImages] = useState<string[]>([]);
+  const [shareTargetNonce, setShareTargetNonce] = useState(0);
   const [importedUrl, setImportedUrl] = useState<string>('');
   const [importedMetadata, setImportedMetadata] = useState<ProductMetadata>({});
   const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
@@ -86,7 +86,7 @@ function DashboardContent() {
     // Breakout: Controller Shift Mechanism
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.2...');
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.3...');
         window.location.reload();
       });
     }
@@ -105,7 +105,7 @@ function DashboardContent() {
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.2 Ironclad Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.3 Ironclad Init');
 
       // Add Document-level Cleanup for Blob URLs
       const handleUnload = () => {
@@ -246,27 +246,15 @@ function DashboardContent() {
           const store = transaction.objectStore(STORE_NAME);
           
           const processData = (data: any, key: string) => {
-            if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Latching to RAM...');
+            if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Signaling CaptureTab...');
             
-            // Handle Multiple Images or Single Image
-            const rawImages = (data.images && Array.isArray(data.images)) ? data.images : (data.image ? [data.image] : []);
-            
-            if (rawImages.length > 0) {
-              if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-              
-              const pointers = rawImages.map((blob: Blob) => {
-                const url = URL.createObjectURL(blob);
-                return url;
-              });
-
-              // For now, we only support revoking the last one in this ref, 
-              // but we'll set all pointers to importedImages
-              objectUrlRef.current = pointers[pointers.length - 1];
-              setImportedImages(pointers);
-              if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_B] ${pointers.length} image(s) latched successful`);
-            }
             if (data.url) setImportedUrl(data.url);
             if (data.title) setImportedMetadata(prev => ({ ...prev, title: data.title }));
+            
+            // Increment nonce to trigger CaptureTab pull
+            setShareTargetNonce(prev => prev + 1);
+            
+            // Cleanup: Record is now "In Transit" or consumed
             store.delete(key);
           };
 
@@ -498,7 +486,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.2"
+        version="v1.8.3"
         dataStatus={dataStatus}
       />
  
@@ -520,10 +508,9 @@ function DashboardContent() {
             lang={lang}
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
-            initialImages={importedImages}
+            shareTargetNonce={shareTargetNonce}
             importedUrl={importedUrl}
             importedMetadata={importedMetadata}
-            onClearInitialImages={() => setImportedImages([])}
             onClearImportedUrl={() => setImportedUrl('')}
             onClearImportedMetadata={() => setImportedMetadata({})}
             onSaveCategory={handleSaveCategory}
