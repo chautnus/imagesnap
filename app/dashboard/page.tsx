@@ -195,7 +195,6 @@ function DashboardContent() {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      if (channel) (channel as any).close();
     };
   }, []);
 
