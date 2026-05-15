@@ -335,7 +335,7 @@ export default function App() {
           user={user}
           subStatus={subStatus}
           isSyncing={isSyncing}
-          version="v1.4.2"
+          version="v1.8.6"
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
@@ -357,10 +357,9 @@ export default function App() {
               lang={lang}
               subStatus={subStatus}
               onUpgrade={handleUpgrade}
-              initialImages={sharedImages.length > 0 ? sharedImages : importedImages}
+              shareTargetNonce={0}
               importedUrl={importedUrl}
               importedMetadata={Object.keys(sharedMetadata).length > 0 ? sharedMetadata : importedMetadata}
-              onClearInitialImages={() => { setImportedImages([]); setSharedImages([]); }}
               onClearImportedUrl={() => setImportedUrl('')}
               onClearImportedMetadata={() => { setImportedMetadata({}); setSharedMetadata({}); }}
               onSaveCategory={handleSaveCategory}
