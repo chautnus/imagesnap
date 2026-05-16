@@ -90,7 +90,7 @@ function DashboardContent() {
     setSubStatus,
     dataStatus,
     isOffline,
-    shareTargetNonce,
+    shareTargetSid,
     handleShareTarget,
     fetchSubStatus,
   } = useDashboardInit(async (id: string) => {
