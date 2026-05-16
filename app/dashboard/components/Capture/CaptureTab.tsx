@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Category, Product } from '@shared/lib/types';
 import { translate } from '@shared/lib/translations';
