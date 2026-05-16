@@ -16,6 +16,15 @@ import { DashboardGuardScreen } from './components/LoadingScreens';
 import { DebugOverlay } from './components/DebugOverlay';
 import { APP_VERSION } from '@shared/lib/version';
 
+/**
+ * SILENCER ACTION
+ * Prevents "Server Action Not Found" on stale manifest POSTs.
+ */
+export async function stalePostAction() {
+  "use server";
+  return { success: true };
+}
+
 interface ErrorBoundaryState { hasError: boolean; }
 
 class DashboardErrorBoundary extends React.Component<{ children: React.ReactNode }, ErrorBoundaryState> {
