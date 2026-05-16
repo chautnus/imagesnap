@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Navigation } from '@web/components/Navigation';
 import { CaptureTab } from './components/Capture/CaptureTab';
-import { ProductMetadata } from '@web/components/CaptureTab';
 import { DataTab } from '@web/components/DataTab';
 import { SettingsTab } from '@web/components/SettingsTab';
 import { HelpTab } from '@web/components/HelpTab';

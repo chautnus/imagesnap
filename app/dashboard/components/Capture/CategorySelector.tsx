@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { Search, Plus } from 'lucide-react';
 import { Category } from '@shared/lib/types';

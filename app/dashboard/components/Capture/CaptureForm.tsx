@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { RefreshCw, Save, Search, Link as LinkIcon, Calendar, Command } from 'lucide-react';
 import { Category } from '@shared/lib/types';
