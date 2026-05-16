@@ -14,7 +14,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
   const [dataStatus, setDataStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
-  const [shareTargetNonce, setShareTargetNonce] = useState(0);
+  const [shareTargetSid, setShareTargetSid] = useState<string | null>(null);
 
   const isConsumingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -68,104 +68,79 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
 
     isConsumingRef.current = true;
 
-    if (sid) {
-      sessionStorage.setItem('imagesnap_last_share_id', sid);
-      window.history.replaceState(null, '', window.location.pathname);
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Share ID ${sid} scrubbed from URL`);
-    }
-
     if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Querying IDB v2 sid Storage...');
 
-    return new Promise<void>((resolve) => {
-      const DB_NAME = 'imagesnap-pwa-db';
-      const DB_VERSION = 2;
-      const STORE_NAME = 'shares';
+    const attemptFetch = (attempt: number) => {
+      return new Promise<void>((resolve) => {
+        const DB_NAME = 'imagesnap-pwa-db';
+        const DB_VERSION = 2;
+        const STORE_NAME = 'shares';
 
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-      const timeoutId = setTimeout(() => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Force-Timeout Triggered!');
-        isConsumingRef.current = false;
-        resolve();
-      }, 5000);
-
-      request.onupgradeneeded = (event: any) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
-        }
-      };
-
-      request.onerror = () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB Open Failed!');
-        clearTimeout(timeoutId);
-        isConsumingRef.current = false;
-        resolve();
-      };
-
-      request.onblocked = () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB Blocked!');
-        clearTimeout(timeoutId);
-        isConsumingRef.current = false;
-        resolve();
-      };
-
-      request.onsuccess = (event: any) => {
-        clearTimeout(timeoutId);
-        const db = event.target.result;
-        try {
-          const transaction = db.transaction(STORE_NAME, 'readwrite');
-          const store = transaction.objectStore(STORE_NAME);
-
-          const processData = (_data: any, _key: string) => {
-            if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Signaling CaptureTab...');
-            setShareTargetNonce(prev => prev + 1);
-          };
-
+        request.onsuccess = (event: any) => {
+          const db = event.target.result;
+          
+          // SCRUB URL ONLY ON SUCCESSFUL IDB ACCESS (Fix Bug 3 & 4)
           if (sid) {
-            const getReq = store.get(sid);
-            getReq.onsuccess = () => {
-              if (getReq.result) processData(getReq.result, sid);
-            };
-          } else {
-            const cursorReq = store.openCursor(null, 'prev');
-            let found = false;
-            cursorReq.onsuccess = (e: any) => {
-              const cursor = e.target.result;
-              if (cursor && !found) {
-                if (cursor.key !== lastProcessedId && cursor.key !== 'latest') {
-                  found = true;
-                  sessionStorage.setItem('imagesnap_last_share_id', cursor.key as string);
-                  processData(cursor.value, cursor.key as string);
-                } else {
-                  if (cursor.key === 'latest') store.delete('latest');
-                  cursor.continue();
-                }
-              }
-            };
+            sessionStorage.setItem('imagesnap_last_share_id', sid);
+            window.history.replaceState(null, '', window.location.pathname);
+            if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Success: IDB Open. URL scrubbed for ${sid}`);
           }
 
-          transaction.oncomplete = () => {
-            db.close();
-            isConsumingRef.current = false;
-            resolve();
-          };
+          try {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
 
-          transaction.onerror = () => {
-            db.close();
-            isConsumingRef.current = false;
-            resolve();
-          };
-        } catch (e) {
-          isConsumingRef.current = false;
-          resolve();
-        }
-      };
+            const handleData = (data: any, key: string) => {
+              if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_B] Data found for ${key}! Signaling CaptureTab...`);
+              setShareTargetSid(key);
+            };
 
-      request.onerror = () => {
-        isConsumingRef.current = false;
-        resolve();
-      };
+            if (sid) {
+              const getReq = store.get(sid);
+              getReq.onsuccess = () => {
+                if (getReq.result) {
+                  handleData(getReq.result, sid);
+                  resolve();
+                } else if (attempt < 3) {
+                  if ((window as any)._pushDebug) (window as any)._pushDebug(`[RETRY] SID ${sid} not found. Attempt ${attempt+1}/3...`);
+                  db.close();
+                  setTimeout(() => attemptFetch(attempt + 1).then(resolve), 100 * (attempt + 1));
+                } else {
+                  if ((window as any)._pushDebug) (window as any)._pushDebug(`[RETRY] SID ${sid} giving up after 3 attempts.`);
+                  resolve();
+                }
+              };
+            } else {
+              // Legacy/Fallback cursor logic
+              const cursorReq = store.openCursor(null, 'prev');
+              cursorReq.onsuccess = (e: any) => {
+                const cursor = e.target.result;
+                if (cursor) {
+                  if (cursor.key !== lastProcessedId && cursor.key !== 'latest') {
+                    handleData(cursor.value, cursor.key as string);
+                    resolve();
+                  } else {
+                    cursor.continue();
+                  }
+                } else { resolve(); }
+              };
+            }
+
+            transaction.oncomplete = () => db.close();
+          } catch (e) {
+            db.close();
+            resolve();
+          }
+        };
+
+        request.onerror = () => resolve();
+      });
+    };
+
+    return attemptFetch(0).finally(() => {
+      isConsumingRef.current = false;
     });
   };
 
@@ -177,7 +152,16 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       });
     }
 
-    // BroadcastChannel logic removed in favor of reactive searchParams (v1.8.12 Architecture)
+    // BroadcastChannel Bridge for SW Logs
+    try {
+      const bc = new BroadcastChannel('imagesnap-logs');
+      bc.onmessage = (event) => {
+        if (event.data?.type === 'LOG' && (window as any)._pushDebug) {
+          (window as any)._pushDebug(event.data.msg);
+        }
+      };
+      return () => bc.close();
+    } catch (e) {}
 
     const handleInit = async () => {
       if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_C] Verifying Secure Session...');
@@ -281,7 +265,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     setSubStatus,
     dataStatus,
     isOffline,
-    shareTargetNonce,
+    shareTargetSid,
     handleShareTarget,
     fetchSubStatus,
   };

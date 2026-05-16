@@ -22,7 +22,25 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="px-4 py-5 flex bg-bg items-center justify-between border-b border-white/5 shadow-xl">
       <div className="flex flex-col">
-        <div className="flex items-center gap-2">
+        <div 
+          className="flex items-center gap-2 cursor-pointer active:scale-95 transition-transform"
+          onClick={() => {
+            const now = Date.now();
+            const last = (window as any)._lastLogoTap || 0;
+            const count = (window as any)._logoTapCount || 0;
+            if (now - last < 500) {
+              const newCount = count + 1;
+              (window as any)._logoTapCount = newCount;
+              if (newCount >= 5) {
+                window.dispatchEvent(new CustomEvent('SYS_DEBUG_TOGGLE'));
+                (window as any)._logoTapCount = 0;
+              }
+            } else {
+              (window as any)._logoTapCount = 1;
+            }
+            (window as any)._lastLogoTap = now;
+          }}
+        >
           <div className="w-5 h-5 bg-accent rounded flex items-center justify-center">
             <ImageIcon size={12} className="text-bg fill-current" />
           </div>

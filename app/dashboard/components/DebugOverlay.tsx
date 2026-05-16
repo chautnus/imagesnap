@@ -8,8 +8,26 @@ export function DebugOverlay() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('debug') === '1') setIsVisible(true);
+    
+    const checkState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const isForced = params.get('debug') === '1';
+      const isPersisted = localStorage.getItem('imagesnap_debug_visible') === '1';
+      if (isForced || isPersisted) setIsVisible(true);
+    };
+
+    const handleToggle = () => {
+      setIsVisible(prev => {
+        const next = !prev;
+        localStorage.setItem('imagesnap_debug_visible', next ? '1' : '0');
+        return next;
+      });
+    };
+
+    window.addEventListener('SYS_DEBUG_TOGGLE', handleToggle);
+    checkState();
+
+    return () => window.removeEventListener('SYS_DEBUG_TOGGLE', handleToggle);
   }, []);
 
   useEffect(() => {

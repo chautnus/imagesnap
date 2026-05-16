@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Navigation } from '@web/components/Navigation';
-import { CaptureTab, ProductMetadata } from '@web/components/CaptureTab';
+import { CaptureTab } from './components/Capture/CaptureTab';
+import { ProductMetadata } from '@web/components/CaptureTab';
 import { DataTab } from '@web/components/DataTab';
 import { SettingsTab } from '@web/components/SettingsTab';
 import { HelpTab } from '@web/components/HelpTab';
@@ -132,7 +133,10 @@ function DashboardContent() {
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_D] Reactive Signal Received: ${sid}`);
       handleShareTarget(sid);
     }
-  }, [searchParams, isAuthReady]);
+  }, [searchParams, isAuthReady, handleShareTarget]);
+
+  // IDB Sync Side Effect: Once sid is pulled from IDB, pass it to CaptureTab
+  // No need for confirmation signal, logic is now SID-based.
 
   const handleUpgrade = async () => {
     if (!user?.email) return;
@@ -199,7 +203,7 @@ function DashboardContent() {
             lang={lang}
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
-            shareTargetNonce={shareTargetNonce}
+            shareTargetSid={shareTargetSid}
             onSaveCategory={handleSaveCategory}
             onSwitchToHelp={() => setActiveTab('help')}
           />

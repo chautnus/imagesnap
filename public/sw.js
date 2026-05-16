@@ -37,7 +37,7 @@ async function pruneOldShares() {
   const cutoff = Date.now() - 24 * 60 * 60 * 1000;
 
   return new Promise((resolve) => {
-    const request = indexedDB.open(DB_NAME);
+    const request = indexedDB.open(DB_NAME, 2);
     request.onsuccess = (event) => {
       const db = event.target.result;
       try {
@@ -92,10 +92,24 @@ self.addEventListener('fetch', (event) => {
             });
           }
 
-          if (typeof (self as any)._pushDebug === 'function') (self as any)._pushDebug(`[SW] Share Intercepted for v1.10.3`);
+          const logMsg = `[SW] Share Intercepted for ${sid}`;
+          if (typeof (self as any)._pushDebug === 'function') (self as any)._pushDebug(logMsg);
+          
+          // Broadcast to active pages
+          try {
+            const bc = new BroadcastChannel('imagesnap-logs');
+            bc.postMessage({ type: 'LOG', msg: logMsg });
+            bc.close();
+          } catch (e) {}
+
           return Response.redirect(`/dashboard?share_id=${sid}`, 303);
         } catch (err) {
           console.error('SW Interception Failed:', err);
+          try {
+            const bc = new BroadcastChannel('imagesnap-logs');
+            bc.postMessage({ type: 'LOG', msg: `[SW] FAILED: ${err.message}` });
+            bc.close();
+          } catch (e) {}
           return Response.redirect('/dashboard?error=share_failed', 303);
         }
       })()
