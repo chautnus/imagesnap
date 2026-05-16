@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { DriveImage } from '../../../src/web/components/DriveImage';
+import { DriveImage } from '@web/components/DriveImage';
 
 interface ImageGridProps {
   images: string[];

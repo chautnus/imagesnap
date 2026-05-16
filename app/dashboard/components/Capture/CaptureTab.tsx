@@ -9,8 +9,8 @@ import { CaptureForm } from './CaptureForm';
 import { QuickAddCategory } from './QuickAddCategory';
 
 // UI components from src
-import { BurstCamera } from '../../../../src/web/components/BurstCamera';
-import { ImagePicker, ExtractedImage } from '../../../../src/web/components/ImagePicker';
+import { BurstCamera } from '@web/components/BurstCamera';
+import { ImagePicker, ExtractedImage } from '@web/components/ImagePicker';
 import { Globe as GlobeIcon, Camera } from 'lucide-react';
 import { Images as ImagesIcon, RefreshCw } from 'lucide-react';
 
