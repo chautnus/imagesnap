@@ -39,6 +39,7 @@ import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
 import { ExternalLink, Crown, Image as ImageIcon } from 'lucide-react';
 import { SubscriptionStatus } from '@shared/lib/types';
+import { APP_VERSION } from '@shared/lib/version';
 
 const API_BASE_URL = (typeof window !== 'undefined' && 
   (window.location.protocol === 'extension:' || 
@@ -300,7 +301,7 @@ export default function App() {
           user={user}
           subStatus={subStatus}
           isSyncing={isSyncing}
-          version="v1.8.12"
+          version={APP_VERSION}
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">

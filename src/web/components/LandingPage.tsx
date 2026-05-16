@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 import { Chrome, Zap, X, ArrowRight, Share2, Database, ShieldCheck, ChevronDown, Check } from 'lucide-react';
+import { APP_VERSION } from '@shared/lib/version';
 
 export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, t: any, variant?: number }) => {
   const [showLoginOptions, setShowLoginOptions] = useState(false);
@@ -288,7 +289,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
       {/* FOOTER */}
       <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-white/5 text-center">
           <p className="text-muted text-sm font-bold uppercase tracking-widest">
-            © 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED. <span className="ml-4 opacity-50">v1.8.10</span>
+            © 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED. <span className="ml-4 opacity-50">{APP_VERSION}</span>
           </p>
       </footer>
     </div>

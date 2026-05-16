@@ -14,6 +14,7 @@ import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
 import { SubscriptionStatus } from '@shared/lib/types';
 import { apiClient } from '@shared/lib/api-client';
+import { APP_VERSION } from '@shared/lib/version';
 
 function DebugOverlay() {
   const [logs, setLogs] = useState<string[]>([]);
@@ -101,7 +102,7 @@ function DashboardContent() {
     // Breakout: Controller Shift Mechanism
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] SW Controller Shifted! Reloading for v1.8.9...');
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] SW Controller Shifted! Reloading for ${APP_VERSION}...`);
         window.location.reload();
       });
     }
@@ -111,7 +112,7 @@ function DashboardContent() {
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.9.7 Ironclad Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] Starting ${APP_VERSION} Ironclad Init`);
 
       // Add Document-level Cleanup for Blob URLs
       const handleUnload = () => {
@@ -200,14 +201,27 @@ function DashboardContent() {
 
     runInitialization();
 
-    // P-1 FIX: migration_v1_6_1 unregister block removed — was deleting Share Target SW
-    // on every new device. Migration complete; SW v8.6 is the baseline.
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Diagnostic: Monitor Category Loading
+  useEffect(() => {
+    if (initStage === 'COMPLETED') {
+      if (appData.categories.length > 0) {
+        if ((window as any)._pushDebug) (window as any)._pushDebug(`[DATA] Success: ${appData.categories.length} categories loaded`);
+      } else {
+        const timeoutId = setTimeout(() => {
+          if (appData.categories.length === 0) {
+            if ((window as any)._pushDebug) (window as any)._pushDebug('[DATA] Warning: Categories still empty after 5s in COMPLETED stage');
+          }
+        }, 5000);
+        return () => clearTimeout(timeoutId);
+      }
+    }
+  }, [appData.categories, initStage]);
 
   const handleShareTarget = async (providedSid?: string) => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -525,7 +539,7 @@ function DashboardContent() {
         user={user}
         subStatus={subStatus}
         isSyncing={isSyncing}
-        version="v1.8.12"
+        version={APP_VERSION}
         dataStatus={dataStatus}
       />
  

@@ -26,7 +26,7 @@
 ## Trạng thái hiện tại
 
 **Last updated**: 2026-05-15 13:36
-**Last session by**: Antigravity (v1.8.11)
+**Last session by**: Antigravity (v1.10.1)
 **Current sprint focus**: Mobile Share Target Stability & Single-Signal Architecture.
 
 ---
@@ -58,9 +58,10 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.8.11)
-- **Hệ thống**: Đã xử lý lỗi treo icon bằng cách reset logic hiển thị.
-- **PWA**: Hoàn thiện kiến trúc Indestructible Bootloader với Timeout 5s.
+## TỔNG KẾT TRẠNG THÁI (v1.10.1)
+- **Hệ thống**: Đã xử lý lỗi treo icon bằng Global Race Timer 6s.
+- **Dữ liệu**: Chuyển sang kiến trúc Reactive Split (Auth trước, Data sau).
+- **Versioning**: Thiết lập Single Source of Truth cho toàn bộ dự án.
 
 ### Dừng ở đâu?
 - Hệ thống đang ở phiên bản **v1.8.11**.

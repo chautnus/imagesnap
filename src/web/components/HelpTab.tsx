@@ -1,5 +1,6 @@
 import React from 'react';
 import { BookOpen, Camera, Globe, Smartphone, Zap, Save, CheckCircle2 } from 'lucide-react';
+import { APP_VERSION } from '@shared/lib/version';
 
 
 interface HelpTabProps {
@@ -75,7 +76,7 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
 
       <div className="flex justify-center mt-4">
         <span className="text-[10px] font-black text-muted tracking-widest uppercase opacity-30">
-          ImageSnap v1.8.10 • Documentation Snapshot
+          ImageSnap {APP_VERSION} • Documentation Snapshot
         </span>
       </div>
     </div>
