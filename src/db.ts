@@ -48,7 +48,6 @@ export async function getSubscription(email: string) {
 
 // Helper to map DB fields to the structure expected by the frontend
 async function mapUser(dbUser: any) {
-  const masterSpreadsheetId = await getConfig('masterSpreadsheetId');
   return {
     email: dbUser.email,
     isPro: dbUser.is_pro,
@@ -60,8 +59,7 @@ async function mapUser(dbUser: any) {
     registeredAt: dbUser.registered_at,
     accessibleCategories: dbUser.accessible_categories,
     username: dbUser.username,
-    password: dbUser.password,
-    masterSpreadsheetId: masterSpreadsheetId
+    password: dbUser.password
   };
 }
 

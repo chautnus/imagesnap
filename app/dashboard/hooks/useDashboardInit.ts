@@ -74,16 +74,6 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     }
   };
 
-  // REACTIVE SYNC
-  useEffect(() => {
-    if (!subStatus.masterSpreadsheetId || !isAuthReady) return;
-    if (spreadsheetId === subStatus.masterSpreadsheetId) return;
-
-    log(`[SYNC] Master ID update detected: ${subStatus.masterSpreadsheetId}`);
-    localStorage.setItem('ps_sheet_id', subStatus.masterSpreadsheetId);
-    setSpreadsheetId(subStatus.masterSpreadsheetId);
-    refreshData(subStatus.masterSpreadsheetId);
-  }, [subStatus.masterSpreadsheetId, isAuthReady, spreadsheetId, refreshData]);
 
   const initializeWorkspace = async () => {
     try {
