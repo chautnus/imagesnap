@@ -52,28 +52,30 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
   });
   const [isSyncing, setIsSyncing] = useState(false);
   
-  // Fix Stale Closure: Keep a ref of the current user for use in callbacks
   const userRef = useRef(user);
   useEffect(() => { userRef.current = user; }, [user]);
+
+  const log = (msg: string) => {
+    if (typeof window !== 'undefined' && (window as any)._pushDebug) {
+      (window as any)._pushDebug(msg);
+    }
+  };
 
   const refreshData = useCallback(async (id: string) => {
     if (!id) return;
     setIsSyncing(true);
     try {
       const currentUser = userRef.current;
-      const isStaff = currentUser?.email?.endsWith('@staff.imagesnap');
+      const STAFF_DOMAIN = '@staff.imagesnap';
+      const isStaff = currentUser?.email?.endsWith(STAFF_DOMAIN);
       
-      if (typeof window !== 'undefined' && (window as any)._pushDebug) {
-        (window as any)._pushDebug(`[DATA] Refreshing workspace: ${id} | Role: ${isStaff ? 'Staff' : 'Admin'}`);
-      }
-
+      log(`[DATA] Fetching Workspace ${id.substring(0, 8)}... (Staff: ${isStaff})`);
+      
       const data = await fetchAllAppData(id, undefined, isStaff);
+      log(`[DATA] Received: ${data.categories.length} Categories, ${data.products.length} Products`);
       
-      // Only seed defaults for a genuinely new workspace: both categories AND productNames empty.
       if (data.categories.length === 0 && data.productNames.length === 0) {
-        if (typeof window !== 'undefined' && (window as any)._pushDebug) {
-          (window as any)._pushDebug(`[DATA] Workspace empty, seeding defaults...`);
-        }
+        log(`[DATA] Workspace empty. Seeding defaults...`);
         for (const cat of DEFAULT_CATEGORIES) {
           await appendRow(id, 'Categories!A2:F', [
             cat.id, cat.name, cat.icon, JSON.stringify(cat.fields), cat.updatedAt, 'FALSE'
@@ -83,11 +85,9 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
         setAppData(freshData);
       } else {
         setAppData(data);
-        if (typeof window !== 'undefined' && (window as any)._pushDebug) {
-          (window as any)._pushDebug(`[DATA] Successfully loaded ${data.categories.length} categories`);
-        }
       }
-    } catch (err) {
+    } catch (err: any) {
+      log(`[FAIL] Data refresh error: ${err.message || err}`);
       console.error("[REFRESH_ERROR] Data fetch failed:", err);
     } finally {
       setIsSyncing(false);
