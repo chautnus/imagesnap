@@ -239,23 +239,25 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-bg text-white">
-        <div className="flex flex-col items-center gap-6 p-8 text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-          </div>
-          <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold animate-pulse">
-            System Initializing...
+    <>
+      <DebugOverlay />
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-bg text-white">
+          <div className="flex flex-col items-center gap-6 p-8 text-center">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
+              <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+            </div>
+            <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold animate-pulse">
+              System Initializing...
+            </div>
           </div>
         </div>
-      </div>
-    }>
-      <DashboardErrorBoundary>
-        <DashboardContent />
-      </DashboardErrorBoundary>
-      <DebugOverlay />
-    </Suspense>
+      }>
+        <DashboardErrorBoundary>
+          <DashboardContent />
+        </DashboardErrorBoundary>
+      </Suspense>
+    </>
   );
 }

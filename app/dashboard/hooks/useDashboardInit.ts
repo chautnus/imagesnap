@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { setAccessToken } from '@shared/lib/google-auth';
 import { findOrCreateWorkspace } from '@shared/lib/sheets';
+import { SubscriptionStatus } from '@shared/lib/types';
 import { apiClient } from '@shared/lib/api-client';
 import { APP_VERSION } from '@shared/lib/version';
-import { useShareTarget } from './useShareTarget';
-import { useSubStatus } from './useSubStatus';
 
 export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
   const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
@@ -14,161 +13,237 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
+  const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
+  const [dataStatus, setDataStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
+  const [shareTargetSid, setShareTargetSid] = useState<string | null>(null);
 
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const objectUrlRef = useRef<string | null>(null);
+  const isConsumingRef = useRef(false);
   const startTimeRef = useRef<number>(Date.now());
 
-  const { shareTargetSid, handleShareTarget } = useShareTarget();
-  const { subStatus, setSubStatus, dataStatus, fetchSubStatus } = useSubStatus();
+  const log = (msg: string) => {
+    if (typeof window !== 'undefined' && (window as any)._pushDebug) {
+      (window as any)._pushDebug(msg);
+    }
+  };
 
-  // Reactive sync: when DB returns the authoritative masterSpreadsheetId (for admin OR staff),
-  // override whatever localStorage or Drive-search produced — no page reload needed.
-  const refreshDataRef = useRef(refreshData);
-  useEffect(() => { refreshDataRef.current = refreshData; });
-
+  // VERSION MIGRATION / AUTO-PURGE
   useEffect(() => {
-    const masterId = (subStatus as any).masterSpreadsheetId;
-    if (!masterId || !isAuthReady) return;
-    if (spreadsheetId === masterId) return;
-    console.log('[SYNC] Detected authoritative Spreadsheet ID from DB:', masterId);
-    localStorage.setItem('ps_sheet_id', masterId);
-    setSpreadsheetId(masterId);
-    refreshDataRef.current(masterId);
-  }, [(subStatus as any).masterSpreadsheetId, isAuthReady]);
+    if (typeof window === 'undefined') return;
+    const lastVersion = localStorage.getItem('imagesnap_app_version');
+    if (lastVersion && lastVersion !== APP_VERSION) {
+      log(`[BOOT] Version Mismatch: ${lastVersion} -> ${APP_VERSION}. Purging old cache...`);
+      // Keep only critical auth state if possible, otherwise full clear for safety
+      const session = localStorage.getItem('imagesnap_session');
+      localStorage.clear();
+      if (session) localStorage.setItem('imagesnap_session', session);
+      localStorage.setItem('imagesnap_app_version', APP_VERSION);
+      
+      // Clear caches
+      if ('caches' in window) {
+        caches.keys().then(names => Promise.all(names.map(n => caches.delete(n))));
+      }
+      
+      log(`[BOOT] Purge complete. Refreshing environment...`);
+      setTimeout(() => window.location.reload(), 500);
+    } else {
+      localStorage.setItem('imagesnap_app_version', APP_VERSION);
+    }
+  }, []);
+
+  const fetchSubStatus = async (email: string) => {
+    log(`[AUTH] Fetching status for ${email}...`);
+    setDataStatus('loading');
+    try {
+      const res = await apiClient(`/api/user-status?email=${encodeURIComponent(email)}`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
+      const isAdmin = email.toLowerCase() === 'chautnus@gmail.com' || email.toLowerCase() === 'admin@imagesnap.cloud';
+      const finalStatus = { ...data, isAdmin: data.isAdmin || isAdmin };
+      
+      if (finalStatus.isAdmin) {
+        finalStatus.isPro = true;
+        finalStatus.limit = 999999;
+      }
+      log(`[AUTH] Status fetched: role=${finalStatus.role}, isPro=${finalStatus.isPro}`);
+      setSubStatus(finalStatus);
+      setDataStatus('success');
+    } catch (e) {
+      log(`[FAIL] fetchSubStatus failed: ${e}`);
+      setDataStatus('error');
+    }
+  };
+
+  // REACTIVE SYNC
+  useEffect(() => {
+    if (!subStatus.masterSpreadsheetId || !isAuthReady) return;
+    if (spreadsheetId === subStatus.masterSpreadsheetId) return;
+
+    log(`[SYNC] Master ID update detected: ${subStatus.masterSpreadsheetId}`);
+    localStorage.setItem('ps_sheet_id', subStatus.masterSpreadsheetId);
+    setSpreadsheetId(subStatus.masterSpreadsheetId);
+    refreshData(subStatus.masterSpreadsheetId);
+  }, [subStatus.masterSpreadsheetId, isAuthReady, spreadsheetId, refreshData]);
 
   const initializeWorkspace = async () => {
     try {
-      console.log("Initializing new workspace...");
+      log("[DRIVE] Initializing workspace lookup...");
       const id = await findOrCreateWorkspace();
+      log(`[DRIVE] Workspace resolution: ${id}`);
       setSpreadsheetId(id);
       localStorage.setItem('ps_sheet_id', id);
       await refreshData(id);
     } catch (err) {
-      console.error("Workspace init error:", err);
+      log(`[FATAL] Workspace init failed: ${err}`);
     }
   };
+
+  const handleShareTarget = useCallback(async (providedSid?: string) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sid = providedSid || urlParams.get('share_id');
+    const lastProcessedId = sessionStorage.getItem('imagesnap_last_share_id');
+
+    if (isConsumingRef.current || (sid && sid === lastProcessedId)) return;
+    isConsumingRef.current = true;
+
+    log(`[IDB] Beginning share ingestion for sid: ${sid}`);
+
+    const attemptFetch = (attempt: number) => {
+      return new Promise<void>((resolve) => {
+        const DB_NAME = 'imagesnap-pwa-db';
+        const DB_VERSION = 2;
+        const STORE_NAME = 'shares';
+
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onsuccess = (event: any) => {
+          const db = event.target.result;
+          try {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+
+            if (sid) {
+              const getReq = store.get(sid);
+              getReq.onsuccess = () => {
+                if (getReq.result) {
+                  log(`[IDB] DATA FOUND for ${sid}`);
+                  setShareTargetSid(sid);
+                  sessionStorage.setItem('imagesnap_last_share_id', sid);
+                  
+                  // Clean URL but preserve important flags like debug
+                  const nextParams = new URLSearchParams(window.location.search);
+                  nextParams.delete('share_id');
+                  nextParams.delete('error');
+                  const nextSearch = nextParams.toString();
+                  const nextUrl = window.location.pathname + (nextSearch ? `?${nextSearch}` : '');
+                  window.history.replaceState(null, '', nextUrl);
+                  
+                  resolve();
+                } else if (attempt < 5) {
+                  log(`[IDB] Data missing for ${sid}. Retry ${attempt + 1}/5...`);
+                  db.close();
+                  setTimeout(() => attemptFetch(attempt + 1).then(resolve), 800);
+                } else {
+                  log(`[FAIL] Share data ${sid} unavailable after retries.`);
+                  resolve();
+                }
+              };
+            } else { resolve(); }
+            transaction.oncomplete = () => db.close();
+          } catch (e) { log(`[FAIL] IDB Transaction error: ${e}`); db.close(); resolve(); }
+        };
+        request.onerror = () => { log('[FAIL] IDB Open error'); resolve(); };
+      });
+    };
+
+    return attemptFetch(0).finally(() => {
+      isConsumingRef.current = false;
+    });
+  }, [refreshData]);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] SW Controller Shifted! Reloading for ${APP_VERSION}...`);
+        log(`[KERNEL] SW Controller Shifted! v1.10.12 takeover.`);
         window.location.reload();
       });
     }
 
-    // BroadcastChannel Bridge for SW Logs
-    let bc: BroadcastChannel | null = null;
-    try {
-      bc = new BroadcastChannel('imagesnap-logs');
-      bc.onmessage = (event) => {
-        if (event.data?.type === 'LOG' && (window as any)._pushDebug) {
-          (window as any)._pushDebug(event.data.msg);
-        }
-      };
-    } catch (e) {}
-
     const handleInit = async () => {
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_C] Verifying Secure Session...');
-
-      abortControllerRef.current?.abort();
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-
+      log('[STAGE] Starting Auth Process...');
       try {
-        const res = await apiClient('/api/auth/session', { signal: controller.signal });
-        clearTimeout(timeoutId);
+        const res = await apiClient('/api/auth/session');
+        log(`[AUTH] Session response: ${res.status}`);
         const sessionData = await res.json();
 
         if (sessionData.authenticated && sessionData.user) {
           const profile = sessionData.user;
+          log(`[AUTH] Authenticated as ${profile.email}`);
           setUser(profile);
           setAccessToken(profile.token);
-
+          
           let storedId = localStorage.getItem('ps_sheet_id');
-
-          // Staff Logic: Always prioritize Master ID if provided
-          if (profile.role === 'staff' && profile.masterSpreadsheetId) {
-            console.log("[INIT] Staff detected, using masterSpreadsheetId:", profile.masterSpreadsheetId);
-            storedId = profile.masterSpreadsheetId;
-            localStorage.setItem('ps_sheet_id', storedId);
-          }
-
-          if (storedId) setSpreadsheetId(storedId);
-          if (profile.role === 'staff') {
-            setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
-          }
           setIsAuthReady(true);
           fetchSubStatus(profile.email);
-          if (storedId) refreshData(storedId);
-          else initializeWorkspace();
+
+          if (storedId) {
+            log(`[DATA] Loading stored ID: ${storedId}`);
+            setSpreadsheetId(storedId);
+            try {
+              await refreshData(storedId);
+              log('[DATA] Initial load complete.');
+            } catch (err: any) {
+              if (err.status === 403 || err.status === 404) {
+                log(`[DATA] Access denied for ${storedId}. Purging local ID.`);
+                localStorage.removeItem('ps_sheet_id');
+                await initializeWorkspace();
+              }
+            }
+          } else {
+            log('[DATA] No local ID found. Searching Drive...');
+            await initializeWorkspace();
+          }
         } else {
-          setAuthError("Session Expired - Verification failed on new infrastructure.");
+          log('[AUTH] No valid session found.');
+          setAuthError("Session Expired - Please login again.");
         }
       } catch (e: any) {
-        clearTimeout(timeoutId);
-        if (e.name === 'AbortError') {
-          if ((window as any)._pushDebug) (window as any)._pushDebug('[AUTH_TIMEOUT_ABORTED] 8s timeout hit — releasing init lock');
-          setAuthError("Authentication Timed Out - Check your connection.");
-        } else {
-          setAuthError("Session Expired - Identity service error.");
-        }
-        // Always returns normally so runInitialization can proceed to COMPLETED
+        log(`[FATAL] Identity service unreachable: ${e}`);
+        setAuthError("Identity service error.");
       }
     };
 
     const runInitialization = async () => {
-      startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] Starting ${APP_VERSION} Ironclad Init`);
-
-      const handleUnload = () => {
-        if (objectUrlRef.current) {
-          URL.revokeObjectURL(objectUrlRef.current);
-          if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] Blob URL Revoked on Unload');
+      log(`[BOOT] System Version: ${APP_VERSION}`);
+      setInitStage('AUTH_PROCESS');
+      
+      // WATCHDOG: Force release if stuck > 10s
+      const watchdog = setTimeout(() => {
+        if (initStage !== 'COMPLETED') {
+          log('[WATCHDOG] Initialization taking too long. Forcing COMPLETED state.');
+          setIsAuthReady(true); // Fallback
+          setInitStage('COMPLETED');
         }
-      };
-      window.addEventListener('beforeunload', handleUnload);
+      }, 10000);
 
-      const initPromise = (async () => {
-        setInitStage('AUTH_PROCESS');
-        await handleInit();
-        // Phase 2 is now handled reactively by the isAuthReady effect
-        setInitStage('DATA_READ');
-      })();
-
-      const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('RACE_TIMEOUT'), 6000));
-      const result = await Promise.race([initPromise, timeoutPromise]);
-
-      if (result === 'RACE_TIMEOUT') {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] RACE WON BY: TIMEOUT (FORCED START)');
-      } else {
-        if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] RACE WON BY: INITIALIZATION (${Date.now() - startTimeRef.current}ms)`);
-      }
-
+      await handleInit();
+      clearTimeout(watchdog);
       setInitStage('COMPLETED');
-
-      return () => window.removeEventListener('beforeunload', handleUnload);
+      log('[STAGE] COMPLETED');
     };
-
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
 
     runInitialization();
 
-    // P-1 FIX: migration_v1_6_1 unregister block removed — was deleting Share Target SW
-    // on every new device. Migration complete; SW v8.6 is the baseline.
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      bc?.close();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [refreshData]);
 
   return {
     initStage,

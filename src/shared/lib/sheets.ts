@@ -69,14 +69,10 @@ export async function sheetsRequest(path: string, options: any = {}, providedTok
   return response.json();
 }
 
-/**
- * Find or create the "ProductSnap Workspace" spreadsheet in the "ProductSnap Images" folder.
- */
 export async function findOrCreateWorkspace() {
   const token = getAccessToken();
   
   // 1. First, try to find ANY existing imagesnap.xlsx spreadsheet on the user's Drive
-  // ignore folder for a moment to prioritize data recovery
   const globalQuery = "name='imagesnap.xlsx' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
   const globalSearchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(globalQuery)}&fields=files(id, parents)`;
   
@@ -85,7 +81,9 @@ export async function findOrCreateWorkspace() {
 
   if (gData.files && gData.files.length > 0) {
     const existingId = gData.files[0].id;
-    console.log("Found existing workspace:", existingId);
+    if (typeof window !== 'undefined' && (window as any)._pushDebug) {
+      (window as any)._pushDebug(`[DRIVE] Found existing workspace: ${existingId}`);
+    }
     return existingId;
   }
 

@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.7 - Ironclad Reliability (v1.10.4)
-const CACHE_NAME = 'imagesnap-v1.10.4';
+// ImageSnap Service Worker v8.8 - Ultra-Reliable Ingestion (v1.10.11)
+const CACHE_NAME = 'imagesnap-v1.10.11';
 
 // Assets to precache
 const PRECACHE_ASSETS = [
@@ -92,24 +92,12 @@ self.addEventListener('fetch', (event) => {
             });
           }
 
-          const logMsg = `[SW] Share Intercepted for ${sid}`;
-          if (typeof (self as any)._pushDebug === 'function') (self as any)._pushDebug(logMsg);
+          // Small delay to ensure IDB is flushed before redirect
+          await new Promise(resolve => setTimeout(resolve, 500));
           
-          // Broadcast to active pages
-          try {
-            const bc = new BroadcastChannel('imagesnap-logs');
-            bc.postMessage({ type: 'LOG', msg: logMsg });
-            bc.close();
-          } catch (e) {}
-
           return Response.redirect(`/dashboard?share_id=${sid}`, 303);
         } catch (err) {
           console.error('SW Interception Failed:', err);
-          try {
-            const bc = new BroadcastChannel('imagesnap-logs');
-            bc.postMessage({ type: 'LOG', msg: `[SW] FAILED: ${err.message}` });
-            bc.close();
-          } catch (e) {}
           return Response.redirect('/dashboard?error=share_failed', 303);
         }
       })()

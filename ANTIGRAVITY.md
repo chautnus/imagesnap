@@ -25,9 +25,9 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-16 00:02
-**Last session by**: Antigravity (v1.10.8)
-**Current sprint focus**: Core Data Visibility & Staff Proxy Read.
+**Last updated**: 2026-05-16 00:25
+**Last session by**: Antigravity (v1.10.12)
+**Current sprint focus**: Ultra-Diagnostics & Version Migration.
 
 ---
 
@@ -58,10 +58,11 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.8)
-- **Hệ thống**: Triển khai Proxy Read cho Staff (v1.10.8).
-- **Dữ liệu**: Fix bug lọc Category rỗng, khôi phục hiển thị dữ liệu cho mọi user.
-- **Versioning**: v1.10.8.
+## TỔNG KẾT TRẠNG THÁI (v1.10.12)
+- **Hệ thống**: Triển khai High-Priority Diagnostic Layer (đè lên loading screen).
+- **Dữ liệu**: Cơ chế Auto-Purge tự động dọn dẹp môi trường khi có bản cập nhật mới.
+- **Tính năng**: Sửa lỗi treo logo khi chia sẻ ảnh bằng cơ chế Watchdog 10s.
+- **Versioning**: v1.10.12.
 
 ### Dừng ở đâu?
 - Hệ thống đang ở phiên bản **v1.10.8**.

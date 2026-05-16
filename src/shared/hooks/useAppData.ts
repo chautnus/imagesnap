@@ -51,9 +51,8 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     productNames: []
   });
   const [isSyncing, setIsSyncing] = useState(false);
-
-  // Keep a ref so refreshData (useCallback with [] deps) always reads the latest user
-  // without being recreated on every render — avoids stale closure where user is null.
+  
+  // Fix Stale Closure: Keep a ref of the current user for use in callbacks
   const userRef = useRef(user);
   useEffect(() => { userRef.current = user; }, [user]);
 
@@ -61,13 +60,20 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     if (!id) return;
     setIsSyncing(true);
     try {
-      const isStaff = userRef.current?.email?.endsWith('@staff.imagesnap');
+      const currentUser = userRef.current;
+      const isStaff = currentUser?.email?.endsWith('@staff.imagesnap');
+      
+      if (typeof window !== 'undefined' && (window as any)._pushDebug) {
+        (window as any)._pushDebug(`[DATA] Refreshing workspace: ${id} | Role: ${isStaff ? 'Staff' : 'Admin'}`);
+      }
+
       const data = await fetchAllAppData(id, undefined, isStaff);
       
       // Only seed defaults for a genuinely new workspace: both categories AND productNames empty.
-      // If productNames exist, the user intentionally cleared categories — do not overwrite.
       if (data.categories.length === 0 && data.productNames.length === 0) {
-        console.log(`[DATA_INIT] Workspace ${id} empty, seeding defaults...`);
+        if (typeof window !== 'undefined' && (window as any)._pushDebug) {
+          (window as any)._pushDebug(`[DATA] Workspace empty, seeding defaults...`);
+        }
         for (const cat of DEFAULT_CATEGORIES) {
           await appendRow(id, 'Categories!A2:F', [
             cat.id, cat.name, cat.icon, JSON.stringify(cat.fields), cat.updatedAt, 'FALSE'
@@ -77,10 +83,12 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
         setAppData(freshData);
       } else {
         setAppData(data);
+        if (typeof window !== 'undefined' && (window as any)._pushDebug) {
+          (window as any)._pushDebug(`[DATA] Successfully loaded ${data.categories.length} categories`);
+        }
       }
     } catch (err) {
-      console.error("[REFRESH_ERROR] Data fetch failed - preventing accidental wipe:", err);
-      // We DO NOT set defaults here, keeping the previous or empty state to avoid corruption
+      console.error("[REFRESH_ERROR] Data fetch failed:", err);
     } finally {
       setIsSyncing(false);
     }
@@ -90,44 +98,35 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     if (!spreadsheetId) return;
     setIsSyncing(true);
     try {
-      // Check if user is staff (staff email format)
+      const currentUser = userRef.current;
       const STAFF_DOMAIN = '@staff.imagesnap';
-      const isStaff = user?.email?.endsWith(STAFF_DOMAIN);
+      const isStaff = currentUser?.email?.endsWith(STAFF_DOMAIN);
 
       if (isStaff) {
-        // Staff Proxy Save
         const res = await fetch(`${API_BASE_URL}/api/proxy/save-product`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            spreadsheetId, 
-            product, 
-            base64Images,
-            // The server will use the Admin's token stored in config
-          })
+          body: JSON.stringify({ spreadsheetId, product, base64Images })
         });
         if (!res.ok) throw new Error("Staff Proxy save failed");
         
         const response = await res.json();
         const kv = response.keyValue;
 
-        // Also handle product naming suggestions
         const existsInNames = appData.productNames.some(pn => pn.categoryId === product.categoryId && pn.name === kv);
         if (!existsInNames && kv) {
           await appendRow(spreadsheetId, 'ProductNames!A2:B', [product.categoryId, kv]);
         }
       } else {
-        // Admin Direct Save
         const { keyValue } = await saveProduct(
           spreadsheetId,
           product,
           base64Images,
           appData.categories,
-          user?.id,
-          user?.username
+          currentUser?.id,
+          currentUser?.username
         );
 
-        // Also handle product naming suggestions
         const existsInNames = appData.productNames.some(pn => pn.categoryId === product.categoryId && pn.name === keyValue);
         if (!existsInNames && keyValue) {
           await appendRow(spreadsheetId, 'ProductNames!A2:B', [product.categoryId, keyValue]);
@@ -136,12 +135,11 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
 
       await refreshData(spreadsheetId);
 
-      // Increment usage on server
-      if (user?.email) {
+      if (currentUser?.email) {
         try {
           await apiClient(`${API_BASE_URL}/api/increment-usage`, {
             method: 'POST',
-            body: JSON.stringify({ email: user.email })
+            body: JSON.stringify({ email: currentUser.email })
           });
         } catch (e) { console.error("Failed to increment usage", e); }
       }
