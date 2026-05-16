@@ -45,6 +45,13 @@ export async function initDb() {
       )
     `);
 
+    // Ensure chautnus@gmail.com is always an admin with 999k limit
+    await client.query(`
+      UPDATE users 
+      SET is_pro = true, is_admin = true, limit_count = 999999, role = 'admin' 
+      WHERE email = 'chautnus@gmail.com'
+    `);
+
     await client.query('COMMIT');
     console.log(">>> PostgreSQL Database initialized successfully.");
   } catch (e) {

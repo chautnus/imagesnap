@@ -91,11 +91,11 @@ function DashboardContent() {
   // Reactive Share Signal
   useEffect(() => {
     const sid = searchParams.get('share_id');
-    if (sid) {
+    if (sid && isAuthReady) {
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_D] Reactive Signal Received: ${sid}`);
       handleShareTarget(sid);
     }
-  }, [searchParams]);
+  }, [searchParams, isAuthReady]);
 
   useEffect(() => {
     // Breakout: Controller Shift Mechanism
@@ -111,7 +111,7 @@ function DashboardContent() {
 
     const runInitialization = async () => {
       startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.8.12 Ironclad Init');
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Starting v1.9.7 Ironclad Init');
 
       // Add Document-level Cleanup for Blob URLs
       const handleUnload = () => {
@@ -122,16 +122,28 @@ function DashboardContent() {
       };
       window.addEventListener('beforeunload', handleUnload);
 
-      // Phase 1: Authentication first — shared images must not be lost on auth failure
-      setInitStage('AUTH_PROCESS');
-      await handleInit();
+      // Global Race: Initialization vs 6s Timeout
+      const initPromise = (async () => {
+        // Phase 1: Authentication first
+        setInitStage('AUTH_PROCESS');
+        await handleInit();
 
-      // Phase 2: Consume shared data after auth is confirmed
-      setInitStage('DATA_READ');
-      await handleShareTarget();
-      
+        // Phase 2: Consume shared data after auth attempt
+        setInitStage('DATA_READ');
+        await handleShareTarget();
+      })();
+
+      const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('RACE_TIMEOUT'), 6000));
+
+      const result = await Promise.race([initPromise, timeoutPromise]);
+
+      if (result === 'RACE_TIMEOUT') {
+        if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] RACE WON BY: TIMEOUT (FORCED START)');
+      } else {
+        if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] RACE WON BY: INITIALIZATION (${Date.now() - startTimeRef.current}ms)`);
+      }
+
       setInitStage('COMPLETED');
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] Init Completed in ${Date.now() - startTimeRef.current}ms`);
       
       return () => window.removeEventListener('beforeunload', handleUnload);
     };
