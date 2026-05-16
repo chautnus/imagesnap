@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 
 import { Image as ImageIcon, Chrome, Zap, X, Menu, ChevronDown } from 'lucide-react';

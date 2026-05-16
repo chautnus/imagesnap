@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { ChevronRight, Folder, Package, Trash2, Filter, Search, Calendar, User, Tag, X, ExternalLink } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';

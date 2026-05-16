@@ -18,9 +18,7 @@ export async function apiClient(url: string, options: FetchOptions = {}): Promis
       
       try {
         await reauthenticate();
-        
-        // Optionally retry the original request here
-        // For now, returning the response and letting the caller handle the UI state
+        return fetch(url, options);
       } catch (e) {
         console.error('[API_CLIENT] Re-authentication failed:', e);
         // If re-auth completely fails, redirect to home

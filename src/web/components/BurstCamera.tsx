@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, RefreshCw, X, Grid3X3, Square, Zap } from 'lucide-react';
 
