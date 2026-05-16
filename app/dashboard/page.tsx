@@ -162,30 +162,21 @@ function DashboardContent() {
 
         if (sessionData.authenticated && sessionData.user) {
           const profile = sessionData.user;
+          // Set identity + spreadsheetId synchronously, then unlock UI
           setUser(profile);
           setAccessToken(profile.token);
-          
-          // Await Sub Status before readiness
-          await fetchSubStatus(profile.email);
-
+          const storedId = localStorage.getItem('ps_sheet_id');
+          if (storedId) setSpreadsheetId(storedId);
           if (profile.role === 'staff') {
-            const storedId = localStorage.getItem('ps_sheet_id');
-            if (storedId) {
-              setSpreadsheetId(storedId);
-              setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
-              await refreshData(storedId);
-            }
-          } else {
-            const storedId = localStorage.getItem('ps_sheet_id');
-            if (storedId) {
-              setSpreadsheetId(storedId);
-              await refreshData(storedId);
-            } else {
-              await initializeWorkspace();
-            }
+            setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
           }
-          
-          setIsAuthReady(true); // Signal readiness only after everything is loaded
+
+          setIsAuthReady(true); // Unlock UI — auth done, spreadsheetId set
+
+          // Fire-and-forget: data loads reactively, does not block init pipeline
+          fetchSubStatus(profile.email);
+          if (storedId) refreshData(storedId);
+          else initializeWorkspace();
         } else {
           setAuthError("Session Expired - Verification failed on new infrastructure.");
         }
