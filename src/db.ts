@@ -22,6 +22,19 @@ export async function getSubscription(email: string) {
   }
 
   const user = res.rows[0];
+  const isAdmin = ADMIN_EMAILS.includes(normalizedEmail);
+  
+  // Auto-upgrade existing user if they are in ADMIN_EMAILS but don't have privileges
+  if (isAdmin && (!user.is_admin || user.limit_count < 999999)) {
+    const updated = await pool.query(
+      `UPDATE users 
+       SET is_pro = true, is_admin = true, limit_count = 999999, role = 'admin' 
+       WHERE email = $1 
+       RETURNING *`, 
+      [normalizedEmail]
+    );
+    return mapUser(updated.rows[0]);
+  }
   
   // Backfill appId if missing
   if (!user.app_id) {

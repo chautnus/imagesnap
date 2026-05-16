@@ -124,13 +124,12 @@ function DashboardContent() {
 
       // Global Race: Initialization vs 6s Timeout
       const initPromise = (async () => {
-        // Phase 1: Authentication first
+        // Phase 1: Authentication and Data Preparation
         setInitStage('AUTH_PROCESS');
         await handleInit();
-
-        // Phase 2: Consume shared data after auth attempt
+        
+        // Phase 2 is now handled reactively by the isAuthReady effect
         setInitStage('DATA_READ');
-        await handleShareTarget();
       })();
 
       const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('RACE_TIMEOUT'), 6000));
@@ -165,25 +164,28 @@ function DashboardContent() {
           const profile = sessionData.user;
           setUser(profile);
           setAccessToken(profile.token);
-          setIsAuthReady(true);
-          fetchSubStatus(profile.email);
+          
+          // Await Sub Status before readiness
+          await fetchSubStatus(profile.email);
 
           if (profile.role === 'staff') {
             const storedId = localStorage.getItem('ps_sheet_id');
             if (storedId) {
               setSpreadsheetId(storedId);
               setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
-              refreshData(storedId);
+              await refreshData(storedId);
             }
           } else {
             const storedId = localStorage.getItem('ps_sheet_id');
             if (storedId) {
               setSpreadsheetId(storedId);
-              refreshData(storedId);
+              await refreshData(storedId);
             } else {
-              initializeWorkspace();
+              await initializeWorkspace();
             }
           }
+          
+          setIsAuthReady(true); // Signal readiness only after everything is loaded
         } else {
           setAuthError("Session Expired - Verification failed on new infrastructure.");
         }
@@ -359,7 +361,15 @@ function DashboardContent() {
       const res = await apiClient(`/api/user-status?email=${encodeURIComponent(email)}`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      setSubStatus({ ...data, isAdmin: data.isAdmin || isAdmin });
+      const finalStatus = { ...data, isAdmin: data.isAdmin || isAdmin };
+      
+      // Force high limits for Admin if server returned 30
+      if (finalStatus.isAdmin) {
+        finalStatus.isPro = true;
+        finalStatus.limit = 999999;
+      }
+      
+      setSubStatus(finalStatus);
       setDataStatus('success');
     } catch (e) { 
       setSubStatus(prev => ({ ...prev, isAdmin }));
