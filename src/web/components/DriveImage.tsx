@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { getAccessToken } from '@shared/lib/google-auth';
 import { Image as ImageIcon, Loader2 } from 'lucide-react';
