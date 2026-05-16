@@ -36,4 +36,13 @@ ImageSnap is a high-performance product cataloging platform for e-commerce marke
 - **Build**: `npm run build` generates both Web and Extension production bundles.
 
 ---
-*Last Updated: 2026-04-30*
+## Domain Indexes
+
+| Domain | Path | Index |
+|--------|------|-------|
+| Project decisions | `docs/memory/project/` | [INDEX.md](memory/project/INDEX.md) |
+| Changelog | `docs/changelog/` | [INDEX.md](changelog/INDEX.md) |
+| PRD | `docs/prd/` | (browse directly) |
+
+---
+*Last Updated: 2026-05-16 — v1.10.7*

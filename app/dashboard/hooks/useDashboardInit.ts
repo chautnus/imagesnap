@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { setAccessToken } from '@shared/lib/google-auth';
 import { findOrCreateWorkspace } from '@shared/lib/sheets';
-import { SubscriptionStatus } from '@shared/lib/types';
 import { apiClient } from '@shared/lib/api-client';
 import { APP_VERSION } from '@shared/lib/version';
+import { useShareTarget } from './useShareTarget';
+import { useSubStatus } from './useSubStatus';
 
 export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
   const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
@@ -13,50 +14,14 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
-  const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
-  const [dataStatus, setDataStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
-  const [shareTargetSid, setShareTargetSid] = useState<string | null>(null);
 
-  const isConsumingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const startTimeRef = useRef<number>(Date.now());
 
-  const fetchSubStatus = async (email: string) => {
-    const isAdmin = email.toLowerCase() === 'chautnus@gmail.com' || email.toLowerCase() === 'admin@imagesnap.cloud';
-    setDataStatus('loading');
-    try {
-      const res = await apiClient(`/api/user-status?email=${encodeURIComponent(email)}`);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const data = await res.json();
-      const finalStatus = { ...data, isAdmin: data.isAdmin || isAdmin };
-      
-      // Reactive update for staff workspace
-      if (finalStatus.role === 'staff' && finalStatus.masterSpreadsheetId) {
-        const currentId = localStorage.getItem('ps_sheet_id');
-        if (currentId !== finalStatus.masterSpreadsheetId) {
-          console.log("[SYNC] Master Spreadsheet ID changed, re-syncing...");
-          localStorage.setItem('ps_sheet_id', finalStatus.masterSpreadsheetId);
-          // Note: We don't call setSpreadsheetId here directly to avoid render loops, 
-          // but we can trigger a refresh if needed or just let the next boot handle it.
-          // Actually, let's update it for immediate effect.
-          window.location.reload(); 
-        }
-      }
-
-      if (finalStatus.isAdmin) {
-        finalStatus.isPro = true;
-        finalStatus.limit = 999999;
-      }
-      setSubStatus(finalStatus);
-      setDataStatus('success');
-    } catch (e) {
-      setSubStatus(prev => ({ ...prev, isAdmin }));
-      setDataStatus('error');
-      console.error("fetchSubStatus failed:", e);
-    }
-  };
+  const { shareTargetSid, handleShareTarget } = useShareTarget();
+  const { subStatus, setSubStatus, dataStatus, fetchSubStatus } = useSubStatus();
 
   const initializeWorkspace = async () => {
     try {
@@ -68,96 +33,6 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     } catch (err) {
       console.error("Workspace init error:", err);
     }
-  };
-
-  const handleShareTarget = async (providedSid?: string) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sid = providedSid || urlParams.get('share_id');
-    const lastProcessedId = sessionStorage.getItem('imagesnap_last_share_id');
-
-    if ((window as any)._pushDebug) (window as any)._pushDebug(`[IDEMPOTENCY] Check: sid=${sid}, last=${lastProcessedId}, isLocked=${isConsumingRef.current}`);
-
-    if (isConsumingRef.current || (sid && sid === lastProcessedId)) {
-      if ((window as any)._pushDebug && sid && sid === lastProcessedId) (window as any)._pushDebug('[IDEMPOTENCY] Share already processed');
-      return;
-    }
-
-    isConsumingRef.current = true;
-
-    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Querying IDB v2 sid Storage...');
-
-    const attemptFetch = (attempt: number) => {
-      return new Promise<void>((resolve) => {
-        const DB_NAME = 'imagesnap-pwa-db';
-        const DB_VERSION = 2;
-        const STORE_NAME = 'shares';
-
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onsuccess = (event: any) => {
-          const db = event.target.result;
-          
-          // SCRUB URL ONLY ON SUCCESSFUL IDB ACCESS (Fix Bug 3 & 4)
-          if (sid) {
-            sessionStorage.setItem('imagesnap_last_share_id', sid);
-            window.history.replaceState(null, '', window.location.pathname);
-            if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Success: IDB Open. URL scrubbed for ${sid}`);
-          }
-
-          try {
-            const transaction = db.transaction(STORE_NAME, 'readonly');
-            const store = transaction.objectStore(STORE_NAME);
-
-            const handleData = (data: any, key: string) => {
-              if ((window as any)._pushDebug) (window as any)._pushDebug(`[STAGE_B] Data found for ${key}! Signaling CaptureTab...`);
-              setShareTargetSid(key);
-            };
-
-            if (sid) {
-              const getReq = store.get(sid);
-              getReq.onsuccess = () => {
-                if (getReq.result) {
-                  handleData(getReq.result, sid);
-                  resolve();
-                } else if (attempt < 3) {
-                  if ((window as any)._pushDebug) (window as any)._pushDebug(`[RETRY] SID ${sid} not found. Attempt ${attempt+1}/3...`);
-                  db.close();
-                  setTimeout(() => attemptFetch(attempt + 1).then(resolve), 100 * (attempt + 1));
-                } else {
-                  if ((window as any)._pushDebug) (window as any)._pushDebug(`[RETRY] SID ${sid} giving up after 3 attempts.`);
-                  resolve();
-                }
-              };
-            } else {
-              // Legacy/Fallback cursor logic
-              const cursorReq = store.openCursor(null, 'prev');
-              cursorReq.onsuccess = (e: any) => {
-                const cursor = e.target.result;
-                if (cursor) {
-                  if (cursor.key !== lastProcessedId && cursor.key !== 'latest') {
-                    handleData(cursor.value, cursor.key as string);
-                    resolve();
-                  } else {
-                    cursor.continue();
-                  }
-                } else { resolve(); }
-              };
-            }
-
-            transaction.oncomplete = () => db.close();
-          } catch (e) {
-            db.close();
-            resolve();
-          }
-        };
-
-        request.onerror = () => resolve();
-      });
-    };
-
-    return attemptFetch(0).finally(() => {
-      isConsumingRef.current = false;
-    });
   };
 
   useEffect(() => {
@@ -196,9 +71,9 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
           const profile = sessionData.user;
           setUser(profile);
           setAccessToken(profile.token);
-          
+
           let storedId = localStorage.getItem('ps_sheet_id');
-          
+
           // Staff Logic: Always prioritize Master ID if provided
           if (profile.role === 'staff' && profile.masterSpreadsheetId) {
             console.log("[INIT] Staff detected, using masterSpreadsheetId:", profile.masterSpreadsheetId);
