@@ -4,19 +4,20 @@ import { cookies } from "next/headers";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, token, isStaff, role } = body;
+    const { email, token, isStaff, role, masterSpreadsheetId } = body;
 
     if (!email) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
     }
 
     const cookieStore = await cookies();
-    
+
     // Create session payload
     const sessionPayload = JSON.stringify({
       email,
       role: role || (isStaff ? 'staff' : 'user'),
       token,
+      masterSpreadsheetId: masterSpreadsheetId || null,
       expires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
     });
 

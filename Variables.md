@@ -9,7 +9,7 @@ This document provides a full audit of variables used across the platform, divid
 ### 1. Dashboard (page.tsx)
 - `shareTargetNonce`: (State) Signals CaptureTab to pull shared data.
 - `initStage`: (State) Tracks boot sequence (IDLE, DATA_READ, etc.).
-- `user`, `isAuthReady`, `spreadsheetId`, `subStatus`: (State) Core auth/quota states.
+- `user`, `isAuthReady`, `spreadsheetId`, `subStatus`, `masterSpreadsheetId`: (State) Core auth/quota states.
 - `logs`, `isVisible`: (State) Debug overlay controls.
 - `dataStatus`, `isOffline`: (State) Network/Sync status.
 

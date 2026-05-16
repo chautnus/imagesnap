@@ -19,7 +19,10 @@ export async function sheetsRequest(path: string, options: any = {}, providedTok
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error?.message || 'Sheets API error');
+    const msg = error.error?.message || 'Sheets API error';
+    const err: any = new Error(msg);
+    err.status = response.status;
+    throw err;
   }
 
   return response.json();
@@ -95,9 +98,13 @@ export async function getSheetRows(spreadsheetId: string, range: string, provide
   try {
     const data = await sheetsRequest(`${spreadsheetId}/values/${range}`, {}, providedToken);
     return data.values || [];
-  } catch (err) {
-    // If sheet doesn't exist, return empty
-    return [];
+  } catch (err: any) {
+    // Only return empty if the resource itself is missing (404) or range is invalid (400)
+    // Otherwise re-throw to signal a transient/system error.
+    if (err.status === 404 || err.status === 400) {
+      return [];
+    }
+    throw err;
   }
 }
 

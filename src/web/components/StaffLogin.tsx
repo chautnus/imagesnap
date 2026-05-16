@@ -37,10 +37,25 @@ export const StaffLogin: React.FC<StaffLoginProps> = ({ onLogin, onBack, t }) =>
 
       const data = await res.json();
       if (res.ok) {
-        onLogin({ 
-          username, 
-          masterSpreadsheetId: data.masterSpreadsheetId, 
-          user: data.user 
+        // Persist workspace ID so useDashboardInit finds it without Drive search on fresh devices.
+        if (data.masterSpreadsheetId) {
+          localStorage.setItem('ps_sheet_id', data.masterSpreadsheetId);
+        }
+        // Establish the HTTP-only session cookie so page refreshes stay authenticated.
+        await fetch(`${API_BASE_URL}/api/auth/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: data.user?.email || `${username}@staff.imagesnap`,
+            role: 'staff',
+            token: data.user?.token || '',
+            masterSpreadsheetId: data.masterSpreadsheetId,
+          })
+        });
+        onLogin({
+          username,
+          masterSpreadsheetId: data.masterSpreadsheetId,
+          user: data.user
         });
       } else {
         setError(data.error || 'Login failed');

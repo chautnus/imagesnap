@@ -53,12 +53,15 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const refreshData = useCallback(async (id: string) => {
+    if (!id) return;
     setIsSyncing(true);
     try {
       const data = await fetchAllAppData(id);
       
-      if (data.categories.length === 0) {
-        // Initialize with defaults if empty
+      // Only seed defaults for a genuinely new workspace: both categories AND productNames empty.
+      // If productNames exist, the user intentionally cleared categories — do not overwrite.
+      if (data.categories.length === 0 && data.productNames.length === 0) {
+        console.log(`[DATA_INIT] Workspace ${id} empty, seeding defaults...`);
         for (const cat of DEFAULT_CATEGORIES) {
           await appendRow(id, 'Categories!A2:F', [
             cat.id, cat.name, cat.icon, JSON.stringify(cat.fields), cat.updatedAt, 'FALSE'
@@ -70,7 +73,8 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
         setAppData(data);
       }
     } catch (err) {
-      console.error("Failed to refresh data:", err);
+      console.error("[REFRESH_ERROR] Data fetch failed - preventing accidental wipe:", err);
+      // We DO NOT set defaults here, keeping the previous or empty state to avoid corruption
     } finally {
       setIsSyncing(false);
     }

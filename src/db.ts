@@ -18,7 +18,7 @@ export async function getSubscription(email: string) {
        RETURNING *`,
       [normalizedEmail, isAdmin, isAdmin, isAdmin ? 999999 : 30, 0, isAdmin ? "admin" : "user", appId]
     );
-    return mapUser(newUser.rows[0]);
+    return await mapUser(newUser.rows[0]);
   }
 
   const user = res.rows[0];
@@ -33,21 +33,22 @@ export async function getSubscription(email: string) {
        RETURNING *`, 
       [normalizedEmail]
     );
-    return mapUser(updated.rows[0]);
+    return await mapUser(updated.rows[0]);
   }
   
   // Backfill appId if missing
   if (!user.app_id) {
     const appId = crypto.randomUUID();
     const updated = await pool.query('UPDATE users SET app_id = $1 WHERE email = $2 RETURNING *', [appId, normalizedEmail]);
-    return mapUser(updated.rows[0]);
+    return await mapUser(updated.rows[0]);
   }
 
-  return mapUser(user);
+  return await mapUser(user);
 }
 
 // Helper to map DB fields to the structure expected by the frontend
-function mapUser(dbUser: any) {
+async function mapUser(dbUser: any) {
+  const masterSpreadsheetId = await getConfig('masterSpreadsheetId');
   return {
     email: dbUser.email,
     isPro: dbUser.is_pro,
@@ -59,7 +60,8 @@ function mapUser(dbUser: any) {
     registeredAt: dbUser.registered_at,
     accessibleCategories: dbUser.accessible_categories,
     username: dbUser.username,
-    password: dbUser.password
+    password: dbUser.password,
+    masterSpreadsheetId: masterSpreadsheetId
   };
 }
 
@@ -67,9 +69,9 @@ function mapUser(dbUser: any) {
 export async function getAllUsers() {
   const res = await pool.query('SELECT * FROM users ORDER BY registered_at DESC');
   const users: Record<string, any> = {};
-  res.rows.forEach(row => {
-    users[row.email] = mapUser(row);
-  });
+  for (const row of res.rows) {
+    users[row.email] = await mapUser(row);
+  }
   return users;
 }
 
@@ -96,7 +98,7 @@ export async function updateUser(email: string, updates: any) {
   values.push(email.toLowerCase());
   const query = `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE email = $${i} RETURNING *`;
   const res = await pool.query(query, values);
-  return mapUser(res.rows[0]);
+  return await mapUser(res.rows[0]);
 }
 
 export async function deleteUser(email: string) {

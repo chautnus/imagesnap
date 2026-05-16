@@ -25,9 +25,9 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-15 13:36
-**Last session by**: Antigravity (v1.10.1)
-**Current sprint focus**: Mobile Share Target Stability & Single-Signal Architecture.
+**Last updated**: 2026-05-15 23:55
+**Last session by**: Antigravity (v1.10.7)
+**Current sprint focus**: Data Persistence Stability & Staff Session Hardening.
 
 ---
 
@@ -58,14 +58,14 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.1)
+## TỔNG KẾT TRẠNG THÁI (v1.10.7)
 - **Hệ thống**: Đã xử lý lỗi treo icon bằng Global Race Timer 6s.
-- **Dữ liệu**: Chuyển sang kiến trúc Reactive Split (Auth trước, Data sau).
+- **Dữ liệu**: Fix lỗi mất Category do Init sai (v1.10.7). Triển khai Master Spreadsheet Sync cho Staff.
 - **Versioning**: Thiết lập Single Source of Truth cho toàn bộ dự án.
 
 ### Dừng ở đâu?
-- Hệ thống đang ở phiên bản **v1.8.11**.
-- Đã fix lỗi build kẹt tại `/dashboard`.
+- Hệ thống đang ở phiên bản **v1.10.7**.
+- Đã fix lỗi Staff login không có session.
 
 ---
 

@@ -31,6 +31,20 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       const finalStatus = { ...data, isAdmin: data.isAdmin || isAdmin };
+      
+      // Reactive update for staff workspace
+      if (finalStatus.role === 'staff' && finalStatus.masterSpreadsheetId) {
+        const currentId = localStorage.getItem('ps_sheet_id');
+        if (currentId !== finalStatus.masterSpreadsheetId) {
+          console.log("[SYNC] Master Spreadsheet ID changed, re-syncing...");
+          localStorage.setItem('ps_sheet_id', finalStatus.masterSpreadsheetId);
+          // Note: We don't call setSpreadsheetId here directly to avoid render loops, 
+          // but we can trigger a refresh if needed or just let the next boot handle it.
+          // Actually, let's update it for immediate effect.
+          window.location.reload(); 
+        }
+      }
+
       if (finalStatus.isAdmin) {
         finalStatus.isPro = true;
         finalStatus.limit = 999999;
@@ -182,7 +196,16 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
           const profile = sessionData.user;
           setUser(profile);
           setAccessToken(profile.token);
-          const storedId = localStorage.getItem('ps_sheet_id');
+          
+          let storedId = localStorage.getItem('ps_sheet_id');
+          
+          // Staff Logic: Always prioritize Master ID if provided
+          if (profile.role === 'staff' && profile.masterSpreadsheetId) {
+            console.log("[INIT] Staff detected, using masterSpreadsheetId:", profile.masterSpreadsheetId);
+            storedId = profile.masterSpreadsheetId;
+            localStorage.setItem('ps_sheet_id', storedId);
+          }
+
           if (storedId) setSpreadsheetId(storedId);
           if (profile.role === 'staff') {
             setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
