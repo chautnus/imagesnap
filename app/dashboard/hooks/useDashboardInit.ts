@@ -155,14 +155,14 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     }
 
     // BroadcastChannel Bridge for SW Logs
+    let bc: BroadcastChannel | null = null;
     try {
-      const bc = new BroadcastChannel('imagesnap-logs');
+      bc = new BroadcastChannel('imagesnap-logs');
       bc.onmessage = (event) => {
         if (event.data?.type === 'LOG' && (window as any)._pushDebug) {
           (window as any)._pushDebug(event.data.msg);
         }
       };
-      return () => bc.close();
     } catch (e) {}
 
     const handleInit = async () => {
@@ -251,6 +251,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     // on every new device. Migration complete; SW v8.6 is the baseline.
 
     return () => {
+      bc?.close();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
