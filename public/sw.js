@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.7 - Ironclad Reliability (v1.10.3)
-const CACHE_NAME = 'imagesnap-v1.10.3';
+// ImageSnap Service Worker v8.7 - Ironclad Reliability (v1.10.4)
+const CACHE_NAME = 'imagesnap-v1.10.4';
 
 // Assets to precache
 const PRECACHE_ASSETS = [

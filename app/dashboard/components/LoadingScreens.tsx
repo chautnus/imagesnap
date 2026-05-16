@@ -113,6 +113,12 @@ export function DashboardGuardScreen({ authError, initStage, isAuthReady }: Dash
             >
               Hard Reset & Update
             </button>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('SYS_DEBUG_TOGGLE'))}
+              className="text-[9px] text-accent/50 font-black uppercase tracking-widest border border-accent/20 px-4 py-2 rounded-lg hover:bg-accent/5 transition-all mt-2"
+            >
+              Enable System Logs
+            </button>
           </div>
         </div>
       </div>
