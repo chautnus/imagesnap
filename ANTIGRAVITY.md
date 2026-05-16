@@ -25,9 +25,9 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-16 00:25
-**Last session by**: Antigravity (v1.10.12)
-**Current sprint focus**: Ultra-Diagnostics & Version Migration.
+**Last updated**: 2026-05-16 00:53
+**Last session by**: Antigravity (v1.10.15)
+**Current sprint focus**: Loop Prevention & Session Integrity.
 
 ---
 
@@ -58,11 +58,11 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.12)
-- **Hệ thống**: Triển khai High-Priority Diagnostic Layer (đè lên loading screen).
-- **Dữ liệu**: Cơ chế Auto-Purge tự động dọn dẹp môi trường khi có bản cập nhật mới.
-- **Tính năng**: Sửa lỗi treo logo khi chia sẻ ảnh bằng cơ chế Watchdog 10s.
-- **Versioning**: v1.10.12.
+## TỔNG KẾT TRẠNG THÁI (v1.10.15)
+- **Hệ thống**: Fix lỗi vòng lặp vô tận (infinite loop) khi chuyển phiên bản.
+- **Dữ liệu**: Gia cố tính năng Auto-Purge, giữ lại Session/Staff flags khi dọn rác.
+- **Tính năng**: Đồng bộ Watchdog về một mối tại useDashboardInit.
+- **Versioning**: v1.10.15.
 
 ### Dừng ở đâu?
 - Hệ thống đang ở phiên bản **v1.10.8**.

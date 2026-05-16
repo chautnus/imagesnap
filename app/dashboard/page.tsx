@@ -106,15 +106,7 @@ function DashboardContent() {
     handleDeleteCategory
   } = useAppData(spreadsheetId, user);
 
-  // AUTH_PROCESS watchdog: soft reload if stuck > 10s
-  useEffect(() => {
-    if (initStage !== 'AUTH_PROCESS') return;
-    const timer = setTimeout(() => {
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[WATCHDOG] AUTH_PROCESS stuck > 10s — soft reload');
-      window.location.reload();
-    }, 10000);
-    return () => clearTimeout(timer);
-  }, [initStage]);
+
 
   // Reactive Share Signal
   useEffect(() => {

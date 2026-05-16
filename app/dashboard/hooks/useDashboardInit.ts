@@ -20,6 +20,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
 
   const isConsumingRef = useRef(false);
   const startTimeRef = useRef<number>(Date.now());
+  const versionPurgedRef = useRef(false);
 
   const log = (msg: string) => {
     if (typeof window !== 'undefined' && (window as any)._pushDebug) {
@@ -27,25 +28,34 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     }
   };
 
-  // VERSION MIGRATION / AUTO-PURGE
+  // VERSION MIGRATION / AUTO-PURGE (Fixed to avoid loops)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || versionPurgedRef.current) return;
+    
     const lastVersion = localStorage.getItem('imagesnap_app_version');
     if (lastVersion && lastVersion !== APP_VERSION) {
+      versionPurgedRef.current = true;
       log(`[BOOT] Version Mismatch: ${lastVersion} -> ${APP_VERSION}. Purging old cache...`);
-      // Keep only critical auth state if possible, otherwise full clear for safety
+      
       const session = localStorage.getItem('imagesnap_session');
+      const isStaff = localStorage.getItem('ps_is_staff');
+      const staffUser = localStorage.getItem('ps_staff_user');
+      
       localStorage.clear();
+      
+      // Restore critical session info
       if (session) localStorage.setItem('imagesnap_session', session);
+      if (isStaff) localStorage.setItem('ps_is_staff', isStaff);
+      if (staffUser) localStorage.setItem('ps_staff_user', staffUser);
+      
       localStorage.setItem('imagesnap_app_version', APP_VERSION);
       
-      // Clear caches
       if ('caches' in window) {
         caches.keys().then(names => Promise.all(names.map(n => caches.delete(n))));
       }
       
       log(`[BOOT] Purge complete. Refreshing environment...`);
-      setTimeout(() => window.location.reload(), 500);
+      setTimeout(() => window.location.reload(), 300);
     } else {
       localStorage.setItem('imagesnap_app_version', APP_VERSION);
     }
@@ -65,7 +75,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
         finalStatus.isPro = true;
         finalStatus.limit = 999999;
       }
-      log(`[AUTH] Status fetched: role=${finalStatus.role}, isPro=${finalStatus.isPro}`);
+      log(`[AUTH] Status fetched: role=${finalStatus.role}`);
       setSubStatus(finalStatus);
       setDataStatus('success');
     } catch (e) {
@@ -73,7 +83,6 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       setDataStatus('error');
     }
   };
-
 
   const initializeWorkspace = async () => {
     try {
@@ -120,7 +129,6 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
                   setShareTargetSid(sid);
                   sessionStorage.setItem('imagesnap_last_share_id', sid);
                   
-                  // Clean URL but preserve important flags like debug
                   const nextParams = new URLSearchParams(window.location.search);
                   nextParams.delete('share_id');
                   nextParams.delete('error');
@@ -153,17 +161,24 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        log(`[KERNEL] SW Controller Shifted! v1.10.12 takeover.`);
-        window.location.reload();
-      });
+      const handleControllerChange = () => {
+        // Only reload if we haven't reloaded in this window session
+        if (!sessionStorage.getItem('imagesnap_sw_reloaded')) {
+          sessionStorage.setItem('imagesnap_sw_reloaded', '1');
+          log(`[KERNEL] SW Controller Shifted! Refreshing for v1.10.14...`);
+          window.location.reload();
+        }
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+      return () => navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     }
+  }, []);
 
+  useEffect(() => {
     const handleInit = async () => {
       log('[STAGE] Starting Auth Process...');
       try {
         const res = await apiClient('/api/auth/session');
-        log(`[AUTH] Session response: ${res.status}`);
         const sessionData = await res.json();
 
         if (sessionData.authenticated && sessionData.user) {
@@ -177,7 +192,6 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
           fetchSubStatus(profile.email);
 
           if (storedId) {
-            log(`[DATA] Loading stored ID: ${storedId}`);
             setSpreadsheetId(storedId);
             try {
               await refreshData(storedId);
@@ -204,17 +218,15 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     };
 
     const runInitialization = async () => {
-      log(`[BOOT] System Version: ${APP_VERSION}`);
       setInitStage('AUTH_PROCESS');
       
-      // WATCHDOG: Force release if stuck > 10s
       const watchdog = setTimeout(() => {
         if (initStage !== 'COMPLETED') {
-          log('[WATCHDOG] Initialization taking too long. Forcing COMPLETED state.');
-          setIsAuthReady(true); // Fallback
+          log('[WATCHDOG] Force-releasing UI to prevent hang.');
+          setIsAuthReady(true); 
           setInitStage('COMPLETED');
         }
-      }, 10000);
+      }, 15000); // Increased to 15s to avoid false positives
 
       await handleInit();
       clearTimeout(watchdog);
