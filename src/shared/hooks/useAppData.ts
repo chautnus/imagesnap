@@ -69,13 +69,12 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       const STAFF_DOMAIN = '@staff.imagesnap';
       const isStaff = currentUser?.email?.endsWith(STAFF_DOMAIN);
       
-      log(`[DATA] Fetching Workspace ${id.substring(0, 8)}... (Staff: ${isStaff})`);
-      
+      log(`[DATA] Refreshing data for ID: ${id.substring(0,8)}...`);
       const data = await fetchAllAppData(id, undefined, isStaff);
       log(`[DATA] Received: ${data.categories.length} Categories, ${data.products.length} Products`);
       
-      if (data.categories.length === 0 && data.productNames.length === 0) {
-        log(`[DATA] Workspace empty. Seeding defaults...`);
+      if (data.categories.length === 0) {
+        log(`[DATA] No categories found. Seeding defaults...`);
         for (const cat of DEFAULT_CATEGORIES) {
           await appendRow(id, 'Categories!A2:F', [
             cat.id, cat.name, cat.icon, JSON.stringify(cat.fields), cat.updatedAt, 'FALSE'
@@ -87,12 +86,18 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
         setAppData(data);
       }
     } catch (err: any) {
-      log(`[FAIL] Data refresh error: ${err.message || err}`);
-      console.error("[REFRESH_ERROR] Data fetch failed:", err);
+      log(`[FAIL] Data fetch failed: ${err.message || err}`);
     } finally {
       setIsSyncing(false);
     }
   }, []);
+
+  // [AUDIT v1.10.17] Reactive Loading: Trigger refresh when ID becomes available
+  useEffect(() => {
+    if (spreadsheetId && user) {
+      refreshData(spreadsheetId);
+    }
+  }, [spreadsheetId, user, refreshData]);
 
   const handleSaveProduct = async (product: Partial<Product>, base64Images: string[]) => {
     if (!spreadsheetId) return;

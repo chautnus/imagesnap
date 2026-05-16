@@ -19,7 +19,17 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
   const [shareTargetSid, setShareTargetSid] = useState<string | null>(null);
 
   const isConsumingRef = useRef(false);
-  const versionPurgedRef = useRef(false);
+  
+  // [ROOT CAUSE 2 & 3] Refs for stable callback and stage tracking
+  const refreshDataRef = useRef(refreshData);
+  const initStageRef = useRef<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
+
+  useEffect(() => { refreshDataRef.current = refreshData; }, [refreshData]);
+  
+  const updateStage = (stage: 'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED') => {
+    initStageRef.current = stage;
+    setInitStage(stage);
+  };
 
   const log = (msg: string) => {
     if (typeof window !== 'undefined' && (window as any)._pushDebug) {
@@ -27,18 +37,20 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     }
   };
 
-  // SAFE VERSION MIGRATION: Only purge if new version is GREATER
+  // [ROOT CAUSE 1] Safe Version Migration with Session Storage Guard
   useEffect(() => {
-    if (typeof window === 'undefined' || versionPurgedRef.current) return;
+    if (typeof window === 'undefined') return;
+    
+    const purgeDone = sessionStorage.getItem('imagesnap_purge_done');
+    const lastVersionStr = localStorage.getItem('imagesnap_app_version') || 'v0.0.0';
     
     const parseVer = (v: string) => parseInt(v.replace(/[^0-9]/g, '') || '0');
-    const lastVersionStr = localStorage.getItem('imagesnap_app_version') || 'v0.0.0';
     const lastVer = parseVer(lastVersionStr);
     const currVer = parseVer(APP_VERSION);
     
-    if (lastVer < currVer) {
-      versionPurgedRef.current = true;
-      log(`[BOOT] Upgrading Environment: ${lastVersionStr} -> ${APP_VERSION}...`);
+    if (lastVer < currVer && !purgeDone) {
+      sessionStorage.setItem('imagesnap_purge_done', '1');
+      log(`[BOOT] Upgrading: ${lastVersionStr} -> ${APP_VERSION}...`);
       
       const session = localStorage.getItem('imagesnap_session');
       const isStaff = localStorage.getItem('ps_is_staff');
@@ -46,20 +58,18 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       
       localStorage.clear();
       
+      // Restore before reload
       if (session) localStorage.setItem('imagesnap_session', session);
       if (isStaff) localStorage.setItem('ps_is_staff', isStaff);
       if (staffUser) localStorage.setItem('ps_staff_user', staffUser);
-      
       localStorage.setItem('imagesnap_app_version', APP_VERSION);
       
       if ('caches' in window) {
         caches.keys().then(names => Promise.all(names.map(n => caches.delete(n))));
       }
       
-      log(`[BOOT] Purge complete. Activating v${currVer}...`);
+      log(`[BOOT] Environment purged. Reloading...`);
       setTimeout(() => window.location.reload(), 300);
-    } else if (lastVer > currVer) {
-      log(`[BOOT] Legacy browser cache detected (running ${APP_VERSION} < stored ${lastVersionStr}). Bypassing purge.`);
     } else {
       localStorage.setItem('imagesnap_app_version', APP_VERSION);
     }
@@ -89,14 +99,14 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
 
   const initializeWorkspace = async () => {
     try {
-      log("[DRIVE] Initializing workspace lookup...");
+      log("[DRIVE] Resolution started...");
       const id = await findOrCreateWorkspace();
-      log(`[DRIVE] Workspace resolved: ${id.substring(0, 8)}`);
+      log(`[DRIVE] Resolved: ${id.substring(0, 8)}`);
       setSpreadsheetId(id);
       localStorage.setItem('ps_sheet_id', id);
-      await refreshData(id);
+      // useAppData will pick this up reactively
     } catch (err) {
-      log(`[FATAL] Workspace init failed: ${err}`);
+      log(`[FATAL] Workspace resolution failed: ${err}`);
     }
   };
 
@@ -108,7 +118,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     if (isConsumingRef.current || (sid && sid === lastProcessedId)) return;
     isConsumingRef.current = true;
 
-    log(`[IDB] Beginning ingestion: ${sid}`);
+    log(`[IDB] Share ingestion: ${sid}`);
 
     const attemptFetch = (attempt: number) => {
       return new Promise<void>((resolve) => {
@@ -128,30 +138,27 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
               const getReq = store.get(sid);
               getReq.onsuccess = () => {
                 if (getReq.result) {
-                  log(`[IDB] DATA FOUND for ${sid}`);
+                  log(`[IDB] DATA FOUND: ${sid}`);
                   setShareTargetSid(sid);
                   sessionStorage.setItem('imagesnap_last_share_id', sid);
                   
                   const nextParams = new URLSearchParams(window.location.search);
                   nextParams.delete('share_id');
-                  nextParams.delete('error');
-                  const nextSearch = nextParams.toString();
-                  const nextUrl = window.location.pathname + (nextSearch ? `?${nextSearch}` : '');
+                  const nextUrl = window.location.pathname + (nextParams.toString() ? `?${nextParams.toString()}` : '');
                   window.history.replaceState(null, '', nextUrl);
-                  
                   resolve();
                 } else if (attempt < 5) {
-                  log(`[IDB] Data missing. Retry ${attempt + 1}/5...`);
+                  log(`[IDB] Retry ${attempt + 1}/5...`);
                   db.close();
                   setTimeout(() => attemptFetch(attempt + 1).then(resolve), 800);
                 } else {
-                  log(`[FAIL] Share data missing after retries.`);
+                  log(`[FAIL] Share data missing.`);
                   resolve();
                 }
               };
             } else { resolve(); }
             transaction.oncomplete = () => db.close();
-          } catch (e) { log(`[FAIL] IDB Transaction error: ${e}`); db.close(); resolve(); }
+          } catch (e) { log(`[FAIL] IDB Error: ${e}`); db.close(); resolve(); }
         };
         request.onerror = () => { log('[FAIL] IDB Open error'); resolve(); };
       });
@@ -160,14 +167,14 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     return attemptFetch(0).finally(() => {
       isConsumingRef.current = false;
     });
-  }, [refreshData]);
+  }, []);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       const handleControllerChange = () => {
         if (!sessionStorage.getItem('imagesnap_sw_reloaded')) {
           sessionStorage.setItem('imagesnap_sw_reloaded', '1');
-          log(`[KERNEL] SW Controller Shifted! Refreshing for v${APP_VERSION}...`);
+          log(`[KERNEL] SW Shift! Reloading for v${APP_VERSION}...`);
           window.location.reload();
         }
       };
@@ -178,14 +185,14 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
 
   useEffect(() => {
     const handleInit = async () => {
-      log('[STAGE] Auth Process...');
+      log('[STAGE] Auth Ingress...');
       try {
         const res = await apiClient('/api/auth/session');
         const sessionData = await res.json();
 
         if (sessionData.authenticated && sessionData.user) {
           const profile = sessionData.user;
-          log(`[AUTH] Authenticated as ${profile.email}`);
+          log(`[AUTH] Profile: ${profile.email}`);
           setUser(profile);
           setAccessToken(profile.token);
           
@@ -194,24 +201,14 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
           fetchSubStatus(profile.email);
 
           if (storedId) {
-            log(`[DATA] Connecting to ID: ${storedId.substring(0, 8)}`);
+            log(`[DATA] Local ID: ${storedId.substring(0, 8)}`);
             setSpreadsheetId(storedId);
-            try {
-              await refreshData(storedId);
-              log('[DATA] Ready.');
-            } catch (err: any) {
-              if (err.status === 403 || err.status === 404) {
-                log(`[DATA] Access denied. Purging local ID.`);
-                localStorage.removeItem('ps_sheet_id');
-                await initializeWorkspace();
-              }
-            }
           } else {
-            log('[DATA] Searching Drive...');
+            log('[DATA] Drive Search...');
             await initializeWorkspace();
           }
         } else {
-          log('[AUTH] No valid session.');
+          log('[AUTH] No session.');
           setAuthError("Session Expired - Please login again.");
         }
       } catch (e: any) {
@@ -221,19 +218,20 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     };
 
     const runInitialization = async () => {
-      setInitStage('AUTH_PROCESS');
+      updateStage('AUTH_PROCESS');
       
+      // [ROOT CAUSE 3] Watchdog using Ref to avoid stale closure
       const watchdog = setTimeout(() => {
-        if (initStage !== 'COMPLETED') {
-          log('[WATCHDOG] Force-release.');
+        if (initStageRef.current !== 'COMPLETED') {
+          log('[WATCHDOG] Stale init detected. Force-release.');
           setIsAuthReady(true); 
-          setInitStage('COMPLETED');
+          updateStage('COMPLETED');
         }
       }, 15000);
 
       await handleInit();
       clearTimeout(watchdog);
-      setInitStage('COMPLETED');
+      updateStage('COMPLETED');
       log('[STAGE] COMPLETED');
     };
 
@@ -248,7 +246,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [refreshData]);
+  }, []); // [ROOT CAUSE 2] Dependency array is empty, stabilized via Refs
 
   return {
     initStage,

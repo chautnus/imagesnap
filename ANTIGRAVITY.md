@@ -25,9 +25,9 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-16 00:53
-**Last session by**: Antigravity (v1.10.15)
-**Current sprint focus**: Loop Prevention & Session Integrity.
+**Last updated**: 2026-05-16 01:16
+**Last session by**: Antigravity (v1.10.17)
+**Current sprint focus**: Absolute Stability & Scoped Data.
 
 ---
 
@@ -58,11 +58,11 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.15)
-- **Hệ thống**: Fix lỗi vòng lặp vô tận (infinite loop) khi chuyển phiên bản.
-- **Dữ liệu**: Gia cố tính năng Auto-Purge, giữ lại Session/Staff flags khi dọn rác.
-- **Tính năng**: Đồng bộ Watchdog về một mối tại useDashboardInit.
-- **Versioning**: v1.10.15.
+## TỔNG KẾT TRẠNG THÁI (v1.10.17)
+- **Hệ thống**: Fix triệt để 4 Root Cause gây Loop và treo State (dùng Ref-safe & SessionGuard).
+- **Dữ liệu**: Cô lập Workspace vào thư mục "ImageSnap Data" để tránh trùng lặp file.
+- **Tính năng**: Tự động nạp dữ liệu (Reactive Loading) ngay khi có Spreadsheet ID.
+- **Versioning**: v1.10.17.
 
 ### Dừng ở đâu?
 - Hệ thống đang ở phiên bản **v1.10.8**.

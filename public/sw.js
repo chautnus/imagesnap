@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.8 - Ultra-Reliable Ingestion (v1.10.11)
-const CACHE_NAME = 'imagesnap-v1.10.11';
+// ImageSnap Service Worker v8.9 - (v1.10.17)
+const CACHE_NAME = 'imagesnap-v1.10.17';
 
 // Assets to precache
 const PRECACHE_ASSETS = [
@@ -9,6 +9,8 @@ const PRECACHE_ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+  // We no longer call skipWaiting() immediately to allow cleaner transitions if needed,
+  // but for PWA stability we often do. Let's keep it but ensure versioning is strict.
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_ASSETS))
@@ -25,7 +27,6 @@ self.addEventListener('activate', (event) => {
         })
       );
       await clients.claim();
-      // Prune old shares (24h)
       await pruneOldShares();
     })()
   );
@@ -45,7 +46,7 @@ async function pruneOldShares() {
         const store = transaction.objectStore(STORE_NAME);
         const cursorReq = store.openCursor();
         cursorReq.onsuccess = (e) => {
-          const cursor = e.target.result;
+          const cursor = (e.target as any).result;
           if (cursor) {
             const timestamp = cursor.value.timestamp || 0;
             if (timestamp < cutoff) store.delete(cursor.key);
@@ -65,7 +66,7 @@ async function pruneOldShares() {
   });
 }
 
-// Handle Web Share Target with Absolute Interception (POST -> 303 -> GET)
+// Handle Web Share Target
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const isShareTargetPath = url.pathname === '/share-target' || url.pathname === '/share-target/';
@@ -92,9 +93,7 @@ self.addEventListener('fetch', (event) => {
             });
           }
 
-          // Small delay to ensure IDB is flushed before redirect
           await new Promise(resolve => setTimeout(resolve, 500));
-          
           return Response.redirect(`/dashboard?share_id=${sid}`, 303);
         } catch (err) {
           console.error('SW Interception Failed:', err);
@@ -105,7 +104,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Runtime Caching for static assets
+  // Runtime Caching
   if (event.request.method === 'GET' && 
      (url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.pathname.includes('/fonts/'))) {
     event.respondWith(
@@ -129,12 +128,12 @@ async function saveSharedData(sid, data) {
     const request = indexedDB.open(DB_NAME, 2);
     
     request.onupgradeneeded = (event) => {
-      const db = event.target.result;
+      const db = (event.target as any).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
     };
 
     request.onsuccess = (event) => {
-      const db = event.target.result;
+      const db = (event.target as any).result;
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
       store.put(data, sid);
