@@ -1,4 +1,6 @@
-﻿import React, { useState } from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import { User, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 
 

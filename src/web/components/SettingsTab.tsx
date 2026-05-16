@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { LogOut, Globe, Crown, CreditCard } from 'lucide-react';
 import { Category, SubscriptionStatus } from '@shared/lib/types';

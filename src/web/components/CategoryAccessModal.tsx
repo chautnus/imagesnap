@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { CheckSquare, Square } from 'lucide-react';
 import { Category } from '@shared/lib/types';

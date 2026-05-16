@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { requestToken } from '@shared/lib/google-auth';
 import { LogIn } from 'lucide-react';
