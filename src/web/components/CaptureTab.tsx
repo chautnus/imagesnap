@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
 import { RefreshCw, X, Image as ImagesIcon, Link as LinkIcon, Calendar, Search, Command, Globe as GlobeIcon, Save, Plus } from 'lucide-react';
 import { Camera } from 'lucide-react';
