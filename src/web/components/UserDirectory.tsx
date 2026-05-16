@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Shield, User as UserIcon, UserMinus, RefreshCw, Plus, UserCheck, Crown } from 'lucide-react';
 import { Category, SubscriptionStatus } from '@shared/lib/types';
