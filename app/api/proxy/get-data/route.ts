@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getConfig, getSubscription } from '@/db';
+import { getConfig, getSubscription } from '@src/db';
 import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
@@ -7,7 +7,8 @@ export async function POST(request: Request) {
     const { spreadsheetId, path, range } = await request.json();
     
     // Auth Check
-    const sessionCookie = cookies().get('imagesnap_session');
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('imagesnap_session');
     if (!sessionCookie) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     
     const sessionData = JSON.parse(sessionCookie.value);
