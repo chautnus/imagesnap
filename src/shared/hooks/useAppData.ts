@@ -56,7 +56,8 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     if (!id) return;
     setIsSyncing(true);
     try {
-      const data = await fetchAllAppData(id);
+      const isStaff = user?.email?.endsWith('@staff.imagesnap');
+      const data = await fetchAllAppData(id, undefined, isStaff);
       
       // Only seed defaults for a genuinely new workspace: both categories AND productNames empty.
       // If productNames exist, the user intentionally cleared categories — do not overwrite.

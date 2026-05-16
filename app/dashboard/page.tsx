@@ -155,7 +155,7 @@ function DashboardContent() {
 
   const accessibleCategories = appData.categories.filter(cat => {
     if (subStatus.isAdmin) return true;
-    if (!subStatus.accessibleCategories) return true;
+    if (!subStatus.accessibleCategories || subStatus.accessibleCategories.length === 0) return true;
     return subStatus.accessibleCategories.includes(cat.id);
   });
 

@@ -25,9 +25,9 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-15 23:55
-**Last session by**: Antigravity (v1.10.7)
-**Current sprint focus**: Data Persistence Stability & Staff Session Hardening.
+**Last updated**: 2026-05-16 00:02
+**Last session by**: Antigravity (v1.10.8)
+**Current sprint focus**: Core Data Visibility & Staff Proxy Read.
 
 ---
 
@@ -58,13 +58,13 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.7)
-- **Hệ thống**: Đã xử lý lỗi treo icon bằng Global Race Timer 6s.
-- **Dữ liệu**: Fix lỗi mất Category do Init sai (v1.10.7). Triển khai Master Spreadsheet Sync cho Staff.
-- **Versioning**: Thiết lập Single Source of Truth cho toàn bộ dự án.
+## TỔNG KẾT TRẠNG THÁI (v1.10.8)
+- **Hệ thống**: Triển khai Proxy Read cho Staff (v1.10.8).
+- **Dữ liệu**: Fix bug lọc Category rỗng, khôi phục hiển thị dữ liệu cho mọi user.
+- **Versioning**: v1.10.8.
 
 ### Dừng ở đâu?
-- Hệ thống đang ở phiên bản **v1.10.7**.
+- Hệ thống đang ở phiên bản **v1.10.8**.
 - Đã fix lỗi Staff login không có session.
 
 ---

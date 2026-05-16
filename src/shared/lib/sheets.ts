@@ -1,14 +1,35 @@
-import { getAccessToken } from './google-auth';
+import { getAccessToken, reauthenticate, setAccessToken } from './google-auth';
 import { findOrCreateFolder } from './drive';
 
 const BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
 
-export async function sheetsRequest(path: string, options: any = {}, providedToken?: string) {
+export async function sheetsRequest(path: string, options: any = {}, providedToken?: string, isStaff: boolean = false) {
+  // Staff must use the server-side proxy because they lack a Google Access Token
+  if (isStaff && typeof window !== 'undefined') {
+    const API_BASE_URL = window.location.origin;
+    const res = await fetch(`${API_BASE_URL}/api/proxy/get-data`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        spreadsheetId: path.split('/')[0], 
+        range: path.includes('/values/') ? path.split('/values/')[1].split('?')[0] : undefined,
+        path: !path.includes('/values/') ? path : undefined
+      })
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      const err: any = new Error(error.error || 'Proxy Sheets error');
+      err.status = res.status;
+      throw err;
+    }
+    return res.json();
+  }
+
   const token = providedToken || getAccessToken();
   if (!token) throw new Error('No access token');
 
   const url = path.startsWith('http') ? path : `${BASE_URL}/${path}`;
-  const response = await fetch(url, {
+  let response = await fetch(url, {
     ...options,
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -16,6 +37,26 @@ export async function sheetsRequest(path: string, options: any = {}, providedTok
       ...options.headers,
     },
   });
+
+  // Handle 401 Unauthorized by attempting to re-authenticate once
+  if (response.status === 401 && typeof window !== 'undefined') {
+    console.warn("[SHEETS] 401 Unauthorized. Attempting re-authentication...");
+    try {
+      const newToken = await reauthenticate();
+      setAccessToken(newToken);
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          'Authorization': `Bearer ${newToken}`,
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+    } catch (reauthErr) {
+      console.error("[SHEETS] Re-authentication failed:", reauthErr);
+      // Fall through to error handling below
+    }
+  }
 
   if (!response.ok) {
     const error = await response.json();
@@ -94,13 +135,11 @@ async function initWorkspaceHeaders(spreadsheetId: string, providedToken?: strin
   }
 }
 
-export async function getSheetRows(spreadsheetId: string, range: string, providedToken?: string) {
+export async function getSheetRows(spreadsheetId: string, range: string, providedToken?: string, isStaff: boolean = false) {
   try {
-    const data = await sheetsRequest(`${spreadsheetId}/values/${range}`, {}, providedToken);
+    const data = await sheetsRequest(`${spreadsheetId}/values/${range}`, {}, providedToken, isStaff);
     return data.values || [];
   } catch (err: any) {
-    // Only return empty if the resource itself is missing (404) or range is invalid (400)
-    // Otherwise re-throw to signal a transient/system error.
     if (err.status === 404 || err.status === 400) {
       return [];
     }
@@ -108,8 +147,8 @@ export async function getSheetRows(spreadsheetId: string, range: string, provide
   }
 }
 
-export async function getSpreadsheetMetadata(spreadsheetId: string, providedToken?: string) {
-  return sheetsRequest(`${spreadsheetId}`, {}, providedToken);
+export async function getSpreadsheetMetadata(spreadsheetId: string, providedToken?: string, isStaff: boolean = false) {
+  return sheetsRequest(`${spreadsheetId}`, {}, providedToken, isStaff);
 }
 
 export async function appendRow(spreadsheetId: string, range: string, values: any[], providedToken?: string) {
