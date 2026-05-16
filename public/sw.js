@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.7 - Ironclad Reliability (v1.10.1)
-const CACHE_NAME = 'imagesnap-v1.10.1';
+// ImageSnap Service Worker v8.7 - Ironclad Reliability (v1.10.3)
+const CACHE_NAME = 'imagesnap-v1.10.3';
 
 // Assets to precache
 const PRECACHE_ASSETS = [
@@ -68,9 +68,9 @@ async function pruneOldShares() {
 // Handle Web Share Target with Absolute Interception (POST -> 303 -> GET)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  const isDashboardPath = url.pathname === '/dashboard' || url.pathname === '/dashboard/';
-
-  if (event.request.method === 'POST' && isDashboardPath) {
+  const isShareTargetPath = url.pathname === '/share-target' || url.pathname === '/share-target/';
+  
+  if (event.request.method === 'POST' && isShareTargetPath) {
     event.respondWith(
       (async () => {
         try {
@@ -92,6 +92,7 @@ self.addEventListener('fetch', (event) => {
             });
           }
 
+          if (typeof (self as any)._pushDebug === 'function') (self as any)._pushDebug(`[SW] Share Intercepted for v1.10.3`);
           return Response.redirect(`/dashboard?share_id=${sid}`, 303);
         } catch (err) {
           console.error('SW Interception Failed:', err);

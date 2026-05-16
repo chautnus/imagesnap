@@ -73,7 +73,7 @@ export function DashboardGuardScreen({ authError, initStage, isAuthReady }: Dash
               {!isTooLarge && (
                 <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
                   <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                    {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync (v1.8.9)
+                    {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync ({APP_VERSION})
                   </span>
                   <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
                     {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
