@@ -237,6 +237,7 @@ export const reauthenticate = (): Promise<string> => {
         const profile = await getUserInfo(token);
         if (profile?.email) {
           await establishSession(token, profile.email);
+          setAccessToken(token);
           resolve(token);
         } else {
           reject(new Error("Profile fetch failed during reauth"));

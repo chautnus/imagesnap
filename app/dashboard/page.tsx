@@ -8,86 +8,113 @@ import { DataTab } from '@web/components/DataTab';
 import { SettingsTab } from '@web/components/SettingsTab';
 import { HelpTab } from '@web/components/HelpTab';
 import { Header } from '@web/components/Header';
-import { initGis, getAccessToken, setAccessToken, getUserInfo, revokeToken } from '@shared/lib/google-auth';
-import { findOrCreateWorkspace } from '@shared/lib/sheets';
+import { revokeToken } from '@shared/lib/google-auth';
 import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
-import { SubscriptionStatus } from '@shared/lib/types';
-import { apiClient } from '@shared/lib/api-client';
+import { useDashboardInit } from './hooks/useDashboardInit';
+import { DashboardGuardScreen } from './components/LoadingScreens';
+import { DebugOverlay } from './components/DebugOverlay';
 import { APP_VERSION } from '@shared/lib/version';
 
-function DebugOverlay() {
-  const [logs, setLogs] = useState<string[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
+interface ErrorBoundaryState { hasError: boolean; }
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('debug') === '1') setIsVisible(true);
-  }, []);
+class DashboardErrorBoundary extends React.Component<{ children: React.ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const syncLogs = () => {
-      setLogs([...((window as any)._debugLogs || [])]);
-    };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
 
-    window.addEventListener('SYS_DEBUG_UPDATE', syncLogs);
-    syncLogs(); // Initial sync
-    
-    return () => window.removeEventListener('SYS_DEBUG_UPDATE', syncLogs);
-  }, []);
+  handleFixAndReload = async () => {
+    try {
+      localStorage.clear();
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        for (const key of keys) await caches.delete(key);
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const reg of regs) await reg.unregister();
+      }
+    } finally {
+      window.location.reload();
+    }
+  };
 
-  if (!isVisible) return null;
-
-  return (
-    <div className="fixed bottom-4 left-4 z-[9999] max-w-[90vw] max-h-[200px] overflow-y-auto bg-black/90 border border-white/10 rounded-lg p-3 shadow-2xl backdrop-blur-xl">
-      <div className="flex justify-between items-center mb-2 border-bottom border-white/5 pb-1">
-        <span className="text-[10px] font-bold text-accent uppercase tracking-widest">Diagnostic Telemetry</span>
-        <button onClick={() => setIsVisible(false)} className="text-[10px] text-white/40 hover:text-white uppercase font-bold">Hide</button>
-      </div>
-      <div className="space-y-1">
-        {logs.map((log, i) => (
-          <div key={i} className="text-[9px] font-mono leading-tight break-all">
-            <span className={log.includes('FATAL') ? 'text-red-400' : (log.includes('STAGE') ? 'text-accent' : 'text-white/60')}>
-              {log}
-            </span>
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-bg text-white">
+          <div className="flex flex-col items-center gap-6 p-8 text-center">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center">
+              <span className="text-2xl">💥</span>
+            </div>
+            <div className="space-y-1">
+              <div className="text-xs font-black tracking-widest uppercase opacity-60">Unexpected Error</div>
+              <p className="text-[10px] text-white/50 max-w-[220px] mx-auto leading-relaxed">
+                Something went wrong. Use Fix & Reload to clear state and recover.
+              </p>
+            </div>
+            <button
+              onClick={this.handleFixAndReload}
+              className="px-8 py-2.5 bg-accent text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:opacity-90 transition-all active:scale-95"
+            >
+              Fix & Reload
+            </button>
           </div>
-        ))}
-        {logs.length === 0 && <div className="text-[9px] text-white/20 italic">Waiting for logs...</div>}
-      </div>
-    </div>
-  );
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function DashboardContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'capture' | 'data' | 'settings' | 'help'>('capture');
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [isAuthReady, setIsAuthReady] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
-  const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
-  const [dataStatus, setDataStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
-  const isConsumingRef = useRef(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const [shareTargetNonce, setShareTargetNonce] = useState(0);
-  const [initStage, setInitStage] = useState<'IDLE' | 'DATA_READ' | 'AUTH_PROCESS' | 'COMPLETED'>('IDLE');
-  const objectUrlRef = useRef<string | null>(null);
-  const startTimeRef = useRef<number>(Date.now());
 
   const { lang, t, toggleLang } = useI18n();
-  const { 
-    appData, 
-    isSyncing, 
-    refreshData, 
-    handleSaveProduct, 
-    handleDeleteProduct, 
-    handleSaveCategory, 
-    handleDeleteCategory 
+
+  const {
+    initStage,
+    isAuthReady,
+    authError,
+    user,
+    spreadsheetId,
+    setSpreadsheetId,
+    subStatus,
+    setSubStatus,
+    dataStatus,
+    isOffline,
+    shareTargetNonce,
+    handleShareTarget,
+    fetchSubStatus,
+  } = useDashboardInit(async (id: string) => {
+    await refreshData(id);
+  });
+
+  const {
+    appData,
+    isSyncing,
+    refreshData,
+    handleSaveProduct,
+    handleDeleteProduct,
+    handleSaveCategory,
+    handleDeleteCategory
   } = useAppData(spreadsheetId, user);
+
+  // AUTH_PROCESS watchdog: soft reload if stuck > 10s
+  useEffect(() => {
+    if (initStage !== 'AUTH_PROCESS') return;
+    const timer = setTimeout(() => {
+      if ((window as any)._pushDebug) (window as any)._pushDebug('[WATCHDOG] AUTH_PROCESS stuck > 10s — soft reload');
+      window.location.reload();
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [initStage]);
 
   // Reactive Share Signal
   useEffect(() => {
@@ -97,291 +124,6 @@ function DashboardContent() {
       handleShareTarget(sid);
     }
   }, [searchParams, isAuthReady]);
-
-  useEffect(() => {
-    // Breakout: Controller Shift Mechanism
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] SW Controller Shifted! Reloading for ${APP_VERSION}...`);
-        window.location.reload();
-      });
-    }
-
-    // BroadcastChannel logic removed in favor of reactive searchParams (v1.8.12 Architecture)
-
-
-    const runInitialization = async () => {
-      startTimeRef.current = Date.now();
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] Starting ${APP_VERSION} Ironclad Init`);
-
-      // Add Document-level Cleanup for Blob URLs
-      const handleUnload = () => {
-        if (objectUrlRef.current) {
-          URL.revokeObjectURL(objectUrlRef.current);
-          if ((window as any)._pushDebug) (window as any)._pushDebug('[KERNEL] Blob URL Revoked on Unload');
-        }
-      };
-      window.addEventListener('beforeunload', handleUnload);
-
-      // Global Race: Initialization vs 6s Timeout
-      const initPromise = (async () => {
-        // Phase 1: Authentication and Data Preparation
-        setInitStage('AUTH_PROCESS');
-        await handleInit();
-        
-        // Phase 2 is now handled reactively by the isAuthReady effect
-        setInitStage('DATA_READ');
-      })();
-
-      const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('RACE_TIMEOUT'), 6000));
-
-      const result = await Promise.race([initPromise, timeoutPromise]);
-
-      if (result === 'RACE_TIMEOUT') {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] RACE WON BY: TIMEOUT (FORCED START)');
-      } else {
-        if ((window as any)._pushDebug) (window as any)._pushDebug(`[BOOT] RACE WON BY: INITIALIZATION (${Date.now() - startTimeRef.current}ms)`);
-      }
-
-      setInitStage('COMPLETED');
-      
-      return () => window.removeEventListener('beforeunload', handleUnload);
-    };
-
-    const handleInit = async () => {
-      if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_C] Verifying Secure Session...');
-
-      abortControllerRef.current?.abort();
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-      try {
-        const res = await apiClient('/api/auth/session', { signal: controller.signal });
-        clearTimeout(timeoutId);
-        const sessionData = await res.json();
-
-        if (sessionData.authenticated && sessionData.user) {
-          const profile = sessionData.user;
-          // Set identity + spreadsheetId synchronously, then unlock UI
-          setUser(profile);
-          setAccessToken(profile.token);
-          const storedId = localStorage.getItem('ps_sheet_id');
-          if (storedId) setSpreadsheetId(storedId);
-          if (profile.role === 'staff') {
-            setSubStatus({ isPro: true, limit: 999999, usage: 0, role: 'staff' });
-          }
-
-          setIsAuthReady(true); // Unlock UI — auth done, spreadsheetId set
-
-          // Fire-and-forget: data loads reactively, does not block init pipeline
-          fetchSubStatus(profile.email);
-          if (storedId) refreshData(storedId);
-          else initializeWorkspace();
-        } else {
-          setAuthError("Session Expired - Verification failed on new infrastructure.");
-        }
-      } catch (e: any) {
-        clearTimeout(timeoutId);
-        if (e.name === 'AbortError') {
-          if ((window as any)._pushDebug) (window as any)._pushDebug('[AUTH_TIMEOUT_ABORTED] 8s timeout hit — releasing init lock');
-          setAuthError("Authentication Timed Out - Check your connection.");
-        } else {
-          setAuthError("Session Expired - Identity service error.");
-        }
-        // Always returns normally so runInitialization can proceed to COMPLETED
-      }
-    };
-
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    runInitialization();
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // Diagnostic: Monitor Category Loading
-  useEffect(() => {
-    if (initStage === 'COMPLETED') {
-      if (appData.categories.length > 0) {
-        if ((window as any)._pushDebug) (window as any)._pushDebug(`[DATA] Success: ${appData.categories.length} categories loaded`);
-      } else {
-        const timeoutId = setTimeout(() => {
-          if (appData.categories.length === 0) {
-            if ((window as any)._pushDebug) (window as any)._pushDebug('[DATA] Warning: Categories still empty after 5s in COMPLETED stage');
-          }
-        }, 5000);
-        return () => clearTimeout(timeoutId);
-      }
-    }
-  }, [appData.categories, initStage]);
-
-  const handleShareTarget = async (providedSid?: string) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sid = providedSid || urlParams.get('share_id');
-    const lastProcessedId = sessionStorage.getItem('imagesnap_last_share_id');
-
-    if ((window as any)._pushDebug) (window as any)._pushDebug(`[IDEMPOTENCY] Check: sid=${sid}, last=${lastProcessedId}, isLocked=${isConsumingRef.current}`);
-
-    if (isConsumingRef.current || (sid && sid === lastProcessedId)) {
-      if ((window as any)._pushDebug && sid && sid === lastProcessedId) (window as any)._pushDebug('[IDEMPOTENCY] Share already processed');
-      return;
-    }
-    
-    isConsumingRef.current = true;
-
-    if (sid) {
-      // Consumed! Update ID immediately to block race conditions during async IDB read
-      sessionStorage.setItem('imagesnap_last_share_id', sid);
-      window.history.replaceState(null, '', window.location.pathname);
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[KERNEL] Share ID ${sid} scrubbed from URL`);
-    }
-
-    if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_A] Querying IDB v2 sid Storage...');
-
-    return new Promise<void>((resolve) => {
-      const DB_NAME = 'imagesnap-pwa-db';
-      const DB_VERSION = 2;
-      const STORE_NAME = 'shares';
-
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-      // Safety Timeout: Force resolve after 5s to prevent "Icon Stuck"
-      const timeoutId = setTimeout(() => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[BOOT] Force-Timeout Triggered!');
-        isConsumingRef.current = false;
-        resolve();
-      }, 5000);
-
-      request.onupgradeneeded = (event: any) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
-        }
-      };
-
-      request.onerror = () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB Open Failed!');
-        clearTimeout(timeoutId);
-        isConsumingRef.current = false;
-        resolve();
-      };
-
-      request.onblocked = () => {
-        if ((window as any)._pushDebug) (window as any)._pushDebug('[FATAL_ERROR] IDB Blocked!');
-        clearTimeout(timeoutId);
-        isConsumingRef.current = false;
-        resolve();
-      };
-
-      request.onsuccess = (event: any) => {
-        clearTimeout(timeoutId);
-        const db = event.target.result;
-        try {
-          const transaction = db.transaction(STORE_NAME, 'readwrite');
-          const store = transaction.objectStore(STORE_NAME);
-          
-          const processData = (data: any, key: string) => {
-            if ((window as any)._pushDebug) (window as any)._pushDebug('[STAGE_B] Data found! Signaling CaptureTab...');
-            
-            // Increment nonce to trigger CaptureTab pull
-            setShareTargetNonce(prev => prev + 1);
-          };
-
-          if (sid) {
-            // Deterministic Read: Get specific record by sid
-            const getReq = store.get(sid);
-            getReq.onsuccess = () => {
-              if (getReq.result) processData(getReq.result, sid);
-            };
-          } else {
-            // Full Scan Fallback for Latest Unconsumed
-            const cursorReq = store.openCursor(null, 'prev');
-            let found = false;
-            cursorReq.onsuccess = (e: any) => {
-              const cursor = e.target.result;
-              if (cursor && !found) {
-                if (cursor.key !== lastProcessedId && cursor.key !== 'latest') {
-                  found = true;
-                  sessionStorage.setItem('imagesnap_last_share_id', cursor.key as string);
-                  processData(cursor.value, cursor.key as string);
-                } else {
-                  // Legacy cleanup or already consumed
-                  if (cursor.key === 'latest') store.delete('latest');
-                  cursor.continue();
-                }
-              }
-            };
-          }
-
-          transaction.oncomplete = () => {
-            db.close();
-            isConsumingRef.current = false;
-            resolve();
-          };
-          
-          transaction.onerror = () => {
-            db.close();
-            isConsumingRef.current = false;
-            resolve();
-          };
-        } catch (e) {
-          isConsumingRef.current = false;
-          resolve();
-        }
-      };
-
-      request.onerror = () => {
-        isConsumingRef.current = false;
-        resolve();
-      };
-    });
-  };
-
-
-
-  const initializeWorkspace = async () => {
-    try {
-      console.log("Initializing new workspace...");
-      const id = await findOrCreateWorkspace();
-      setSpreadsheetId(id);
-      localStorage.setItem('ps_sheet_id', id);
-      await refreshData(id);
-    } catch (err) {
-      console.error("Workspace init error:", err);
-    }
-  };
-
-  const fetchSubStatus = async (email: string) => {
-    const isAdmin = email.toLowerCase() === 'chautnus@gmail.com' || email.toLowerCase() === 'admin@imagesnap.cloud';
-    setDataStatus('loading');
-    try {
-      const res = await apiClient(`/api/user-status?email=${encodeURIComponent(email)}`);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const data = await res.json();
-      const finalStatus = { ...data, isAdmin: data.isAdmin || isAdmin };
-      
-      // Force high limits for Admin if server returned 30
-      if (finalStatus.isAdmin) {
-        finalStatus.isPro = true;
-        finalStatus.limit = 999999;
-      }
-      
-      setSubStatus(finalStatus);
-      setDataStatus('success');
-    } catch (e) { 
-      setSubStatus(prev => ({ ...prev, isAdmin }));
-      setDataStatus('error');
-      console.error("fetchSubStatus failed:", e);
-    }
-  };
 
   const handleUpgrade = async () => {
     if (!user?.email) return;
@@ -399,125 +141,12 @@ function DashboardContent() {
   };
 
   if (!user || !isAuthReady) {
-    // Show error once init is done (regardless of nonce — no blank screen)
-    if (authError && initStage === 'COMPLETED') {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-bg text-white">
-          <div className="flex flex-col items-center gap-6 p-8 text-center">
-            <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
-              <span className="text-2xl text-accent">⚠️</span>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <div className="text-xs font-black tracking-widest uppercase opacity-60">
-                  Critical Error
-                </div>
-                <p className="text-[10px] text-accent mt-2 max-w-[220px] mx-auto leading-relaxed">
-                  {authError}
-                </p>
-              </div>
-              
-              <div className="pt-4 animate-pulse">
-                <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  Build v1.8.12
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex flex-col gap-3">
-              <button 
-                onClick={() => window.location.href = '/'}
-                className="px-8 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
-              >
-                Back to Home
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // If we haven't finished Stage A (Initialization), show the loading screen
-    if (initStage !== 'COMPLETED') {
-      const isTooLarge = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('error') === 'file_too_large';
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-bg text-white">
-          <div className="flex flex-col items-center gap-6 p-8 text-center">
-            {!isTooLarge ? (
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-white/5 rounded-full" />
-                <div className="absolute inset-0 w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : (
-              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
-                <span className="text-2xl text-accent">⚠️</span>
-              </div>
-            )}
-            
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <div className="text-xs font-black tracking-widest uppercase opacity-60">
-                  {isTooLarge ? "File Too Large" : "System Diagnostics"}
-                </div>
-                
-                {!isTooLarge && (
-                  <div className="flex flex-col gap-1 text-[9px] text-muted uppercase tracking-tighter opacity-40">
-                    <span className={initStage === 'DATA_READ' ? 'text-accent font-bold' : ''}>
-                      {initStage === 'DATA_READ' ? '●' : '○'} A. Dynamic Nonce Sync (v1.8.9)
-                    </span>
-                    <span className={initStage === 'AUTH_PROCESS' ? 'text-accent font-bold' : ''}>
-                      {initStage === 'AUTH_PROCESS' ? '●' : '○'} B. Google Session Recovery
-                    </span>
-                    <span className={isAuthReady ? 'text-accent font-bold' : ''}>
-                      {isAuthReady ? '●' : '○'} C. Encrypted Session Established
-                    </span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="pt-4 animate-pulse">
-                <div className="text-[9px] uppercase tracking-[0.2em] text-accent/50 font-bold">
-                  Build v1.8.12
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex flex-col gap-3">
-              <button 
-                onClick={async () => {
-                  if ('serviceWorker' in navigator) {
-                    try {
-                      const regs = await navigator.serviceWorker.getRegistrations();
-                      for(let reg of regs) await reg.unregister();
-                      if ('caches' in window) {
-                        const keys = await caches.keys();
-                        for(let key of keys) await caches.delete(key);
-                      }
-                      window.location.reload();
-                    } catch (e) {
-                      window.location.reload();
-                    }
-                  }
-                }}
-                className="text-[9px] text-muted underline decoration-accent/30 underline-offset-4 hover:text-white transition-colors"
-              >
-                Hard Reset & Update
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Fallback: init done, no auth error, but user still null — show spinner briefly
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 border-4 border-white/5 rounded-full" />
-          <div className="absolute inset-0 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-        </div>
-      </div>
+      <DashboardGuardScreen
+        authError={authError}
+        initStage={initStage}
+        isAuthReady={isAuthReady}
+      />
     );
   }
 
@@ -534,7 +163,7 @@ function DashboardContent() {
           ⚠️ You are currently offline. Some features may be limited.
         </div>
       )}
-      <Header 
+      <Header
         activeTab={activeTab}
         user={user}
         subStatus={subStatus}
@@ -542,11 +171,11 @@ function DashboardContent() {
         version={APP_VERSION}
         dataStatus={dataStatus}
       />
- 
+
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
         {activeTab === 'capture' && (
-          <CaptureTab 
-            categories={accessibleCategories} 
+          <CaptureTab
+            categories={accessibleCategories}
             productNames={appData.productNames}
             onSave={async (product, imgs) => {
               if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
@@ -556,8 +185,8 @@ function DashboardContent() {
               }
               await handleSaveProduct(product, imgs);
               if (user?.email && !localStorage.getItem('ps_is_staff')) fetchSubStatus(user.email);
-            }} 
-            t={t} 
+            }}
+            t={t}
             lang={lang}
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
@@ -567,24 +196,24 @@ function DashboardContent() {
           />
         )}
         {activeTab === 'data' && (
-          <DataTab 
-            categories={accessibleCategories} 
-            products={appData.products} 
+          <DataTab
+            categories={accessibleCategories}
+            products={appData.products}
             onDelete={handleDeleteProduct}
-            t={t} 
+            t={t}
             lang={lang}
             subStatus={subStatus}
           />
         )}
         {activeTab === 'settings' && (
-          <SettingsTab 
-            categories={appData.categories} 
+          <SettingsTab
+            categories={appData.categories}
             onSaveCategory={handleSaveCategory}
             onDeleteCategory={handleDeleteCategory}
-            toggleLang={toggleLang} 
+            toggleLang={toggleLang}
             lang={lang}
             spreadsheetId={spreadsheetId}
-            t={t} 
+            t={t}
             user={user}
             subStatus={subStatus}
             onUpgrade={handleUpgrade}
@@ -620,7 +249,9 @@ export default function Dashboard() {
         </div>
       </div>
     }>
-      <DashboardContent />
+      <DashboardErrorBoundary>
+        <DashboardContent />
+      </DashboardErrorBoundary>
       <DebugOverlay />
     </Suspense>
   );
