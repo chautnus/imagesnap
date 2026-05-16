@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from 'react';
 import { setAccessToken } from '@shared/lib/google-auth';
 import { findOrCreateWorkspace } from '@shared/lib/sheets';
