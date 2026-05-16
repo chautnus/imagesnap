@@ -23,6 +23,21 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
   const { shareTargetSid, handleShareTarget } = useShareTarget();
   const { subStatus, setSubStatus, dataStatus, fetchSubStatus } = useSubStatus();
 
+  // Reactive sync: when DB returns the authoritative masterSpreadsheetId (for admin OR staff),
+  // override whatever localStorage or Drive-search produced — no page reload needed.
+  const refreshDataRef = useRef(refreshData);
+  useEffect(() => { refreshDataRef.current = refreshData; });
+
+  useEffect(() => {
+    const masterId = (subStatus as any).masterSpreadsheetId;
+    if (!masterId || !isAuthReady) return;
+    if (spreadsheetId === masterId) return;
+    console.log('[SYNC] Detected authoritative Spreadsheet ID from DB:', masterId);
+    localStorage.setItem('ps_sheet_id', masterId);
+    setSpreadsheetId(masterId);
+    refreshDataRef.current(masterId);
+  }, [(subStatus as any).masterSpreadsheetId, isAuthReady]);
+
   const initializeWorkspace = async () => {
     try {
       console.log("Initializing new workspace...");

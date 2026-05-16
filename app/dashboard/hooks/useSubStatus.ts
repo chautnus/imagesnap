@@ -17,16 +17,6 @@ export function useSubStatus() {
       const data = await res.json();
       const finalStatus = { ...data, isAdmin: data.isAdmin || isAdmin };
 
-      // Reactive update for staff workspace
-      if (finalStatus.role === 'staff' && finalStatus.masterSpreadsheetId) {
-        const currentId = localStorage.getItem('ps_sheet_id');
-        if (currentId !== finalStatus.masterSpreadsheetId) {
-          console.log("[SYNC] Master Spreadsheet ID changed, re-syncing...");
-          localStorage.setItem('ps_sheet_id', finalStatus.masterSpreadsheetId);
-          window.location.reload();
-        }
-      }
-
       if (finalStatus.isAdmin) {
         finalStatus.isPro = true;
         finalStatus.limit = 999999;

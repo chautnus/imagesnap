@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { AppData, Product, Category, User } from '../lib/types';
 import { fetchAllAppData } from '../services/dataService';
 import { saveProduct, deleteProduct } from '../services/productService';
@@ -52,11 +52,16 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
   });
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // Keep a ref so refreshData (useCallback with [] deps) always reads the latest user
+  // without being recreated on every render — avoids stale closure where user is null.
+  const userRef = useRef(user);
+  useEffect(() => { userRef.current = user; }, [user]);
+
   const refreshData = useCallback(async (id: string) => {
     if (!id) return;
     setIsSyncing(true);
     try {
-      const isStaff = user?.email?.endsWith('@staff.imagesnap');
+      const isStaff = userRef.current?.email?.endsWith('@staff.imagesnap');
       const data = await fetchAllAppData(id, undefined, isStaff);
       
       // Only seed defaults for a genuinely new workspace: both categories AND productNames empty.
@@ -68,7 +73,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
             cat.id, cat.name, cat.icon, JSON.stringify(cat.fields), cat.updatedAt, 'FALSE'
           ]);
         }
-        const freshData = await fetchAllAppData(id);
+        const freshData = await fetchAllAppData(id, undefined, isStaff);
         setAppData(freshData);
       } else {
         setAppData(data);
