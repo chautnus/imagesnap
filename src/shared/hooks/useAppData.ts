@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from 'react';
 import { AppData, Product, Category, User } from '../lib/types';
 import { fetchAllAppData } from '../services/dataService';
