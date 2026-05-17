@@ -4,6 +4,8 @@ import { CompetitorTracking } from '@web/pages/use-cases/CompetitorTracking';
 import { SwipeFileTool } from '@web/pages/use-cases/SwipeFileTool';
 import { ConstructionTeams } from '@web/pages/use-cases/ConstructionTeams';
 import { EcommerceStudios } from '@web/pages/use-cases/EcommerceStudios';
+import { RealEstatePhotographers } from '@web/pages/use-cases/RealEstatePhotographers';
+import { FieldInspections } from '@web/pages/use-cases/FieldInspections';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
 import { Metadata } from 'next';
 
@@ -27,7 +29,17 @@ const USE_CASE_PAGES: Record<string, { component: any, props?: any, title: strin
     component: EcommerceStudios,
     title: "E-commerce Product Photo Management for Studios — ImageSnap",
     description: "Stop losing product shots in unstructured Drive folders. ImageSnap lets e-commerce studios capture product images with SKU, variant, and client data — auto-organized to Google Drive and logged in Sheets."
-  }
+  },
+  'real-estate-photographers': {
+    component: RealEstatePhotographers,
+    title: "ImageSnap for Real Estate Photographers: Organize Property Photos — ImageSnap",
+    description: "Deliver property photos to agents and clients faster. ImageSnap organizes real estate shoots by address, MLS number, and room type — auto-saved to Google Drive and logged in Sheets."
+  },
+  'field-inspections': {
+    component: FieldInspections,
+    title: "Field Inspection Photo Documentation — ImageSnap",
+    description: "Capture site photos directly to Google Drive with location, inspector, and defect data attached. ImageSnap turns field inspection documentation into a searchable, auditable record — no app downloads required."
+  },
 };
 
 export async function generateStaticParams() {

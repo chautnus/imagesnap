@@ -32,7 +32,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/use-cases/competitor-tracking-beyond-keyword-tools', priority: 0.7, lastMod: '2026-05-06' },
     { path: '/use-cases/swipe-file-tool', priority: 0.7, lastMod: '2026-05-06' },
     { path: '/use-cases/construction-teams', priority: 0.7, lastMod: '2026-05-06' },
-    { path: '/use-cases/ecommerce-studios', priority: 0.7, lastMod: '2026-05-06' },
+    { path: '/use-cases/ecommerce-studios', priority: 0.7, lastMod: '2026-05-17' },
+    { path: '/use-cases/real-estate-photographers', priority: 0.7, lastMod: '2026-05-17' },
+    { path: '/use-cases/field-inspections', priority: 0.7, lastMod: '2026-05-17' },
 
     { path: '/privacy', priority: 0.3, lastMod: '2026-05-06', changeFreq: 'yearly' },
   ]
