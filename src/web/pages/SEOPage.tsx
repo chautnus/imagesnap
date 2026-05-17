@@ -2,7 +2,6 @@
 import React from 'react';
 
 import { ArrowRight, Check } from 'lucide-react';
-import { SEO } from '../components/SEO';
 import { requestToken } from '@shared/lib/google-auth';
 
 interface SEOPageProps {
@@ -26,7 +25,6 @@ export const SEOPage: React.FC<SEOPageProps> = ({
 }) => {
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-      <SEO title={title} description={description} />
       
       <div 
         className="text-center mb-20"
