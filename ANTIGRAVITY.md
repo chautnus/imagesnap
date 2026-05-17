@@ -26,8 +26,8 @@
 ## Trạng thái hiện tại
  
 **Last updated**: 2026-05-17
-**Last session by**: Antigravity (v1.10.21)
-**Current sprint focus**: Interactive Diagnostic Wizard & PWA Share Target Error Recovery.
+**Last session by**: Antigravity (v1.10.22)
+**Current sprint focus**: Persistent PWA Ingestion & Root Folder Unification.
 
 ---
 
@@ -58,16 +58,16 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.21 - Interactive Diagnostics Wizard & Self-Diagnosing SW Engine)
-- **Tầng 1 (IDB Error Logging)**: Ghi bản ghi sự cố 1KB siêu nhẹ trực tiếp vào bảng `shares` v2 của IndexedDB khi SW gặp lỗi, chuyển hướng sạch về `/dashboard?share_id=sid&sw_fatal_error=true`.
-- **Tầng 3 (Diagnostics Wizard)**: Xây dựng bảng chẩn đoán tương tác **Interactive Wizard Panel** cực kỳ cao cấp, cho phép người dùng chạy thử thủ công và vẽ hình thu nhỏ (Thumbnail) từng khâu, hiển thị trực quan các log lỗi từ SW.
-- **Chống mất dữ liệu (sessionStorage)**: Lưu giữ `share_id` và cờ lỗi thầm lặng vào `sessionStorage` trước khi người dùng bị chuyển hướng do Token Google hết hạn. Tự động khôi phục và chạy chẩn đoán sau khi quay lại app.
-- **Telemetry**: Cắm chốt ghi log đầy đủ ở Main Thread khi: chọn Gallery, chụp ảnh Burst, chụp Native Camera, và thao tác lưu sản phẩm thành công/thất bại lên Google Sheets.
-- **Versioning**: v1.10.21.
+## TỔNG KẾT TRẠNG THÁI (v1.10.22 - Persistent PWA Ingestion & Root Folder Unification)
+- **Đồng nhất Thư mục gốc**: Đồng bộ 100% thư mục lưu trữ cha trong Google Drive thành **`ImageSnap Data`** tại cả `sheets.ts` và `productService.ts` (loại bỏ thư mục `ImageSnap` trùng lặp gây bối rối).
+- **Tránh mất Log trên PWA Mobile (localStorage + TTL 5 phút)**: Thay thế hoàn toàn cơ chế lưu tạm `sessionStorage` bằng `localStorage` để chống mất mát dữ liệu do PWA bị hệ điều hành Android/iOS xóa sạch Context khi chuyển hướng OAuth.
+- **TTL & Tự dọn dẹp**: Tích hợp cơ chế hết hạn (Time-To-Live) 5 phút cho `share_id` để tránh rác bộ nhớ của thiết bị. Thực hiện tự dọn sạch `localStorage` ngay lập tức sau khi dữ liệu được trích xuất thành công lên giao diện hoặc qua bảng Diagnostics.
+- **Giao diện & Telemetry**: Giữ vững các cải tiến từ v1.10.21 bao gồm bảng Diagnostics Wizard, và cắm chốt ghi log đầy đủ ở Main Thread khi: chọn Gallery, chụp ảnh Burst, chụp Native Camera, và thao tác lưu sản phẩm thành công/thất bại lên Google Sheets.
+- **Versioning**: v1.10.22.
 
 ### Dừng ở đâu?
-- Toàn bộ cơ chế chẩn đoán lỗi 2 tầng (IDB error logs & Diagnostics Wizard) đã được tích hợp thành công vào Dashboard & CaptureTab.
-- Hệ thống hoạt động tự chẩn đoán lỗi 100% không phụ thuộc vào cáp debug.
+- Thư mục cha đã được đồng nhất về `ImageSnap Data`.
+- Sự cố sập log share trên di động đã được giải quyết triệt để nhờ localStorage.
 
 ---
 

@@ -51,15 +51,18 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [showPicker, setShowPicker] = useState(false);
   const [extractedImages, setExtractedImages] = useState<ExtractedImage[]>([]);
   const [showWizard, setShowWizard] = useState(false);
+  const [isFatalError, setIsFatalError] = useState(false);
   const blobUrlsRef = useRef<string[]>([]);
  
   // Auto-open Wizard if a share error occurred
   useEffect(() => {
     if (shareTargetSid && typeof window !== 'undefined') {
-      const isErr = sessionStorage.getItem('imagesnap_pending_fatal_error') === 'true';
+      const isErr = localStorage.getItem('imagesnap_pending_fatal_error') === 'true';
       if (isErr) {
         if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Redirecting to Diagnostics Wizard because SW Fatal Error was set.`);
+        setIsFatalError(true);
         setShowWizard(true);
+        localStorage.removeItem('imagesnap_pending_fatal_error');
       }
     }
   }, [shareTargetSid]);
@@ -77,7 +80,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   useEffect(() => {
     if (shareTargetSid) {
       // Bỏ qua luồng thành công ngầm nếu Wizard đang được kích hoạt
-      const isErr = typeof window !== 'undefined' && sessionStorage.getItem('imagesnap_pending_fatal_error') === 'true';
+      const isErr = typeof window !== 'undefined' && localStorage.getItem('imagesnap_pending_fatal_error') === 'true';
       if (isErr) return;
 
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Pulling Share Data for SID: ${shareTargetSid}`);
@@ -126,8 +129,9 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
           };
           transaction.oncomplete = () => {
             if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Normal Ingestion finished. Clearing pending status.`);
-            sessionStorage.removeItem('imagesnap_pending_share_id');
-            sessionStorage.removeItem('imagesnap_pending_fatal_error');
+            localStorage.removeItem('imagesnap_pending_share_id');
+            localStorage.removeItem('imagesnap_pending_share_time');
+            localStorage.removeItem('imagesnap_pending_fatal_error');
             db.close();
           };
         } catch (e: any) {
@@ -287,7 +291,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       {showWizard && shareTargetSid && (
         <DiagnosticsWizard 
           shareId={shareTargetSid}
-          hasFatalError={typeof window !== 'undefined' && sessionStorage.getItem('imagesnap_pending_fatal_error') === 'true'}
+          hasFatalError={isFatalError}
           onClose={() => setShowWizard(false)}
           onIngestComplete={(data) => {
             if (data.images && data.images.length > 0) {

@@ -11,7 +11,7 @@ export async function saveProduct(
   userName?: string,
   providedToken?: string
 ) {
-  const rootFolderId = await findOrCreateFolder('ImageSnap', undefined, providedToken);
+  const rootFolderId = await findOrCreateFolder('ImageSnap Data', undefined, providedToken);
   const cat = categories.find(c => c.id === product.categoryId);
   if (!cat) throw new Error("Category not found");
 

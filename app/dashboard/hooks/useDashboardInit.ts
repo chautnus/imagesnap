@@ -196,13 +196,27 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     return () => window.removeEventListener('SYS_AUTH_EXPIRED', handleAuthExpired);
   }, []);
 
-  // Triggered on completion to restore pending share Target from sessionStorage
+  // Triggered on completion to restore pending share Target from localStorage with a 5-minute TTL
   useEffect(() => {
     if (initStage === 'COMPLETED' && typeof window !== 'undefined') {
-      const pendingSid = sessionStorage.getItem('imagesnap_pending_share_id');
-      if (pendingSid) {
-        log(`[INGEST] Restoring pending share_id from sessionStorage: ${pendingSid}`);
-        handleShareTarget(pendingSid);
+      const pendingSid = localStorage.getItem('imagesnap_pending_share_id');
+      const pendingTimeStr = localStorage.getItem('imagesnap_pending_share_time');
+      
+      if (pendingSid && pendingTimeStr) {
+        const pendingTime = parseInt(pendingTimeStr);
+        const age = Date.now() - pendingTime;
+        
+        if (age < 5 * 60 * 1000) { // 5 minutes TTL
+          log(`[INGEST] Restoring pending share_id from localStorage (Age: ${Math.round(age/1000)}s): ${pendingSid}`);
+          handleShareTarget(pendingSid);
+        } else {
+          log(`[INGEST] Pending share_id expired (Age: ${Math.round(age/1000)}s). Purging.`);
+          localStorage.removeItem('imagesnap_pending_fatal_error');
+        }
+        
+        // Clean up keys immediately to prevent reuse/pollution
+        localStorage.removeItem('imagesnap_pending_share_id');
+        localStorage.removeItem('imagesnap_pending_share_time');
       }
     }
   }, [initStage, handleShareTarget]);
@@ -253,13 +267,14 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       const swError = urlParams.get('sw_fatal_error');
       
       if (sid) {
-        sessionStorage.setItem('imagesnap_pending_share_id', sid);
-        log(`[SESSION] Cached pending share_id: ${sid}`);
+        localStorage.setItem('imagesnap_pending_share_id', sid);
+        localStorage.setItem('imagesnap_pending_share_time', Date.now().toString());
+        log(`[SESSION] Cached pending share_id in localStorage: ${sid}`);
       }
       
       if (swError === 'true') {
-        sessionStorage.setItem('imagesnap_pending_fatal_error', 'true');
-        log(`[SESSION] Cached pending fatal error flag`);
+        localStorage.setItem('imagesnap_pending_fatal_error', 'true');
+        log(`[SESSION] Cached pending fatal error flag in localStorage`);
       }
       
       // Clean up URL parameters immediately

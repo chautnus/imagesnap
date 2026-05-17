@@ -161,9 +161,9 @@ export const DiagnosticsWizard: React.FC<DiagnosticsWizardProps> = ({
       addLocalLog("[OK] Đã chuyển dữ liệu vào Form nhập sản phẩm.");
       addLocalLog("--- QUY TRÌNH CHẨN ĐOÁN TỰ ĐỘNG HOÀN TẤT THÀNH CÔNG! ---");
       
-      // Tự động xóa khỏi sessionStorage khi thành công
-      sessionStorage.removeItem('imagesnap_pending_share_id');
-      sessionStorage.removeItem('imagesnap_pending_fatal_error');
+      // Tự động xóa khỏi localStorage khi thành công
+      localStorage.removeItem('imagesnap_pending_share_id');
+      localStorage.removeItem('imagesnap_pending_fatal_error');
     } catch (e: any) {
       setStep3Status('fail');
       addLocalLog(`[LỖI] Không thể điền dữ liệu: ${e.message}`);
@@ -190,8 +190,8 @@ export const DiagnosticsWizard: React.FC<DiagnosticsWizardProps> = ({
       } catch (e) { db.close(); }
     };
     
-    sessionStorage.removeItem('imagesnap_pending_share_id');
-    sessionStorage.removeItem('imagesnap_pending_fatal_error');
+    localStorage.removeItem('imagesnap_pending_share_id');
+    localStorage.removeItem('imagesnap_pending_fatal_error');
   };
 
   return (
