@@ -24,6 +24,23 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- Alternative Pages (BOFU) -->
+  <url>
+    <loc>https://www.imagesnap.cloud/alternatives/companycam-alternative</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/alternatives/pics-io-alternative</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/alternatives/google-photos-vs-imagesnap</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Comparison Pages (BOFU) -->
   <url>
     <loc>https://www.imagesnap.cloud/compare/imagesnap-vs-manual-spreadsheet</loc>
@@ -46,6 +63,52 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- Feature Pages (MOFU) -->
+  <url>
+    <loc>https://www.imagesnap.cloud/features/web-image-import</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/features/auto-folder-organization</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/features/team-collaboration</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/features/metadata-auto-fill</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Integration Pages -->
+  <url>
+    <loc>https://www.imagesnap.cloud/integrations/google-drive</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Free Tools (TOFU) -->
+  <url>
+    <loc>https://www.imagesnap.cloud/tools/exif-viewer</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/tools/bulk-photo-renamer</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/tools/drive-folder-generator</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+
   <!-- Use Case Pages (MOFU) -->
   <url>
     <loc>https://www.imagesnap.cloud/use-cases/competitor-tracking-beyond-keyword-tools</loc>
@@ -65,6 +128,16 @@
   <url>
     <loc>https://www.imagesnap.cloud/use-cases/ecommerce-studios</loc>
     <lastmod>2026-05-06</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/use-cases/real-estate-photographers</loc>
+    <lastmod>2026-05-17</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.imagesnap.cloud/use-cases/field-inspections</loc>
+    <lastmod>2026-05-17</lastmod>
     <priority>0.7</priority>
   </url>
 
