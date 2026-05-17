@@ -1,6 +1,6 @@
-// ImageSnap Service Worker v9.1 - Standalone Tracing (v1.10.20)
+// ImageSnap Service Worker v9.2 - Standalone Tracing (v1.10.21)
 importScripts('/sw-logger.js');
-const CACHE_NAME = 'imagesnap-v1.10.20';
+const CACHE_NAME = 'imagesnap-v1.10.21';
 
 // Assets to precache
 const PRECACHE_ASSETS = [
@@ -139,14 +139,21 @@ self.addEventListener('fetch', (event) => {
           // SUCCESS
           self.swLog.step("INTERCEPT_SUCCESS_REDIRECTING");
           await new Promise(resolve => setTimeout(resolve, 500));
-          return Response.redirect(self.swLog.makeRedirectUrl('/dashboard', { share_id: sid }), 303);
+          return Response.redirect(`/dashboard?share_id=${sid}`, 303);
 
         } catch (err) {
           self.swLog.error(`FATAL:${err.message || err}`);
           const errorLog = err.message || err.toString();
           
-          // FAIL: Fallback to URL passing
-          return Response.redirect(self.swLog.makeRedirectUrl('/dashboard', { sw_fatal_error: errorLog }), 303);
+          // TẦNG 1: Ghi log sự cố siêu nhẹ vào IDB
+          try {
+            await self.swLog.writeErrorToIDB(sid, errorLog);
+          } catch (writeErr) {
+            console.error("IDB error write failed:", writeErr);
+          }
+          
+          // Chuyển hướng sạch kèm cờ báo động lỗi
+          return Response.redirect(`/dashboard?share_id=${sid}&sw_fatal_error=true`, 303);
         }
       })()
     );

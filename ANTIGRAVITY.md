@@ -24,10 +24,10 @@
 ---
 
 ## Trạng thái hiện tại
-
-**Last updated**: 2026-05-16
-**Last session by**: Antigravity (v1.10.20)
-**Current sprint focus**: Standalone SW Trace & Auth Reliability.
+ 
+**Last updated**: 2026-05-17
+**Last session by**: Antigravity (v1.10.21)
+**Current sprint focus**: Interactive Diagnostic Wizard & PWA Share Target Error Recovery.
 
 ---
 
@@ -58,17 +58,16 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.20 - SW Standalone Logger Patch)
-- **Hệ thống**: Gốc rễ chẩn đoán lỗi Service Worker được tách hẳn thành file biệt lập `public/sw-logger.js` (không làm rác/bẩn core logic).
-- **Dữ liệu**: Đồng bộ toàn bộ chuỗi nhật ký `sw_trace` từ URL về Main Thread để đẩy lên Cloud Sheets.
-- **Auth**: Bỏ Silent Auth. Khi Token hết hạn, bắn sự kiện `SYS_AUTH_EXPIRED` để ép người dùng Login lại tương tác, giải quyết dứt điểm lỗi kẹt Session 401.
-- **Backend**: Thêm Graceful Fallback (trả về Gói Free) cho route `/api/user-status` nếu DB 500 Error, chống sập luồng khởi tạo.
-- **Tính năng**: Fix `DataCloneError` ở Service Worker khi nhận file từ Gallery điện thoại (convert File -> ArrayBuffer -> Blob).
-- **Versioning**: v1.10.20.
+## TỔNG KẾT TRẠNG THÁI (v1.10.21 - Interactive Diagnostics Wizard & Self-Diagnosing SW Engine)
+- **Tầng 1 (IDB Error Logging)**: Ghi bản ghi sự cố 1KB siêu nhẹ trực tiếp vào bảng `shares` v2 của IndexedDB khi SW gặp lỗi, chuyển hướng sạch về `/dashboard?share_id=sid&sw_fatal_error=true`.
+- **Tầng 3 (Diagnostics Wizard)**: Xây dựng bảng chẩn đoán tương tác **Interactive Wizard Panel** cực kỳ cao cấp, cho phép người dùng chạy thử thủ công và vẽ hình thu nhỏ (Thumbnail) từng khâu, hiển thị trực quan các log lỗi từ SW.
+- **Chống mất dữ liệu (sessionStorage)**: Lưu giữ `share_id` và cờ lỗi thầm lặng vào `sessionStorage` trước khi người dùng bị chuyển hướng do Token Google hết hạn. Tự động khôi phục và chạy chẩn đoán sau khi quay lại app.
+- **Telemetry**: Cắm chốt ghi log đầy đủ ở Main Thread khi: chọn Gallery, chụp ảnh Burst, chụp Native Camera, và thao tác lưu sản phẩm thành công/thất bại lên Google Sheets.
+- **Versioning**: v1.10.21.
 
 ### Dừng ở đâu?
-- Hệ thống đang ở phiên bản **v1.10.8**.
-- Đã fix lỗi Staff login không có session.
+- Toàn bộ cơ chế chẩn đoán lỗi 2 tầng (IDB error logs & Diagnostics Wizard) đã được tích hợp thành công vào Dashboard & CaptureTab.
+- Hệ thống hoạt động tự chẩn đoán lỗi 100% không phụ thuộc vào cáp debug.
 
 ---
 

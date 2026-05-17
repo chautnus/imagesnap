@@ -196,6 +196,17 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     return () => window.removeEventListener('SYS_AUTH_EXPIRED', handleAuthExpired);
   }, []);
 
+  // Triggered on completion to restore pending share Target from sessionStorage
+  useEffect(() => {
+    if (initStage === 'COMPLETED' && typeof window !== 'undefined') {
+      const pendingSid = sessionStorage.getItem('imagesnap_pending_share_id');
+      if (pendingSid) {
+        log(`[INGEST] Restoring pending share_id from sessionStorage: ${pendingSid}`);
+        handleShareTarget(pendingSid);
+      }
+    }
+  }, [initStage, handleShareTarget]);
+
   useEffect(() => {
     const handleInit = async () => {
       log('[STAGE] Auth Ingress...');
@@ -238,19 +249,24 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       updateStage('AUTH_PROCESS');
       
       const urlParams = new URLSearchParams(window.location.search);
+      const sid = urlParams.get('share_id');
       const swError = urlParams.get('sw_fatal_error');
-      if (swError) {
-        log(`[SW FATAL] ${decodeURIComponent(swError)}`);
+      
+      if (sid) {
+        sessionStorage.setItem('imagesnap_pending_share_id', sid);
+        log(`[SESSION] Cached pending share_id: ${sid}`);
       }
       
-      const swTrace = urlParams.get('sw_trace');
-      if (swTrace) {
-        log(`[SW TRACE] ${decodeURIComponent(swTrace)}`);
-        
-        // Clean up URL parameters
+      if (swError === 'true') {
+        sessionStorage.setItem('imagesnap_pending_fatal_error', 'true');
+        log(`[SESSION] Cached pending fatal error flag`);
+      }
+      
+      // Clean up URL parameters immediately
+      if (sid || swError) {
         try {
           const nextParams = new URLSearchParams(window.location.search);
-          nextParams.delete('sw_trace');
+          nextParams.delete('share_id');
           nextParams.delete('sw_fatal_error');
           const nextUrl = window.location.pathname + (nextParams.toString() ? `?${nextParams.toString()}` : '');
           window.history.replaceState(null, '', nextUrl);

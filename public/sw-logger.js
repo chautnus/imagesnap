@@ -1,4 +1,4 @@
-// public/sw-logger.js - File độc lập chuyên biệt xử lý Log cho Service Worker
+// public/sw-logger.js - File độc lập chuyên biệt xử lý Log lỗi cho Service Worker (v1.10.21)
 self._swTrace = [];
 
 self.swLog = {
@@ -24,22 +24,56 @@ self.swLog = {
     console.error(`[SW_LOGGER_ERROR] ${errItem}`);
   },
 
-  // 4. Sinh URL chuyển hướng chứa đầy đủ dấu vết để Main Thread thu hoạch
-  makeRedirectUrl: function(basePath, params) {
-    var url = basePath + "?";
-    var queryParts = [];
-    
-    // Đính kèm các tham số gốc (ví dụ: share_id)
-    for (var key in params) {
-      if (params[key] !== undefined && params[key] !== null) {
-        queryParts.push(key + "=" + encodeURIComponent(params[key]));
-      }
-    }
-    
-    // Đính kèm chuỗi trace lịch sử đã mã hóa
-    var traceString = self._swTrace.join(' > ');
-    queryParts.push("sw_trace=" + encodeURIComponent(traceString));
-    
-    return url + queryParts.join('&');
+  // 4. Trích xuất toàn bộ vết tích
+  getTrace: function() {
+    return self._swTrace;
+  },
+
+  // 5. Ghi nhận bản ghi lỗi siêu nhẹ vào IndexedDB (Tầng 1 Fallback)
+  writeErrorToIDB: function(sid, errMessage) {
+    return new Promise((resolve) => {
+      const DB_NAME = 'imagesnap-pwa-db';
+      const STORE_NAME = 'shares';
+      const DB_VERSION = 2; // Giữ nguyên DB Version 2, tuyệt đối an toàn!
+
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      
+      request.onsuccess = (event) => {
+        const db = event.target.result;
+        try {
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(STORE_NAME);
+          
+          // Ghi bản ghi sự cố cực nhẹ (KHÔNG CÓ ẢNH)
+          const errorPayload = {
+            is_error: true,
+            error_message: errMessage,
+            sw_logs: self._swTrace,
+            timestamp: Date.now()
+          };
+          
+          const putReq = store.put(errorPayload, sid);
+          
+          putReq.onsuccess = () => {
+            // Đợi transaction hoàn tất
+          };
+          
+          transaction.oncomplete = () => {
+            db.close();
+            resolve(true);
+          };
+          
+          transaction.onerror = () => {
+            db.close();
+            resolve(false);
+          };
+        } catch (e) {
+          db.close();
+          resolve(false);
+        }
+      };
+      
+      request.onerror = () => resolve(false);
+    });
   }
 };

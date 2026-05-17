@@ -14,7 +14,8 @@ import { QuickAddCategory } from './QuickAddCategory';
 import { BurstCamera } from '@web/components/BurstCamera';
 import { ImagePicker, ExtractedImage } from '@web/components/ImagePicker';
 import { Globe as GlobeIcon, Camera } from 'lucide-react';
-import { Images as ImagesIcon, RefreshCw } from 'lucide-react';
+import { Images as ImagesIcon, RefreshCw, ShieldAlert } from 'lucide-react';
+import { DiagnosticsWizard } from './DiagnosticsWizard';
 
 interface CaptureTabProps {
   categories: Category[];
@@ -49,7 +50,19 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [keySearchFocus, setKeySearchFocus] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [extractedImages, setExtractedImages] = useState<ExtractedImage[]>([]);
+  const [showWizard, setShowWizard] = useState(false);
   const blobUrlsRef = useRef<string[]>([]);
+ 
+  // Auto-open Wizard if a share error occurred
+  useEffect(() => {
+    if (shareTargetSid && typeof window !== 'undefined') {
+      const isErr = sessionStorage.getItem('imagesnap_pending_fatal_error') === 'true';
+      if (isErr) {
+        if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Redirecting to Diagnostics Wizard because SW Fatal Error was set.`);
+        setShowWizard(true);
+      }
+    }
+  }, [shareTargetSid]);
 
   // Update recent categories
   useEffect(() => {
@@ -60,9 +73,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
     }
   }, [selectedCategoryId]);
 
-  // IDB Data Ingestion logic (Coordinator Level)
+  // IDB Data Ingestion logic (Coordinator Level - Normal Successful Ingestion)
   useEffect(() => {
     if (shareTargetSid) {
+      // Bỏ qua luồng thành công ngầm nếu Wizard đang được kích hoạt
+      const isErr = typeof window !== 'undefined' && sessionStorage.getItem('imagesnap_pending_fatal_error') === 'true';
+      if (isErr) return;
+
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Pulling Share Data for SID: ${shareTargetSid}`);
       
       const DB_NAME = 'imagesnap-pwa-db';
@@ -107,8 +124,14 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
               });
             }
           };
-          transaction.oncomplete = () => db.close();
-        } catch (e) {
+          transaction.oncomplete = () => {
+            if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Normal Ingestion finished. Clearing pending status.`);
+            sessionStorage.removeItem('imagesnap_pending_share_id');
+            sessionStorage.removeItem('imagesnap_pending_fatal_error');
+            db.close();
+          };
+        } catch (e: any) {
+          if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Error in ingestion: ${e.message || e}`);
           db.close();
         }
       };
@@ -136,12 +159,14 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
   const handleSave = async () => {
     if (isSaving || !selectedCategoryId || images.length === 0) return;
+    if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Save Product triggered. Category: ${selectedCategoryId}, Images: ${images.length}`);
     setIsSaving(true);
     try {
       const isStaff = subStatus.userEmail?.endsWith('@staff.imagesnap');
-      const processedImages = await Promise.all(images.map(async (img) => {
+      const processedImages = await Promise.all(images.map(async (img, idx) => {
         let base64 = img;
         if (img.startsWith('blob:')) {
+          if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Processing blob URL to base64 for image ${idx + 1}...`);
           const res = await fetch(img);
           const blob = await res.blob();
           base64 = await new Promise(r => { const rd = new FileReader(); rd.onloadend = () => r(rd.result as string); rd.readAsDataURL(blob); });
@@ -149,8 +174,11 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         return (isStaff && base64.startsWith('data:')) ? await compressImage(base64) : base64;
       }));
       await onSave({ categoryId: selectedCategoryId, data: { ...formData } }, processedImages);
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Product saved successfully to Google Sheets!`);
       setImages([]);
       setFormData({});
+    } catch (e: any) {
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Product save failed: ${e.message || e}`);
     } finally { setIsSaving(false); }
   };
 
@@ -167,27 +195,58 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
       {/* Action Row */}
       <div className="grid grid-cols-4 gap-2">
-        <BurstCamera imageCount={images.length} onPhotoTaken={url => setImages(p => [...p, url])} />
+        <BurstCamera imageCount={images.length} onPhotoTaken={url => {
+          if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Burst photo taken. Current images: ${images.length + 1}`);
+          setImages(p => [...p, url]);
+        }} />
         
         <label htmlFor="file-gallery" className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent transition-all cursor-pointer h-20">
           <ImagesIcon size={18} />
           <span className="text-[10px] font-black uppercase">GALLERY</span>
           <input type="file" accept="image/*" multiple className="hidden" id="file-gallery"
-            onChange={e => Array.from(e.target.files || []).forEach(f => {
-              const r = new FileReader(); r.onload = re => setImages(p => [...p, re.target!.result as string]); r.readAsDataURL(f);
-            })}
+            onChange={e => {
+              const files = Array.from(e.target.files || []);
+              if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Gallery picker: User selected ${files.length} files.`);
+              files.forEach((f, idx) => {
+                const r = new FileReader(); 
+                r.onload = re => {
+                  if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Gallery loaded file ${idx + 1}: ${f.name} (${f.size} bytes)`);
+                  setImages(p => [...p, re.target!.result as string]);
+                };
+                r.readAsDataURL(f);
+              });
+            }}
           />
         </label>
-
+ 
         <label htmlFor="file-native" className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 bg-card border-line text-muted hover:border-accent transition-all cursor-pointer h-20">
           <Camera size={18} />
           <span className="text-[10px] font-black uppercase">CAMERA</span>
           <input type="file" accept="image/*" capture="environment" className="hidden" id="file-native"
-            onChange={e => Array.from(e.target.files || []).forEach(f => {
-              const r = new FileReader(); r.onload = re => setImages(p => [...p, re.target!.result as string]); r.readAsDataURL(f);
-            })}
+            onChange={e => {
+              const files = Array.from(e.target.files || []);
+              if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Native camera picker: User captured ${files.length} files.`);
+              files.forEach((f, idx) => {
+                const r = new FileReader();
+                r.onload = re => {
+                  if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Native camera loaded file ${idx + 1}: ${f.name} (${f.size} bytes)`);
+                  setImages(p => [...p, re.target!.result as string]);
+                };
+                r.readAsDataURL(f);
+              });
+            }}
           />
         </label>
+
+        {shareTargetSid && (
+          <button
+            onClick={() => setShowWizard(true)}
+            className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 bg-card border-accent/30 text-accent hover:border-accent transition-all h-20 animate-pulse"
+          >
+            <ShieldAlert size={18} />
+            <span className="text-[10px] font-black uppercase">DIAGNOSE</span>
+          </button>
+        )}
       </div>
 
       <ImageGrid images={images} onRemoveImage={idx => setImages(images.filter((_, i) => i !== idx))} />
@@ -224,6 +283,37 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         onClose={() => setShowQuickAdd(false)}
         onSave={onSaveCategory!}
       />
+
+      {showWizard && shareTargetSid && (
+        <DiagnosticsWizard 
+          shareId={shareTargetSid}
+          hasFatalError={typeof window !== 'undefined' && sessionStorage.getItem('imagesnap_pending_fatal_error') === 'true'}
+          onClose={() => setShowWizard(false)}
+          onIngestComplete={(data) => {
+            if (data.images && data.images.length > 0) {
+              setImages(prev => [...prev, ...data.images]);
+              blobUrlsRef.current.push(...data.images);
+            }
+            setFormData(prev => {
+              const next = { ...prev };
+              const cat = categories.find(c => c.id === selectedCategoryId);
+              if (cat) {
+                cat.fields.forEach(f => {
+                  const label = translate(f.label, lang).toLowerCase();
+                  if (data.title && !next[f.id] && (f.type === 'key' || label.includes('name') || label.includes('title'))) {
+                    next[f.id] = data.title;
+                  }
+                  if (data.url && !next[f.id] && f.type === 'url') {
+                    next[f.id] = data.url;
+                  }
+                });
+              }
+              return next;
+            });
+            setShowWizard(false);
+          }}
+        />
+      )}
     </div>
   );
 };
