@@ -243,6 +243,20 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
         log(`[SW FATAL] ${decodeURIComponent(swError)}`);
       }
       
+      const swTrace = urlParams.get('sw_trace');
+      if (swTrace) {
+        log(`[SW TRACE] ${decodeURIComponent(swTrace)}`);
+        
+        // Clean up URL parameters
+        try {
+          const nextParams = new URLSearchParams(window.location.search);
+          nextParams.delete('sw_trace');
+          nextParams.delete('sw_fatal_error');
+          const nextUrl = window.location.pathname + (nextParams.toString() ? `?${nextParams.toString()}` : '');
+          window.history.replaceState(null, '', nextUrl);
+        } catch (e) {}
+      }
+      
       // [ROOT CAUSE 3] Watchdog using Ref to avoid stale closure
       const watchdog = setTimeout(() => {
         if (initStageRef.current !== 'COMPLETED') {

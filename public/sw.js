@@ -1,5 +1,6 @@
-// ImageSnap Service Worker v9.0 - Diagnostic Edition (v1.10.18)
-const CACHE_NAME = 'imagesnap-v1.10.18';
+// ImageSnap Service Worker v9.1 - Standalone Tracing (v1.10.20)
+importScripts('/sw-logger.js');
+const CACHE_NAME = 'imagesnap-v1.10.20';
 
 // Assets to precache
 const PRECACHE_ASSETS = [
@@ -73,14 +74,18 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       (async () => {
         const sid = Date.now().toString();
-        let errorLog = '';
+        self.swLog.start();
+        self.swLog.step(`INTERCEPT_START:${sid}`);
         
         try {
           // STEP 1: Parse FormData
+          self.swLog.step("PARSE_FORM_DATA_START");
           let formData;
           try {
             formData = await event.request.formData();
+            self.swLog.step("PARSE_FORM_DATA_SUCCESS");
           } catch (fdErr) {
+            self.swLog.error(`FormData parse failed: ${fdErr.message}`);
             throw new Error(`FormData parse failed: ${fdErr.message}`);
           }
           
@@ -88,24 +93,31 @@ self.addEventListener('fetch', (event) => {
           const title = formData.get('title') || '';
           const text = formData.get('text') || '';
           const link = formData.get('url') || '';
+          self.swLog.step(`PAYLOAD: images=${imageFiles.length}, title=${title ? 'yes' : 'no'}, text=${text ? 'yes' : 'no'}, url=${link ? 'yes' : 'no'}`);
 
           if (imageFiles.length > 0 || title || text || link) {
             
             // STEP 2: Prevent DataCloneError by converting File -> ArrayBuffer -> Blob
+            self.swLog.step("CONVERT_IMAGES_TO_BLOBS_START");
             let cleanImages = [];
             try {
-              cleanImages = await Promise.all(imageFiles.map(async (file) => {
+              cleanImages = await Promise.all(imageFiles.map(async (file, idx) => {
                 if (file instanceof File || file instanceof Blob) {
+                  self.swLog.step(`CONVERTING_FILE_${idx}:${file.name || 'unnamed'}:${file.type}:${file.size} bytes`);
                   const buffer = await file.arrayBuffer();
                   return new Blob([buffer], { type: file.type || 'image/jpeg' });
                 }
+                self.swLog.step(`SKIPPING_CONVERT_FILE_${idx}: not File or Blob instance`);
                 return file; // If it's somehow a string
               }));
+              self.swLog.step("CONVERT_IMAGES_TO_BLOBS_SUCCESS");
             } catch (cloneErr) {
+              self.swLog.error(`Buffer conversion failed: ${cloneErr.message}`);
               throw new Error(`Buffer conversion failed: ${cloneErr.message}`);
             }
 
             // STEP 3: Save to IndexedDB
+            self.swLog.step("IDB_SAVE_START");
             try {
               await saveSharedData(sid, { 
                 images: cleanImages, 
@@ -114,23 +126,27 @@ self.addEventListener('fetch', (event) => {
                 url: link,
                 timestamp: parseInt(sid)
               });
+              self.swLog.step("IDB_SAVE_SUCCESS");
             } catch (dbErr) {
+              self.swLog.error(`IDB Save failed: ${dbErr.message || dbErr}`);
               throw new Error(`IDB Save failed: ${dbErr.message || dbErr}`);
             }
           } else {
+            self.swLog.error("No data found in Share payload");
             throw new Error(`No data found in Share payload`);
           }
 
           // SUCCESS
+          self.swLog.step("INTERCEPT_SUCCESS_REDIRECTING");
           await new Promise(resolve => setTimeout(resolve, 500));
-          return Response.redirect(`/dashboard?share_id=${sid}`, 303);
+          return Response.redirect(self.swLog.makeRedirectUrl('/dashboard', { share_id: sid }), 303);
 
         } catch (err) {
-          console.error('[SW FATAL] Share Target Interception Failed:', err);
-          errorLog = err.message || err.toString();
+          self.swLog.error(`FATAL:${err.message || err}`);
+          const errorLog = err.message || err.toString();
           
           // FAIL: Fallback to URL passing
-          return Response.redirect(`/dashboard?sw_fatal_error=${encodeURIComponent(errorLog)}`, 303);
+          return Response.redirect(self.swLog.makeRedirectUrl('/dashboard', { sw_fatal_error: errorLog }), 303);
         }
       })()
     );
