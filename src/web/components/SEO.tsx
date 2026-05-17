@@ -20,7 +20,7 @@ const BASE_URL = "https://www.imagesnap.cloud";
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
 
 export const SEO: React.FC<SEOProps> = ({ title, description, keywords, ogImage, blogPosting }) => {
-  const canonical = `${BASE_URL}${window.location.pathname}`;
+  const canonical = `${BASE_URL}${typeof window !== 'undefined' ? window.location.pathname : '/'}`;
   const resolvedOgImage = ogImage || DEFAULT_OG_IMAGE;
 
   const blogSchema = blogPosting ? JSON.stringify({
