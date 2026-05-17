@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { CompetitorTracking } from '@web/pages/use-cases/CompetitorTracking';
 import { SwipeFileTool } from '@web/pages/use-cases/SwipeFileTool';
 import { ConstructionTeams } from '@web/pages/use-cases/ConstructionTeams';
-import { GenericSEOPage } from '@web/pages/GenericSEOPage';
+import { EcommerceStudios } from '@web/pages/use-cases/EcommerceStudios';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
 import { Metadata } from 'next';
 
@@ -24,14 +24,9 @@ const USE_CASE_PAGES: Record<string, { component: any, props?: any, title: strin
     description: "Sync site photos directly to Google Drive folders with automatic classification. Perfect for construction teams needing reliable visual records and site logs."
   },
   'ecommerce-studios': {
-    component: GenericSEOPage,
-    props: {
-      title: "E-commerce Asset Management for Studios — ImageSnap",
-      headline: "Streamline your E-commerce Visual Workflow",
-      description: "Automatically organize product shots and marketing assets in Google Drive with structured metadata for your e-commerce studio. Professional asset management."
-    },
-    title: "E-commerce Asset Management for Studios — ImageSnap",
-    description: "Streamline your E-commerce Visual Workflow with ImageSnap. Automatically organize product shots and marketing assets in Google Drive with structured metadata."
+    component: EcommerceStudios,
+    title: "E-commerce Product Photo Management for Studios — ImageSnap",
+    description: "Stop losing product shots in unstructured Drive folders. ImageSnap lets e-commerce studios capture product images with SKU, variant, and client data — auto-organized to Google Drive and logged in Sheets."
   }
 };
 
