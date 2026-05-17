@@ -25,9 +25,9 @@
 
 ## Trạng thái hiện tại
 
-**Last updated**: 2026-05-16 01:16
-**Last session by**: Antigravity (v1.10.17)
-**Current sprint focus**: Absolute Stability & Scoped Data.
+**Last updated**: 2026-05-16
+**Last session by**: Antigravity (v1.10.18)
+**Current sprint focus**: Diagnostic Logging & SW Reliability.
 
 ---
 
@@ -58,11 +58,11 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.17)
-- **Hệ thống**: Fix triệt để 4 Root Cause gây Loop và treo State (dùng Ref-safe & SessionGuard).
-- **Dữ liệu**: Cô lập Workspace vào thư mục "ImageSnap Data" để tránh trùng lặp file.
-- **Tính năng**: Tự động nạp dữ liệu (Reactive Loading) ngay khi có Spreadsheet ID.
-- **Versioning**: v1.10.17.
+## TỔNG KẾT TRẠNG THÁI (v1.10.18 - Diagnostic Edition)
+- **Hệ thống**: Triển khai Cloud Logging (Buffer 3s via `localStorage` -> Google Sheets `Logs`).
+- **Dữ liệu**: Fix lỗi sập ngầm khi nạp dữ liệu bằng cách sử dụng `ensureSheetExists`.
+- **Tính năng**: Fix `DataCloneError` ở Service Worker khi nhận file từ Gallery điện thoại (convert File -> ArrayBuffer -> Blob).
+- **Versioning**: v1.10.18.
 
 ### Dừng ở đâu?
 - Hệ thống đang ở phiên bản **v1.10.8**.

@@ -2,40 +2,35 @@
 
 import React, { useState, useEffect } from 'react';
 
+import { flushCloudLogs } from '@shared/lib/sheets';
+
 export function DebugOverlay() {
   const [logs, setLogs] = useState<string[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(false);
 
+  // Cloud Logger Flush Interval (Every 3 seconds)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
-    const checkState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const isForced = params.get('debug') === '1';
-      const isPersisted = localStorage.getItem('imagesnap_debug_visible') === '1' || 
-                          sessionStorage.getItem('imagesnap_debug_mode') === '1';
-      
-      if (isForced) {
-        sessionStorage.setItem('imagesnap_debug_mode', '1');
-        setIsVisible(true);
-      } else if (isPersisted) {
-        setIsVisible(true);
+    const interval = setInterval(async () => {
+      try {
+        const bufferStr = localStorage.getItem('imagesnap_log_buffer');
+        if (bufferStr) {
+          const buffer = JSON.parse(bufferStr);
+          if (buffer.length > 0) {
+            // Clear buffer immediately to prevent duplicate flushing if API is slow
+            localStorage.setItem('imagesnap_log_buffer', '[]');
+            await flushCloudLogs(buffer);
+          }
+        }
+      } catch (e) {
+        // Silent catch for flush loop
       }
-    };
+    }, 3000);
 
-    const handleToggle = () => {
-      setIsVisible(prev => {
-        const next = !prev;
-        localStorage.setItem('imagesnap_debug_visible', next ? '1' : '0');
-        return next;
-      });
-    };
-
-    window.addEventListener('SYS_DEBUG_TOGGLE', handleToggle);
-    checkState();
-
-    return () => window.removeEventListener('SYS_DEBUG_TOGGLE', handleToggle);
+    return () => clearInterval(interval);
   }, []);
+
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -52,6 +47,20 @@ export function DebugOverlay() {
 
   if (!isVisible) return null;
 
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-4 right-4 z-[999999]">
+        <button 
+          onClick={() => setIsMinimized(false)}
+          className="bg-black/95 border-2 border-accent/20 rounded-full px-4 py-2 text-[10px] font-black text-accent shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-2xl flex items-center gap-2 animate-pulse"
+        >
+          <div className="w-1.5 h-1.5 bg-accent rounded-full" />
+          SYS LOGS RUNNING
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed top-0 left-0 right-0 bottom-0 pointer-events-none z-[999999] flex items-end p-4">
       <div className="pointer-events-auto w-full max-w-md max-h-[40vh] overflow-y-auto bg-black/95 border-2 border-accent/20 rounded-2xl p-4 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl animate-in slide-in-from-bottom duration-500">
@@ -60,7 +69,7 @@ export function DebugOverlay() {
             <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />
             <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Live Diagnostics</span>
           </div>
-          <button onClick={() => setIsVisible(false)} className="text-[10px] text-white/40 hover:text-white uppercase font-black tracking-widest px-2 py-1">Dismiss</button>
+          <button onClick={() => setIsMinimized(true)} className="text-[10px] text-white/40 hover:text-white uppercase font-black tracking-widest px-2 py-1">Minimize</button>
         </div>
         <div className="space-y-1.5 font-mono">
           {logs.map((log, i) => (

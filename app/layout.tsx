@@ -56,6 +56,11 @@ export default function RootLayout({
             var log = '[' + new Date().toISOString().split('T')[1].split('Z')[0] + '] ' + msg;
             window._debugLogs.push(log);
             console.log(log);
+            try {
+              var buffer = JSON.parse(localStorage.getItem('imagesnap_log_buffer') || '[]');
+              buffer.push(log);
+              localStorage.setItem('imagesnap_log_buffer', JSON.stringify(buffer));
+            } catch(e) {}
             window.dispatchEvent(new CustomEvent('SYS_DEBUG_UPDATE'));
           };
           window.onerror = function(msg, url, line, col, error) {

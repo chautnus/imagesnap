@@ -104,9 +104,10 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       log(`[DRIVE] Resolved: ${id.substring(0, 8)}`);
       setSpreadsheetId(id);
       localStorage.setItem('ps_sheet_id', id);
-      // useAppData will pick this up reactively
+      return id;
     } catch (err) {
       log(`[FATAL] Workspace resolution failed: ${err}`);
+      return null;
     }
   };
 
@@ -203,9 +204,13 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
           if (storedId) {
             log(`[DATA] Local ID: ${storedId.substring(0, 8)}`);
             setSpreadsheetId(storedId);
+            await refreshDataRef.current(storedId);
           } else {
             log('[DATA] Drive Search...');
-            await initializeWorkspace();
+            const newId = await initializeWorkspace();
+            if (newId) {
+              await refreshDataRef.current(newId);
+            }
           }
         } else {
           log('[AUTH] No session.');
@@ -219,6 +224,12 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
 
     const runInitialization = async () => {
       updateStage('AUTH_PROCESS');
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const swError = urlParams.get('sw_fatal_error');
+      if (swError) {
+        log(`[SW FATAL] ${decodeURIComponent(swError)}`);
+      }
       
       // [ROOT CAUSE 3] Watchdog using Ref to avoid stale closure
       const watchdog = setTimeout(() => {

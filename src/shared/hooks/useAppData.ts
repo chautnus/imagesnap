@@ -5,7 +5,7 @@ import { AppData, Product, Category, User } from '../lib/types';
 import { fetchAllAppData } from '../services/dataService';
 import { saveProduct, deleteProduct } from '../services/productService';
 import { saveCategory, deleteCategory } from '../services/categoryService';
-import { appendRow } from '../lib/sheets';
+import { appendRow, ensureSheetExists } from '../lib/sheets';
 import { apiClient } from '../lib/api-client';
 
 const API_BASE_URL = (typeof window !== 'undefined' && 
@@ -75,6 +75,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       
       if (data.categories.length === 0) {
         log(`[DATA] No categories found. Seeding defaults...`);
+        await ensureSheetExists(id, 'Categories', ['ID', 'Name', 'Icon', 'Fields JSON', 'Updated At', '_deleted']);
         for (const cat of DEFAULT_CATEGORIES) {
           await appendRow(id, 'Categories!A2:F', [
             cat.id, cat.name, cat.icon, JSON.stringify(cat.fields), cat.updatedAt, 'FALSE'

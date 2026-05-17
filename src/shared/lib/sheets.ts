@@ -201,3 +201,21 @@ export async function updateRowBySearch(spreadsheetId: string, sheetName: string
     body: JSON.stringify({ values: [values] })
   }, providedToken);
 }
+
+export async function flushCloudLogs(logs: string[]) {
+  if (logs.length === 0) return;
+  const token = getAccessToken();
+  const spreadsheetId = typeof window !== 'undefined' ? localStorage.getItem('ps_sheet_id') : null;
+  if (!token || !spreadsheetId) return;
+
+  try {
+    await ensureSheetExists(spreadsheetId, 'Logs', ['Timestamp', 'Message'], token);
+    const rows = logs.map(log => [new Date().toISOString(), log]);
+    await sheetsRequest(`${spreadsheetId}/values/Logs!A:B:append?valueInputOption=USER_ENTERED`, {
+      method: 'POST',
+      body: JSON.stringify({ values: rows })
+    }, token);
+  } catch (e) {
+    console.error('Failed to flush logs to cloud:', e);
+  }
+}

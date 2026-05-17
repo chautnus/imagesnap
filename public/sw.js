@@ -1,5 +1,5 @@
-// ImageSnap Service Worker v8.9 - (v1.10.17)
-const CACHE_NAME = 'imagesnap-v1.10.17';
+// ImageSnap Service Worker v9.0 - Diagnostic Edition (v1.10.18)
+const CACHE_NAME = 'imagesnap-v1.10.18';
 
 // Assets to precache
 const PRECACHE_ASSETS = [
@@ -9,8 +9,6 @@ const PRECACHE_ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  // We no longer call skipWaiting() immediately to allow cleaner transitions if needed,
-  // but for PWA stability we often do. Let's keep it but ensure versioning is strict.
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_ASSETS))
@@ -46,7 +44,7 @@ async function pruneOldShares() {
         const store = transaction.objectStore(STORE_NAME);
         const cursorReq = store.openCursor();
         cursorReq.onsuccess = (e) => {
-          const cursor = (e.target as any).result;
+          const cursor = (e.target).result;
           if (cursor) {
             const timestamp = cursor.value.timestamp || 0;
             if (timestamp < cutoff) store.delete(cursor.key);
@@ -74,9 +72,17 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method === 'POST' && isShareTargetPath) {
     event.respondWith(
       (async () => {
+        const sid = Date.now().toString();
+        let errorLog = '';
+        
         try {
-          const formData = await event.request.formData();
-          const sid = Date.now().toString();
+          // STEP 1: Parse FormData
+          let formData;
+          try {
+            formData = await event.request.formData();
+          } catch (fdErr) {
+            throw new Error(`FormData parse failed: ${fdErr.message}`);
+          }
           
           let imageFiles = formData.getAll('images');
           const title = formData.get('title') || '';
@@ -84,20 +90,47 @@ self.addEventListener('fetch', (event) => {
           const link = formData.get('url') || '';
 
           if (imageFiles.length > 0 || title || text || link) {
-            await saveSharedData(sid, { 
-              images: imageFiles, 
-              title, 
-              text, 
-              url: link,
-              timestamp: parseInt(sid)
-            });
+            
+            // STEP 2: Prevent DataCloneError by converting File -> ArrayBuffer -> Blob
+            let cleanImages = [];
+            try {
+              cleanImages = await Promise.all(imageFiles.map(async (file) => {
+                if (file instanceof File || file instanceof Blob) {
+                  const buffer = await file.arrayBuffer();
+                  return new Blob([buffer], { type: file.type || 'image/jpeg' });
+                }
+                return file; // If it's somehow a string
+              }));
+            } catch (cloneErr) {
+              throw new Error(`Buffer conversion failed: ${cloneErr.message}`);
+            }
+
+            // STEP 3: Save to IndexedDB
+            try {
+              await saveSharedData(sid, { 
+                images: cleanImages, 
+                title, 
+                text, 
+                url: link,
+                timestamp: parseInt(sid)
+              });
+            } catch (dbErr) {
+              throw new Error(`IDB Save failed: ${dbErr.message || dbErr}`);
+            }
+          } else {
+            throw new Error(`No data found in Share payload`);
           }
 
+          // SUCCESS
           await new Promise(resolve => setTimeout(resolve, 500));
           return Response.redirect(`/dashboard?share_id=${sid}`, 303);
+
         } catch (err) {
-          console.error('SW Interception Failed:', err);
-          return Response.redirect('/dashboard?error=share_failed', 303);
+          console.error('[SW FATAL] Share Target Interception Failed:', err);
+          errorLog = err.message || err.toString();
+          
+          // FAIL: Fallback to URL passing
+          return Response.redirect(`/dashboard?sw_fatal_error=${encodeURIComponent(errorLog)}`, 303);
         }
       })()
     );
@@ -128,15 +161,23 @@ async function saveSharedData(sid, data) {
     const request = indexedDB.open(DB_NAME, 2);
     
     request.onupgradeneeded = (event) => {
-      const db = (event.target as any).result;
+      const db = (event.target).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
     };
 
     request.onsuccess = (event) => {
-      const db = (event.target as any).result;
+      const db = (event.target).result;
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
-      store.put(data, sid);
+      const putReq = store.put(data, sid);
+      
+      putReq.onsuccess = () => {
+        // Explicitly wait for transaction complete to guarantee persistence
+      };
+      putReq.onerror = (e) => {
+        reject(e.target.error);
+      };
+      
       transaction.oncomplete = () => {
         db.close();
         resolve(true);
