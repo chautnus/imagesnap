@@ -76,7 +76,20 @@ export async function findOrCreateWorkspace() {
   const query = `name='imagesnap.xlsx' and '${parentFolderId}' in parents and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`;
   const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id)`;
   
-  const gResponse = await fetch(searchUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+  let gResponse = await fetch(searchUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+  
+  if (gResponse.status === 401) {
+    if (typeof window !== 'undefined') {
+      try {
+        await reauthenticate();
+      } catch (e) {
+        throw new Error("Request had invalid authentication credentials. Session expired.");
+      }
+    } else {
+      throw new Error("Request had invalid authentication credentials. Session expired.");
+    }
+  }
+
   const gData = await gResponse.json();
 
   if (gData.files && gData.files.length > 0) {

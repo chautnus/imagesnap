@@ -229,22 +229,11 @@ export const establishSession = async (token: string, email: string, isStaff: bo
 
 export const reauthenticate = (): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => reject(new Error("Re-authentication timed out")), 10000);
-
-    requestToken('none', async (token) => {
-      clearTimeout(timeoutId);
-      try {
-        const profile = await getUserInfo(token);
-        if (profile?.email) {
-          await establishSession(token, profile.email);
-          setAccessToken(token);
-          resolve(token);
-        } else {
-          reject(new Error("Profile fetch failed during reauth"));
-        }
-      } catch (e) {
-        reject(e);
-      }
-    });
+    console.warn("[AUTH] Token expired. Silent re-authentication is deprecated due to browser ITP rules. Forcing manual re-login.");
+    revokeToken();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('SYS_AUTH_EXPIRED'));
+    }
+    reject(new Error("Token expired. Re-authentication required."));
   });
 };

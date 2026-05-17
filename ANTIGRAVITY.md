@@ -26,8 +26,8 @@
 ## Trạng thái hiện tại
 
 **Last updated**: 2026-05-16
-**Last session by**: Antigravity (v1.10.18)
-**Current sprint focus**: Diagnostic Logging & SW Reliability.
+**Last session by**: Antigravity (v1.10.19)
+**Current sprint focus**: Auth Reliability & Diagnostic Logging.
 
 ---
 
@@ -58,11 +58,12 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.18 - Diagnostic Edition)
+## TỔNG KẾT TRẠNG THÁI (v1.10.19 - Token Expiration Patch)
 - **Hệ thống**: Triển khai Cloud Logging (Buffer 3s via `localStorage` -> Google Sheets `Logs`).
-- **Dữ liệu**: Fix lỗi sập ngầm khi nạp dữ liệu bằng cách sử dụng `ensureSheetExists`.
+- **Auth**: Bỏ Silent Auth. Khi Token hết hạn, bắn sự kiện `SYS_AUTH_EXPIRED` để ép người dùng Login lại tương tác, giải quyết dứt điểm lỗi kẹt Session 401.
+- **Backend**: Thêm Graceful Fallback (trả về Gói Free) cho route `/api/user-status` nếu DB 500 Error, chống sập luồng khởi tạo.
 - **Tính năng**: Fix `DataCloneError` ở Service Worker khi nhận file từ Gallery điện thoại (convert File -> ArrayBuffer -> Blob).
-- **Versioning**: v1.10.18.
+- **Versioning**: v1.10.19.
 
 ### Dừng ở đâu?
 - Hệ thống đang ở phiên bản **v1.10.8**.

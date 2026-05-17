@@ -184,6 +184,18 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     }
   }, []);
 
+  // [ROOT CAUSE: TOKEN EXPIRATION] Force Re-login when token dies
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      log('[AUTH] Token expired globally. Forcing re-login screen.');
+      setAuthError("Phiên đăng nhập hết hạn. Vui lòng ấn Login để cấp lại quyền.");
+      updateStage('AUTH_PROCESS');
+    };
+
+    window.addEventListener('SYS_AUTH_EXPIRED', handleAuthExpired);
+    return () => window.removeEventListener('SYS_AUTH_EXPIRED', handleAuthExpired);
+  }, []);
+
   useEffect(() => {
     const handleInit = async () => {
       log('[STAGE] Auth Ingress...');

@@ -11,6 +11,13 @@ export async function GET(req: NextRequest) {
     const status = await getSubscription(email);
     return NextResponse.json(status);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("DB connection failed for user-status, using fallback:", error.message);
+    // Graceful fallback if DB fails
+    return NextResponse.json({
+      isPro: false,
+      limit: 30,
+      usage: 0,
+      isAdmin: email.toLowerCase() === 'chautnus@gmail.com' || email.toLowerCase() === 'admin@imagesnap.cloud'
+    });
   }
 }
