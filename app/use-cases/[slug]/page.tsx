@@ -45,9 +45,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const page = USE_CASE_PAGES[slug];
   if (!page) return { title: "Page Not Found" };
+  const url = `https://www.imagesnap.cloud/use-cases/${slug}`;
   return {
     title: page.title,
     description: page.description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: page.title,
+      description: page.description,
+      url,
+      images: [{ url: "https://www.imagesnap.cloud/og-image.png" }],
+    },
   };
 }
 

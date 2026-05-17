@@ -41,9 +41,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = BLOG_POSTS[slug];
   if (!post) return { title: "Post Not Found" };
+  const url = `https://www.imagesnap.cloud/blog/${slug}`;
   return {
     title: post.title,
     description: post.description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: post.title,
+      description: post.description,
+      url,
+      type: "article",
+      images: [{ url: "https://www.imagesnap.cloud/og-image.png" }],
+    },
   };
 }
 
