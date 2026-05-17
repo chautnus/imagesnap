@@ -1,12 +1,11 @@
-// ImageSnap Service Worker v9.2 - Standalone Tracing (v1.10.21)
+// ImageSnap Service Worker v9.3 - Standalone Tracing (v1.10.23)
 importScripts('/sw-logger.js');
-const CACHE_NAME = 'imagesnap-v1.10.21';
+const CACHE_NAME = 'imagesnap-v1.10.23';
 
 // Assets to precache
 const PRECACHE_ASSETS = [
-  '/dashboard',
   '/manifest.json',
-  '/icons/icon-192x192.png'
+  '/icon192.png'
 ];
 
 self.addEventListener('install', (event) => {
