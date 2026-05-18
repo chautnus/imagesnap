@@ -1,12 +1,10 @@
 import pg from 'pg';
-import dotenv from 'dotenv';
-
-// Load environment variables from .env immediately for local/Express dev servers
-dotenv.config();
 
 const { Pool } = pg;
 
-const DATABASE_URL = process.env.DATABASE_URL;
+// Use bracket notation to prevent Next.js/webpack from static-inlining at build time.
+// Fall back to POSTGRES_URL which Vercel Neon sets as the primary variable.
+const DATABASE_URL = process.env['DATABASE_URL'] || process.env['POSTGRES_URL'];
 
 if (!DATABASE_URL) {
   console.warn("WARNING: DATABASE_URL is not set. Database operations will fail.");
@@ -30,7 +28,7 @@ export function ensureDbInitialized(): Promise<void> {
 // Bọc pool.query để tự động đợi việc khởi tạo hoàn tất và kiểm tra kết nối
 const originalQuery = pool.query.bind(pool);
 pool.query = (async (...args: any[]) => {
-  if (!DATABASE_URL) {
+  if (!process.env['DATABASE_URL'] && !process.env['POSTGRES_URL']) {
     throw new Error("DATABASE_URL is not configured. Please add the DATABASE_URL environment variable to your settings or create a local .env file with your PostgreSQL connection string (DATABASE_URL=postgres://...).");
   }
   await ensureDbInitialized();
@@ -38,7 +36,7 @@ pool.query = (async (...args: any[]) => {
 }) as any;
 
 export async function initDb() {
-  if (!DATABASE_URL) return;
+  if (!process.env['DATABASE_URL'] && !process.env['POSTGRES_URL']) return;
 
   const client = await pool.connect();
   try {
