@@ -60,8 +60,8 @@
 
 ## TỔNG KẾT TRẠNG THÁI (v1.11.7 - Runtime Environment Variables & Webpack Static Replacement Fix)
 - **Sửa lỗi DATABASE_URL is not configured (Status 500)**: Khắc phục triệt để lỗi biên dịch tĩnh (static replacement) của Webpack Next.js khi đóng gói serverless function bằng cách chuyển đổi toàn bộ truy cập biến môi trường Postgres sang **Bracket Notation** (`process.env['DATABASE_URL']`, `process.env['POSTGRES_URL']`, `process.env['DATABASE_PRIVATE_URL']`).
-- **Tự chữa lành phân giải đường dẫn gốc**: Thay thế `import.meta.url` bằng `process.cwd()` tại [src/db-postgres.ts](file:///c:/dev/imagesnap/src/db-postgres.ts) để giải quyết xung đột đường dẫn tương đối động khi chạy dev/production dưới môi trường đóng gói Webpack/Turbopack.
-- **Xác minh toàn vẹn (Import Integrity)**: Đảm bảo TypeScript compiler tĩnh (`npx tsc --noEmit`) vượt qua 100% không có lỗi.
+- **Khử xung đột nạp biến môi trường (dotenvx)**: Loại bỏ hoàn toàn các cuộc gọi `dotenv.config()` dư thừa trong [src/db-postgres.ts](file:///c:/dev/imagesnap/src/db-postgres.ts) để tránh việc `dotenvx` ghi đè/nạp đè không mong muốn và gây ô nhiễm log.
+- **Neo nạp động Runtime hoàn toàn**: Đọc động các biến kết nối và thực hiện kiểm định kết nối động tại thời điểm truy vấn thực thi bằng hàm `getDatabaseUrl()`.
 - **Versioning**: v1.11.7.
 
 ### Dừng ở đâu?

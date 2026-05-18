@@ -1,29 +1,22 @@
 import pg from 'pg';
-import dotenv from 'dotenv';
-import path from 'path';
-
-const projectRoot = process.cwd();
-
-// Nạp an toàn cả .env.local và .env từ đường dẫn tuyệt đối thư mục gốc cho local Express
-dotenv.config({ path: path.resolve(projectRoot, '.env.local') });
-dotenv.config({ path: path.resolve(projectRoot, '.env') });
 
 const { Pool } = pg;
 
-// Đọc động tránh static Webpack replacement bằng Bracket Notation
-const rawUrl = process.env['DATABASE_URL'] || 
-               process.env['POSTGRES_URL'] || 
-               process.env['DATABASE_PRIVATE_URL'];
+// Hàm định nghĩa động để lấy connection string sạch sẽ ở runtime (tránh static-replace của Webpack)
+function getDatabaseUrl(): string | undefined {
+  const rawUrl = process.env['DATABASE_URL'] || 
+                 process.env['POSTGRES_URL'] || 
+                 process.env['DATABASE_PRIVATE_URL'];
+  return rawUrl ? rawUrl.replace(/^\uFEFF/, '').trim() : undefined;
+}
 
-// Làm sạch các ký tự điều hướng BOM (\uFEFF) của Windows và khoảng trắng thừa
-const DATABASE_URL = rawUrl ? rawUrl.replace(/^\uFEFF/, '').trim() : undefined;
-
-if (!DATABASE_URL) {
+const initialUrl = getDatabaseUrl();
+if (!initialUrl) {
   console.warn("WARNING: DATABASE_URL is not set. Database operations will fail.");
 }
 
 export const pool = new Pool({
-  connectionString: DATABASE_URL,
+  connectionString: initialUrl,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
@@ -37,10 +30,10 @@ export function ensureDbInitialized(): Promise<void> {
   return initPromise;
 }
 
-// Bọc pool.query để tự động đợi việc khởi tạo hoàn tất và kiểm tra kết nối
+// Bọc pool.query để tự động đợi việc khởi tạo hoàn tất và kiểm tra kết nối động
 const originalQuery = pool.query.bind(pool);
 pool.query = (async (...args: any[]) => {
-  if (!DATABASE_URL) {
+  if (!getDatabaseUrl()) {
     throw new Error("DATABASE_URL is not configured. Please add the DATABASE_URL environment variable to your settings or create a local .env file with your PostgreSQL connection string (DATABASE_URL=postgres://...).");
   }
   await ensureDbInitialized();
@@ -48,7 +41,7 @@ pool.query = (async (...args: any[]) => {
 }) as any;
 
 export async function initDb() {
-  if (!DATABASE_URL) return;
+  if (!getDatabaseUrl()) return;
 
   const client = await pool.connect();
   try {
