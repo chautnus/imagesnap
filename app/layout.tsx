@@ -51,7 +51,21 @@ export default function RootLayout({
     <html lang="en" className={outfit.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
-          window._pushDebug = function(msg) {};
+          window._debugLogs = window._debugLogs || [];
+          window._pushDebug = function(msg) {
+            window._debugLogs.push(msg);
+            if (window._debugLogs.length > 100) window._debugLogs.shift();
+            console.log(msg);
+            window.dispatchEvent(new CustomEvent('SYS_DEBUG_UPDATE'));
+            
+            // Buffering for cloud sync
+            try {
+              var buffer = JSON.parse(localStorage.getItem('imagesnap_log_buffer') || '[]');
+              buffer.push({ msg: msg, timestamp: Date.now() });
+              if (buffer.length > 50) buffer.shift();
+              localStorage.setItem('imagesnap_log_buffer', JSON.stringify(buffer));
+            } catch(e) {}
+          };
         `}} />
       </head>
       <body className="antialiased">

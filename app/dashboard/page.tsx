@@ -153,6 +153,7 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen pb-20 w-full max-w-2xl mx-auto relative bg-bg text-white">
+      <DebugOverlay user={user} />
       {isOffline && (
         <div className="bg-accent text-black text-[10px] font-black uppercase tracking-widest py-1 px-4 text-center sticky top-0 z-[100] animate-in slide-in-from-top duration-300">
           ⚠️ You are currently offline. Some features may be limited.
