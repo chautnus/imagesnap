@@ -5,6 +5,57 @@
 
 ---
 
+### [BUG-028] — Eternal Infinite Authentication Redirect Loop (Lỗi muôn thuở)
+**Status**: CLOSED
+**Severity**: CRITICAL
+**Discovered**: [2026-05-18] | **Fixed**: [2026-05-18]
+
+#### Symptom
+When the Google access token inside the session cookie expired after 1 hour, the user got locked into an infinite authentication redirect loop between the Home Page (`/`) and the Dashboard (`/dashboard`), rendering the login screen inaccessible.
+
+#### Root Cause
+A critical disparity in token lifetimes:
+1. Google's client-side Implicit Flow only yields a 1-hour access token.
+2. The server-side session cookie (`imagesnap_session`) is set to last for 24 hours.
+3. When the Google access token inside the cookie expired, `/dashboard` aborted initialization, threw an auth error, and pushed the client to `/`.
+4. However, `HomeClient.tsx` checked the session API, saw it was still authenticated, and instantly redirected the user back to `/dashboard`, creating a infinite redirect cycle.
+
+#### Fix Applied
+1. **Active Token Verification on Home Ingress:** Integrated a live validation hook inside `HomeClient.tsx` that queries Google's `/oauth2/v3/userinfo` with the session's token before triggering a redirect.
+2. **Self-Healing Session Purge:** If the token is invalid/expired, `HomeClient` immediately triggers a `DELETE` request to `/api/auth/session` to clear the cookie and stays on the landing page.
+3. **Automated SW Cookie Invalidation:** Added session cleanup in `useDashboardInit.ts` on `SYS_AUTH_EXPIRED` to purge the cookie directly at the source of expiration.
+
+#### Lesson Learned
+⚠ BÀI HỌC #028: When bridging short-lived third-party OAuth access tokens inside long-lived secure session cookies, always perform a client-side verification query against the identity provider's validator before triggering automatic redirects, and guarantee a self-healing purge on failure.
+
+---
+
+### [BUG-027] — PWA Web Share Target Freeze at Launch Splash Screen (Logo/Icon PWA)
+**Status**: CLOSED
+**Severity**: CRITICAL
+**Discovered**: [2026-05-18] | **Fixed**: [2026-05-18]
+
+#### Symptom
+When users shared an image or link from an external mobile application (e.g. Gallery) to the PWA on Android (Chrome/Samsung Internet), the application got completely frozen at the PWA launching splash screen (app logo/icon) and never loaded the Dashboard.
+
+#### Root Cause
+Under modern mobile Web Share Target specifications, if the Service Worker's `'fetch'` handler intercepts a POST request and returns a standard `Response.redirect()`, Chrome on Android can fail to resolve the navigation promise or release the PWA's standalone window splash screen, leaving the UI hanging.
+
+#### Fix Applied
+Replaced the `Response.redirect()` within `sw.js` with a successful **Status 200 HTML response** that embeds a client-side redirection script:
+```javascript
+return new Response(
+  `<script>window.location.replace("${redirectUrl}");</script>`,
+  { headers: { 'Content-Type': 'text/html' } }
+);
+```
+Since the browser receives an immediate valid 200 OK HTML payload, the system instantly dismisses the splash screen and loads the script, which performs a perfect client-side replace to `/dashboard?share_id=...` with 100% reliability.
+
+#### Lesson Learned
+⚠ BÀI HỌC #027: To prevent OS-level PWA launch freezes on mobile devices during Web Share Target intercept operations, avoid returning server-side redirects (`Response.redirect`) from the Service Worker fetch listener. Instead, serve a lightweight HTML response containing a client-side `window.location.replace` directive.
+
+---
+
 ### [BUG-026] — Mobile PWA Share Target Failure & DB Ingestion Crash
 **Status**: CLOSED
 **Severity**: CRITICAL
@@ -530,7 +581,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 26 |
+| Total bugs logged | 28 |
 | Open | 0 |
-| Closed | 26 |
+| Closed | 28 |
 | Patterns extracted | 2 |
