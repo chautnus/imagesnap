@@ -25,9 +25,9 @@
 
 ## Trạng thái hiện tại
  
-**Last updated**: 2026-05-17
-**Last session by**: Antigravity (v1.10.23)
-**Current sprint focus**: Service Worker Precache Fix & Installation Stabilisation.
+**Last updated**: 2026-05-18
+**Last session by**: Antigravity (v1.11.7)
+**Current sprint focus**: Runtime Environment Variables & Webpack Static Replacement Fix.
 
 ---
 
@@ -58,17 +58,15 @@
     - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
     - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
 
-## TỔNG KẾT TRẠNG THÁI (v1.10.23 - Service Worker Installation Recovery)
-- **Sửa sập Precache SW**: Giải phóng Service Worker khỏi lỗi cài đặt thất bại do khai báo sai đường dẫn `/icons/icon-192x192.png` không tồn tại trong thư mục `public` (khiến cuộc gọi `cache.addAll()` bị reject toàn bộ, sập ngầm SW).
-- **Hợp nhất Precache tĩnh**: Chuyển danh sách precache về các file tĩnh công khai `/manifest.json` và `/icon192.png` chắc chắn tải thành công 200 OK ẩn danh.
-- **Nâng cấp cưỡng bức SW**: Tăng phiên bản Service Worker lên v9.3 (`imagesnap-v1.10.23`) để cưỡng bức điện thoại phát hiện file thay đổi và thực hiện cập nhật ngay.
-- **Đồng nhất Thư mục gốc**: Đồng bộ 100% thư mục lưu trữ cha trong Google Drive thành **`ImageSnap Data`** tại cả `sheets.ts` và `productService.ts`.
-- **Tránh mất Log trên PWA Mobile (localStorage + TTL 5 phút)**: Thay thế hoàn toàn cơ chế lưu tạm `sessionStorage` bằng `localStorage` để chống mất mát dữ liệu do PWA bị hệ điều hành Android/iOS xóa sạch Context khi chuyển hướng OAuth.
-- **Versioning**: v1.10.23.
+## TỔNG KẾT TRẠNG THÁI (v1.11.7 - Runtime Environment Variables & Webpack Static Replacement Fix)
+- **Sửa lỗi DATABASE_URL is not configured (Status 500)**: Khắc phục triệt để lỗi biên dịch tĩnh (static replacement) của Webpack Next.js khi đóng gói serverless function bằng cách chuyển đổi toàn bộ truy cập biến môi trường Postgres sang **Bracket Notation** (`process.env['DATABASE_URL']`, `process.env['POSTGRES_URL']`, `process.env['DATABASE_PRIVATE_URL']`).
+- **Tự chữa lành phân giải đường dẫn gốc**: Thay thế `import.meta.url` bằng `process.cwd()` tại [src/db-postgres.ts](file:///c:/dev/imagesnap/src/db-postgres.ts) để giải quyết xung đột đường dẫn tương đối động khi chạy dev/production dưới môi trường đóng gói Webpack/Turbopack.
+- **Xác minh toàn vẹn (Import Integrity)**: Đảm bảo TypeScript compiler tĩnh (`npx tsc --noEmit`) vượt qua 100% không có lỗi.
+- **Versioning**: v1.11.7.
 
 ### Dừng ở đâu?
-- Service Worker đã có thể cài đặt và cập nhật thành công 100% mà không bị block bởi lỗi 404 Precache.
-- Cơ chế chẩn đoán lỗi IndexedDB đã sẵn sàng để hoạt động chính thức trên máy người dùng.
+- Các biến môi trường nhạy cảm kết nối Neon Postgres đã được bảo vệ khỏi bộ tối ưu hóa tĩnh Webpack của Next.js.
+- Tính ổn định khi Admin truy cập phần cài đặt (Settings Tab) đã được khôi phục hoàn chỉnh.
 
 ---
 
