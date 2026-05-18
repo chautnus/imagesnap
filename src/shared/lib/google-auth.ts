@@ -24,6 +24,10 @@ let authQueue: AuthCallback[] = [];
  */
 const ensureGsiScript = (): Promise<void> => {
   if (typeof window === 'undefined') return Promise.reject(new Error('Window undefined'));
+  const isExtension = window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension') || ((window as any).chrome && (window as any).chrome.identity);
+  if (isExtension) {
+    return Promise.resolve();
+  }
   if ((window as any).google?.accounts?.oauth2) {
     if (typeof window !== 'undefined' && (window as any)._pushDebug) (window as any)._pushDebug('[GSI] Script already present');
     return Promise.resolve();
@@ -54,6 +58,10 @@ const ensureGsiScript = (): Promise<void> => {
 
 export const initGis = async (onSuccess: (token: string) => void) => {
   if (typeof window === 'undefined') return;
+  const isExtension = window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension') || ((window as any).chrome && (window as any).chrome.identity);
+  if (isExtension) {
+    return;
+  }
 
   // Add to queue
   const authPromise = new Promise<string>((resolve, reject) => {
