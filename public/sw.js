@@ -1,6 +1,6 @@
-// ImageSnap Service Worker v9.3 - Standalone Tracing (v1.10.23)
+// ImageSnap Service Worker v9.3 - Standalone Tracing (v1.10.124)
 importScripts('/sw-logger.js');
-const CACHE_NAME = 'imagesnap-v1.10.23';
+const CACHE_NAME = 'imagesnap-v1.10.124';
 
 // Assets to precache
 const PRECACHE_ASSETS = [
@@ -74,12 +74,24 @@ self.addEventListener('fetch', (event) => {
   const isShareTargetPath = url.pathname === '/share-target' || url.pathname === '/share-target/';
   
   if (event.request.method === 'POST' && isShareTargetPath) {
+    const sid = Date.now().toString();
+    self.swLog.start();
+    self.swLog.step(`INTERCEPT_START:${sid}`);
+
+    // Instant Response: dismiss mobile PWA launch splash screen instantly (takes 5-10ms)
+    const redirectUrl = new URL(`/dashboard?share_id=${sid}`, self.location.origin).href;
     event.respondWith(
+      new Response(
+        `<script>window.location.replace("${redirectUrl}");</script>`,
+        {
+          headers: { 'Content-Type': 'text/html' }
+        }
+      )
+    );
+
+    // Asynchronous background parsing and database ingestion
+    event.waitUntil(
       (async () => {
-        const sid = Date.now().toString();
-        self.swLog.start();
-        self.swLog.step(`INTERCEPT_START:${sid}`);
-        
         try {
           // STEP 1: Parse FormData
           self.swLog.step("PARSE_FORM_DATA_START");
@@ -129,7 +141,7 @@ self.addEventListener('fetch', (event) => {
                   return new Blob([buffer], { type: file.type || 'image/jpeg' });
                 }
                 self.swLog.step(`SKIPPING_CONVERT_FILE_${idx}: not File or Blob instance`);
-                return file; // If it's somehow a string
+                return file;
               }));
               self.swLog.step("CONVERT_IMAGES_TO_BLOBS_SUCCESS");
             } catch (cloneErr) {
@@ -157,16 +169,7 @@ self.addEventListener('fetch', (event) => {
             throw new Error(`No data found in Share payload`);
           }
 
-          // SUCCESS
-          self.swLog.step("INTERCEPT_SUCCESS_REDIRECTING");
-          await new Promise(resolve => setTimeout(resolve, 500));
-          const redirectUrl = new URL(`/dashboard?share_id=${sid}`, self.location.origin).href;
-          return new Response(
-            `<script>window.location.replace("${redirectUrl}");</script>`,
-            {
-              headers: { 'Content-Type': 'text/html' }
-            }
-          );
+          self.swLog.step("INGESTION_COMPLETED_SUCCESSFULLY");
 
         } catch (err) {
           self.swLog.error(`FATAL:${err.message || err}`);
@@ -178,15 +181,6 @@ self.addEventListener('fetch', (event) => {
           } catch (writeErr) {
             console.error("IDB error write failed:", writeErr);
           }
-          
-          // Chuyển hướng sạch kèm cờ báo động lỗi
-          const fatalRedirectUrl = new URL(`/dashboard?share_id=${sid}&sw_fatal_error=true`, self.location.origin).href;
-          return new Response(
-            `<script>window.location.replace("${fatalRedirectUrl}");</script>`,
-            {
-              headers: { 'Content-Type': 'text/html' }
-            }
-          );
         }
       })()
     );

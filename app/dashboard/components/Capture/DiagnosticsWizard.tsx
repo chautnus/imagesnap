@@ -76,60 +76,74 @@ export const DiagnosticsWizard: React.FC<DiagnosticsWizardProps> = ({
     
     request.onsuccess = (event: any) => {
       const db = event.target.result;
-      try {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const getReq = store.get(shareId);
-        
-        getReq.onsuccess = () => {
-          const record = getReq.result;
-          if (record) {
-            setRawRecord(record);
-            setStep1Status('success');
-            addLocalLog("[OK] Đọc bản ghi thành công.");
-            
-            if (record.is_error) {
-              setStep1Status('fail');
-              setErrorDetails(`Phát hiện bản ghi lỗi từ SW: ${record.error_message}`);
-              addLocalLog(`[SW ERROR REPORT] ${record.error_message}`);
-              if (record.sw_logs && Array.isArray(record.sw_logs)) {
-                addLocalLog("--- Nhật ký chi tiết của SW nhận được từ DB: ---");
-                record.sw_logs.forEach((swLog: string) => addLocalLog(`[SW] ${swLog}`));
-              }
-            } else {
-              addLocalLog(`[METADATA] File ảnh gốc: ${record.images?.length || 0} file`);
-              addLocalLog(`[METADATA] Tiêu đề: "${record.title || 'Trống'}"`);
-              addLocalLog(`[METADATA] URL đính kèm: "${record.url || 'Trống'}"`);
+      let attempts = 0;
+
+      const checkRecord = () => {
+        try {
+          const transaction = db.transaction(STORE_NAME, 'readonly');
+          const store = transaction.objectStore(STORE_NAME);
+          const getReq = store.get(shareId);
+          
+          getReq.onsuccess = () => {
+            const record = getReq.result;
+            if (record) {
+              setRawRecord(record);
+              setStep1Status('success');
+              addLocalLog("[OK] Đọc bản ghi thành công.");
               
-              if (record.sw_logs && Array.isArray(record.sw_logs)) {
-                addLocalLog("--- Hành trình của SW (Đọc từ DB): ---");
-                record.sw_logs.forEach((swLog: string) => addLocalLog(`[SW] ${swLog}`));
+              if (record.is_error) {
+                setStep1Status('fail');
+                setErrorDetails(`Phát hiện bản ghi lỗi từ SW: ${record.error_message}`);
+                addLocalLog(`[SW ERROR REPORT] ${record.error_message}`);
+                if (record.sw_logs && Array.isArray(record.sw_logs)) {
+                  addLocalLog("--- Nhật ký chi tiết của SW nhận được từ DB: ---");
+                  record.sw_logs.forEach((swLog: string) => addLocalLog(`[SW] ${swLog}`));
+                }
+              } else {
+                addLocalLog(`[METADATA] File ảnh gốc: ${record.images?.length || 0} file`);
+                addLocalLog(`[METADATA] Tiêu đề: "${record.title || 'Trống'}"`);
+                addLocalLog(`[METADATA] URL đính kèm: "${record.url || 'Trống'}"`);
+                
+                if (record.sw_logs && Array.isArray(record.sw_logs)) {
+                  addLocalLog("--- Hành trình của SW (Đọc từ DB): ---");
+                  record.sw_logs.forEach((swLog: string) => addLocalLog(`[SW] ${swLog}`));
+                }
+                setStep(2); // Cho phép chuyển sang công đoạn 2
               }
-              setStep(2); // Cho phép chuyển sang công đoạn 2
+              db.close();
+              setLoading(false);
+            } else {
+              if (attempts < 15) {
+                attempts++;
+                addLocalLog(`[POLLING] SW vẫn đang parse ảnh ngầm, chờ 300ms... (Lần ${attempts}/15)`);
+                setTimeout(checkRecord, 300);
+              } else {
+                setStep1Status('fail');
+                setErrorDetails("Không tìm thấy dữ liệu ảnh tương ứng với Share ID này trong Database sau 4.5 giây.");
+                addLocalLog("[THẤT BẠI] Bản ghi trống hoặc luồng SW bị chết.");
+                db.close();
+                setLoading(false);
+              }
             }
-          } else {
+          };
+          
+          getReq.onerror = () => {
             setStep1Status('fail');
-            setErrorDetails("Không tìm thấy dữ liệu ảnh tương ứng với Share ID này trong Database.");
-            addLocalLog("[THẤT BẠI] Bản ghi trống hoặc đã bị dọn dẹp.");
-          }
-          db.close();
-          setLoading(false);
-        };
-        
-        getReq.onerror = () => {
+            setErrorDetails("Truy vấn bảng 'shares' thất bại.");
+            addLocalLog("[THẤT BẠI] Lỗi transaction.");
+            db.close();
+            setLoading(false);
+          };
+        } catch (e: any) {
           setStep1Status('fail');
-          setErrorDetails("Truy vấn bảng 'shares' thất bại.");
-          addLocalLog("[THẤT BẠI] Lỗi transaction.");
+          setErrorDetails(`DB Error: ${e.message || e}`);
+          addLocalLog(`[CRASH] Lỗi biệt lệ: ${e.message}`);
           db.close();
           setLoading(false);
-        };
-      } catch (e: any) {
-        setStep1Status('fail');
-        setErrorDetails(`DB Error: ${e.message || e}`);
-        addLocalLog(`[CRASH] Lỗi biệt lệ: ${e.message}`);
-        db.close();
-        setLoading(false);
-      }
+        }
+      };
+
+      checkRecord();
     };
   };
 

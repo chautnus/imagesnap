@@ -14,6 +14,17 @@ self.swLog = {
     var logItem = `[${timestamp}] ${name}`;
     self._swTrace.push(logItem);
     console.log(`[SW_LOGGER_STEP] ${logItem}`);
+    
+    // Broadcast live to all open browser/PWA window clients
+    if (self.clients) {
+      self.clients.matchAll().then(function(clients) {
+        if (clients && clients.length > 0) {
+          clients.forEach(function(client) {
+            client.postMessage({ type: 'SW_DEBUG_LOG', msg: logItem });
+          });
+        }
+      }).catch(function() {});
+    }
   },
 
   // 3. Ghi nhận lỗi chí mạng
@@ -22,6 +33,17 @@ self.swLog = {
     var errItem = `[${timestamp}] ERR:${errMessage}`;
     self._swTrace.push(errItem);
     console.error(`[SW_LOGGER_ERROR] ${errItem}`);
+    
+    // Broadcast live to all open browser/PWA window clients
+    if (self.clients) {
+      self.clients.matchAll().then(function(clients) {
+        if (clients && clients.length > 0) {
+          clients.forEach(function(client) {
+            client.postMessage({ type: 'SW_DEBUG_LOG', msg: errItem });
+          });
+        }
+      }).catch(function() {});
+    }
   },
 
   // 4. Trích xuất toàn bộ vết tích
