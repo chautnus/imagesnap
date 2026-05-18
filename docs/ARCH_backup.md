@@ -1,4 +1,4 @@
-# ARCH.md — ARCHITECTURE DOCUMENT
+# ARCH.md — ARCHITECTURE DOCUMENT (BACKUP v1.10.124)
 
 ## ARCH-1. System Overview
 Hệ thống ImageSnap được xây dựng theo mô hình Modular Feature-based, kết hợp giữa Browser Extension và Web Application (PWA).
@@ -24,16 +24,11 @@ Hệ thống sử dụng triết lý **Deterministic Termination**:
 - **Fail-fast**: Xóa session và redirect ngay khi có lỗi `reject` từ Auth Queue.
 
 ### ARCH-2.2 PWA & Service Worker (`public/`)
-- **Service Worker (`sw.js` & `sw-logger.js`)**:
-    - **Asynchronous Web Share Target (POST `/share-target`)**:
-        1. *Instant Response*: SW lập tức trả về Response HTML Status 200 chứa mã chuyển hướng client-side `window.location.replace` tới `/dashboard?share_id=...` (dưới 10ms). OS giải phóng màn hình splash screen (logo PWA) lập tức, tránh treo giao diện.
-        2. *Background Processing*: Bọc luồng parse FormData, nạp Blobs và ghi dữ liệu tạm thời vào IndexedDB (`shares`) trong lệnh chạy ngầm `event.waitUntil()` hoàn toàn bất đồng bộ.
-        3. *Live Broadcast Logs*: Truyền phát logs hành trình xử lý ngầm thời gian thực qua `clients.matchAll()` về Client.
-- **Client-Side Synchronization (`DiagnosticsWizard.tsx` & `CaptureTab.tsx`)**:
-    - Thực hiện **IndexedDB Polling** tuần hoàn mỗi 300ms (tối đa 15 lần) để tự động bắt và nạp ảnh xem trước ngay khi SW hoàn thành ghi DB ngầm.
-- **Bộ tự vá lỗi tự động (Self-Healing IndexedDB on NotFoundError)**:
-    - Khi thực hiện giao dịch, nếu bắt gặp lỗi `NotFoundError` (do DB v2 cũ thiếu store), hệ thống tự động gọi `indexedDB.deleteDatabase()` và `window.location.reload()` để tái thiết cấu trúc dữ liệu sạch hoàn hảo trong 100ms.
-- **Manifest (`manifest.json`)**: Định nghĩa icon, theme và cấu hình `share_target` liên kết luồng chia sẻ di động.
+- **Service Worker (`sw.js`)**: 
+    - Xử lý Web Share Target (POST `/share`).
+    - Lưu trữ dữ liệu chia sẻ tạm thời vào IndexedDB (`ImageSnapSharing`).
+    - Phát tín hiệu qua `BroadcastChannel` và Redirect người dùng về `/dashboard`.
+- **Manifest (`manifest.json`)**: Định nghĩa icon, theme và `share_target` configuration.
 
 ### ARCH-2.3 Extension (`src/extension/`)
 ... (giữ nguyên) ...
@@ -46,7 +41,6 @@ Hệ thống sử dụng triết lý **Deterministic Termination**:
 - **IndexedDB**: Sử dụng cho việc lưu trữ tạm thời dữ liệu chia sẻ vì tính ổn định hơn Cache API đối với blobs lớn.
 - **Lemon Squeezy**: Lựa chọn cho payment [→ BR-2.2.1].
 - **Broad Host Permission (`*://*/*`)**: Đã khôi phục quyền truy cập rộng để đảm bảo tính năng Scraping hoạt động ổn định trên mọi tab mà không cần click icon liên tục (khắc phục giới hạn của activeTab) [→ BR-3.1].
-- **Live Mobile Diagnostics Overlay**: Nhúng trực tiếp một script nhỏ Vanilla JS/CSS thô tại `<head>` trong [layout.tsx](file:///c:/dev/imagesnap/app/layout.tsx) tạo floating console, gom logs runtime di động và logs truyền qua `postMessage` từ SW để kiểm tra sự cố di động trực tuyến không cần cáp nối.
 
 ## ARCH-4. Dependencies
 - `@google/genai`: Hỗ trợ các tính năng AI trong tương lai.
