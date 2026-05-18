@@ -30,29 +30,33 @@ A critical disparity in token lifetimes:
 
 ---
 
-### [BUG-027] — PWA Web Share Target Freeze at Launch Splash Screen (Logo/Icon PWA)
+### [BUG-027] — PWA Web Share Target Freeze at Launch Splash Screen & Blind Mobile Debugging
 **Status**: CLOSED
 **Severity**: CRITICAL
 **Discovered**: [2026-05-18] | **Fixed**: [2026-05-18]
 
 #### Symptom
-When users shared an image or link from an external mobile application (e.g. Gallery) to the PWA on Android (Chrome/Samsung Internet), the application got completely frozen at the PWA launching splash screen (app logo/icon) and never loaded the Dashboard.
+When users shared an image or link from an external mobile application (e.g. Gallery) to the PWA on Android (Chrome/Samsung Internet), the application got completely frozen at the PWA launching splash screen (app logo/icon) and never loaded the Dashboard. Furthermore, there was no console debug visibility on mobile devices, making silent Service Worker parsing crashes impossible to diagnose.
 
 #### Root Cause
-Under modern mobile Web Share Target specifications, if the Service Worker's `'fetch'` handler intercepts a POST request and returns a standard `Response.redirect()`, Chrome on Android can fail to resolve the navigation promise or release the PWA's standalone window splash screen, leaving the UI hanging.
+Two main issues:
+1. **Synchronous Share Block:** The Service Worker intercepted the POST share target, but waited to parse the `formData`, convert images to Blobs, and save them to IndexedDB **before** returning the redirection response. If any of these steps took more than a few milliseconds, or blocked/errored, the browser held the OS-level PWA splash screen indefinitely, causing a freeze.
+2. **Blind Debugging:** Mobile browsers run Service Workers in isolated background threads. Uncaught exceptions, DB lockouts, or logic hangs in the SW never bubbled up to the client, leaving the user with zero diagnostics or stack traces.
 
 #### Fix Applied
-Replaced the `Response.redirect()` within `sw.js` with a successful **Status 200 HTML response** that embeds a client-side redirection script:
-```javascript
-return new Response(
-  `<script>window.location.replace("${redirectUrl}");</script>`,
-  { headers: { 'Content-Type': 'text/html' } }
-);
-```
-Since the browser receives an immediate valid 200 OK HTML payload, the system instantly dismisses the splash screen and loads the script, which performs a perfect client-side replace to `/dashboard?share_id=...` with 100% reliability.
+1. **Asynchronous Share Redesign (Instant Redirect + background event.waitUntil):**
+   - The Service Worker now intercepts the POST request and **instantly returns a Status 200 HTML client-side redirect response** (taking < 10ms). The OS immediately dismisses the splash screen and loads `/dashboard?share_id=...`.
+   - The heavy parsing (FormData reading, image conversion, IndexedDB write) is moved to a background job using `event.waitUntil()`, completely unblocking the main window thread.
+2. **IndexedDB Polling & Live SW Logger Broadcast:**
+   - In [DiagnosticsWizard.tsx](file:///c:/dev/imagesnap/app/dashboard/components/Capture/DiagnosticsWizard.tsx), the client now polls IndexedDB every 300ms (up to 15 times) for the shared record, showing a beautiful progress logs overlay while the SW finishes its background tasks.
+   - The Service Worker logger (`sw-logger.js`) broadcasts every step trace live via `clients.matchAll()` to the client window.
+3. **DOM-Injected Mobile Debug Console (Global Floating Overlay):**
+   - Injected a lightweight, vanilla JS/CSS debug console into `<head>` of [layout.tsx](file:///c:/dev/imagesnap/app/layout.tsx) that initializes at `DOMContentLoaded`.
+   - Adds a floating `🐛 LOGS` pill on all pages. Tapping it opens a glassmorphism console list that displays live client errors, promise rejections, and broadcasts SW logs.
+   - Includes physical self-healing buttons (`[Unregister SW]` to purge stuck cached service workers and `[Copy]` to grab error stack traces directly from a phone).
 
 #### Lesson Learned
-⚠ BÀI HỌC #027: To prevent OS-level PWA launch freezes on mobile devices during Web Share Target intercept operations, avoid returning server-side redirects (`Response.redirect`) from the Service Worker fetch listener. Instead, serve a lightweight HTML response containing a client-side `window.location.replace` directive.
+⚠ BÀI HỌC #027: Always separate the *response* of a mobile PWA Web Share Target POST request from its *data parsing logic*. Return a lightweight redirect response immediately to release the OS splash screen, then run resource-intensive work asynchronously in `event.waitUntil()`. In mobile environments where Chrome DevTools is unavailable, always implement a DOM-injected Vanilla JS diagnostic panel that catches global exceptions and receives Service Worker logs via `postMessage`.
 
 ---
 
