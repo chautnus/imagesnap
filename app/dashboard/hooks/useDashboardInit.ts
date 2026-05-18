@@ -194,7 +194,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
     const handleAuthExpired = () => {
       log('[AUTH] Token expired globally. Forcing re-login screen.');
       setAuthError("Phiên đăng nhập hết hạn. Vui lòng ấn Login để cấp lại quyền.");
-      updateStage('AUTH_PROCESS');
+      updateStage('COMPLETED');
     };
 
     window.addEventListener('SYS_AUTH_EXPIRED', handleAuthExpired);

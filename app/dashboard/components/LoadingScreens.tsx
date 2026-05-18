@@ -12,7 +12,7 @@ interface DashboardGuardScreenProps {
 }
 
 export function DashboardGuardScreen({ authError, initStage, isAuthReady }: DashboardGuardScreenProps) {
-  if (authError && initStage === 'COMPLETED') {
+  if (authError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg text-white">
         <div className="flex flex-col items-center gap-6 p-8 text-center">

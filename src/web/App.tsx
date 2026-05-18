@@ -5,7 +5,6 @@ import { DataTab } from './components/DataTab';
 import { SettingsTab } from './components/SettingsTab';
 import { HelpTab } from './components/HelpTab';
 import { Header } from './components/Header';
-import { Wizard } from './components/Wizard';
 import { LandingPage } from './components/LandingPage';
 import { StaffLogin } from './components/StaffLogin';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
