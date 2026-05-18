@@ -77,7 +77,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             </div>
             <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border-2 border-white/5">
               <div
-                className={`h-full transition-all duration-1000 ${subStatus.isPro ? 'w-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'bg-accent shadow-[0_0_10px_rgba(212,255,0,0.5)]'}`}
+                className={`h-full transition-all duration-1000 ${subStatus.isPro ? 'w-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'bg-accent shadow-[0_0_10px_rgba(0,120,215,0.5)]'}`}
                 style={{ width: subStatus.isPro ? '100%' : `${Math.min(100, (subStatus.usage / subStatus.limit) * 100)}%` }}
               />
             </div>

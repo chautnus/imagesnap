@@ -1,6 +1,6 @@
-// ImageSnap Service Worker v9.3 - Standalone Tracing (v1.10.125)
+// ImageSnap Service Worker v10.0 - Standalone Tracing (v1.11.0)
 importScripts('/sw-logger.js');
-const CACHE_NAME = 'imagesnap-v1.10.125';
+const CACHE_NAME = 'imagesnap-v1.11.0';
 
 // Assets to precache
 const PRECACHE_ASSETS = [

@@ -57,7 +57,7 @@ export const PricingPage = ({ onLogin }: { onLogin?: () => void }) => {
                <PricingItem text="Bulk export to CSV/Sheets" accent />
                <PricingItem text="Priority support" accent />
             </ul>
-            <button onClick={onLogin} className="w-full py-5 bg-accent text-bg rounded-2xl font-black text-lg hover:glow-accent transition-all shadow-[0_0_30px_rgba(212,255,0,0.2)]">
+            <button onClick={onLogin} className="w-full py-5 bg-accent text-bg rounded-2xl font-black text-lg hover:glow-accent transition-all shadow-[0_0_30px_rgba(0,120,215,0.2)]">
                UPGRADE TO PRO
             </button>
          </div>

@@ -190,7 +190,7 @@ export const BurstCamera: React.FC<BurstCameraProps> = ({ imageCount, onPhotoTak
     <>
       <button
         onClick={() => startCamera()}
-        className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all h-20 ${isCameraOpen ? 'bg-accent text-bg border-accent shadow-[0_0_20px_rgba(212,255,0,0.3)]' : 'bg-card border-line text-muted hover:border-accent hover:text-accent'}`}
+        className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all h-20 ${isCameraOpen ? 'bg-accent text-bg border-accent shadow-[0_0_20px_rgba(0,120,215,0.3)]' : 'bg-card border-line text-muted hover:border-accent hover:text-accent'}`}
       >
         <Camera size={18} />
         <span className="text-[10px] font-black tracking-tighter uppercase">BURST CAM</span>

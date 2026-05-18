@@ -95,7 +95,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({ isOpen, extractedImage
                             if (next.has(img.url)) next.delete(img.url); else next.add(img.url);
                             setPickerSelection(next);
                           }}
-                          className={`relative aspect-square rounded-2xl overflow-hidden border-2 cursor-pointer transition-all ${pickerSelection.has(img.url) ? 'border-accent shadow-[0_0_20px_rgba(212,255,0,0.4)] scale-[1.02]' : 'border-white/10 hover:border-white/30'}`}
+                          className={`relative aspect-square rounded-2xl overflow-hidden border-2 cursor-pointer transition-all ${pickerSelection.has(img.url) ? 'border-accent shadow-[0_0_20px_rgba(0,120,215,0.4)] scale-[1.02]' : 'border-white/10 hover:border-white/30'}`}
                         >
                           <img src={img.url} className="w-full h-full object-cover" alt={img.alt} />
                           {pickerSelection.has(img.url) && (

@@ -14,8 +14,7 @@ import { QuickAddCategory } from './QuickAddCategory';
 import { BurstCamera } from '@web/components/BurstCamera';
 import { ImagePicker, ExtractedImage } from '@web/components/ImagePicker';
 import { Globe as GlobeIcon, Camera } from 'lucide-react';
-import { Images as ImagesIcon, RefreshCw, ShieldAlert } from 'lucide-react';
-import { DiagnosticsWizard } from './DiagnosticsWizard';
+import { Images as ImagesIcon, RefreshCw } from 'lucide-react';
 
 interface CaptureTabProps {
   categories: Category[];
@@ -50,22 +49,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   const [keySearchFocus, setKeySearchFocus] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [extractedImages, setExtractedImages] = useState<ExtractedImage[]>([]);
-  const [showWizard, setShowWizard] = useState(false);
-  const [isFatalError, setIsFatalError] = useState(false);
   const blobUrlsRef = useRef<string[]>([]);
- 
-  // Auto-open Wizard if a share error occurred
-  useEffect(() => {
-    if (shareTargetSid && typeof window !== 'undefined') {
-      const isErr = localStorage.getItem('imagesnap_pending_fatal_error') === 'true';
-      if (isErr) {
-        if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Redirecting to Diagnostics Wizard because SW Fatal Error was set.`);
-        setIsFatalError(true);
-        setShowWizard(true);
-        localStorage.removeItem('imagesnap_pending_fatal_error');
-      }
-    }
-  }, [shareTargetSid]);
 
   // Update recent categories
   useEffect(() => {
@@ -79,89 +63,96 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   // IDB Data Ingestion logic (Coordinator Level - Normal Successful Ingestion)
   useEffect(() => {
     if (shareTargetSid) {
-      // Bỏ qua luồng thành công ngầm nếu Wizard đang được kích hoạt
-      const isErr = typeof window !== 'undefined' && localStorage.getItem('imagesnap_pending_fatal_error') === 'true';
-      if (isErr) return;
-
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Pulling Share Data for SID: ${shareTargetSid}`);
-      
       const DB_NAME = 'imagesnap-pwa-db';
       const STORE_NAME = 'shares';
       const DB_VERSION = 2;
-      
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-      
-      request.onupgradeneeded = (event: any) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
-        }
-      };
-      
-      request.onsuccess = (event: any) => {
-        const db = event.target.result;
-        try {
-          const transaction = db.transaction(STORE_NAME, 'readwrite');
-          const store = transaction.objectStore(STORE_NAME);
-          const getReq = store.get(shareTargetSid);
-          
-          getReq.onsuccess = () => {
-            const data = getReq.result;
-            if (data) {
-              // 1. Process Images
-              if (data.images && Array.isArray(data.images)) {
-                const newBlobUrls = data.images.map((b: Blob) => URL.createObjectURL(b));
-                setImages(prev => [...prev, ...newBlobUrls]);
-                blobUrlsRef.current.push(...newBlobUrls);
-              }
+      let attempts = 0;
+      let timeoutId: any = null;
 
-              // 2. Process Metadata
-              setFormData(prev => {
-                const next = { ...prev };
-                const cat = categories.find(c => c.id === selectedCategoryId);
-                if (cat) {
-                  cat.fields.forEach(f => {
-                    const label = translate(f.label, lang).toLowerCase();
-                    if (data.title && !next[f.id] && (f.type === 'key' || label.includes('name') || label.includes('title'))) {
-                      next[f.id] = data.title;
-                    }
-                    if (data.url && !next[f.id] && f.type === 'url') {
-                      next[f.id] = data.url;
-                    }
-                  });
-                }
-                return next;
-              });
-
-              // Cleanup: Delete from IDB after successful consumption (Audit Stage 2)
-              try {
-                store.delete(shareTargetSid);
-                if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Share target record deleted from IDB`);
-              } catch (delErr) {}
-            }
-          };
-          transaction.oncomplete = () => {
-            if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Normal Ingestion finished. Clearing pending status.`);
-            localStorage.removeItem('imagesnap_pending_share_id');
-            localStorage.removeItem('imagesnap_pending_share_time');
-            localStorage.removeItem('imagesnap_pending_fatal_error');
-            db.close();
-          };
-          transaction.onerror = () => {
-            if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Ingestion transaction failed.`);
-            db.close();
-          };
-        } catch (e: any) {
-          if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Error in ingestion: ${e.message || e}`);
-          db.close();
-          if (e.name === 'NotFoundError') {
-            console.warn('[HEAL] Shares store missing in CaptureTab. Deleting DB...');
-            const delReq = indexedDB.deleteDatabase(DB_NAME);
-            delReq.onsuccess = () => {
-              window.location.reload();
-            };
+      const attemptIngestion = () => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onupgradeneeded = (event: any) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
           }
-        }
+        };
+        
+        request.onsuccess = (event: any) => {
+          const db = event.target.result;
+          try {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const getReq = store.get(shareTargetSid);
+            
+            getReq.onsuccess = () => {
+              const data = getReq.result;
+              if (data) {
+                // 1. Process Images
+                if (data.images && Array.isArray(data.images)) {
+                  const newBlobUrls = data.images.map((b: Blob) => URL.createObjectURL(b));
+                  setImages(prev => [...prev, ...newBlobUrls]);
+                  blobUrlsRef.current.push(...newBlobUrls);
+                }
+
+                // 2. Process Metadata
+                setFormData(prev => {
+                  const next = { ...prev };
+                  const cat = categories.find(c => c.id === selectedCategoryId);
+                  if (cat) {
+                    cat.fields.forEach(f => {
+                      const label = translate(f.label, lang).toLowerCase();
+                      if (data.title && !next[f.id] && (f.type === 'key' || label.includes('name') || label.includes('title'))) {
+                        next[f.id] = data.title;
+                      }
+                      if (data.url && !next[f.id] && f.type === 'url') {
+                        next[f.id] = data.url;
+                      }
+                    });
+                  }
+                  return next;
+                });
+
+                // Cleanup
+                try {
+                  store.delete(shareTargetSid);
+                } catch (delErr) {}
+                
+                localStorage.removeItem('imagesnap_pending_share_id');
+                localStorage.removeItem('imagesnap_pending_share_time');
+                localStorage.removeItem('imagesnap_pending_fatal_error');
+                db.close();
+              } else {
+                db.close();
+                if (attempts < 15) {
+                  attempts++;
+                  timeoutId = setTimeout(attemptIngestion, 300);
+                }
+              }
+            };
+            
+            getReq.onerror = () => {
+              db.close();
+            };
+          } catch (e: any) {
+            db.close();
+            if (e.name === 'NotFoundError') {
+              const delReq = indexedDB.deleteDatabase(DB_NAME);
+              delReq.onsuccess = () => {
+                window.location.reload();
+              };
+            }
+          }
+        };
+
+        request.onerror = () => {};
+      };
+
+      attemptIngestion();
+
+      return () => {
+        if (timeoutId) clearTimeout(timeoutId);
       };
     }
   }, [shareTargetSid, selectedCategoryId]);
@@ -272,16 +263,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             }}
           />
         </label>
-
-        {shareTargetSid && (
-          <button
-            onClick={() => setShowWizard(true)}
-            className="flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 bg-card border-accent/30 text-accent hover:border-accent transition-all h-20 animate-pulse"
-          >
-            <ShieldAlert size={18} />
-            <span className="text-[10px] font-black uppercase">DIAGNOSE</span>
-          </button>
-        )}
       </div>
 
       <ImageGrid images={images} onRemoveImage={idx => {
@@ -329,36 +310,6 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         onSave={onSaveCategory!}
       />
 
-      {showWizard && shareTargetSid && (
-        <DiagnosticsWizard 
-          shareId={shareTargetSid}
-          hasFatalError={isFatalError}
-          onClose={() => setShowWizard(false)}
-          onIngestComplete={(data) => {
-            if (data.images && data.images.length > 0) {
-              setImages(prev => [...prev, ...data.images]);
-              blobUrlsRef.current.push(...data.images);
-            }
-            setFormData(prev => {
-              const next = { ...prev };
-              const cat = categories.find(c => c.id === selectedCategoryId);
-              if (cat) {
-                cat.fields.forEach(f => {
-                  const label = translate(f.label, lang).toLowerCase();
-                  if (data.title && !next[f.id] && (f.type === 'key' || label.includes('name') || label.includes('title'))) {
-                    next[f.id] = data.title;
-                  }
-                  if (data.url && !next[f.id] && f.type === 'url') {
-                    next[f.id] = data.url;
-                  }
-                });
-              }
-              return next;
-            });
-            setShowWizard(false);
-          }}
-        />
-      )}
     </div>
   );
 };

@@ -49,23 +49,23 @@
     document.body.appendChild(ov);
 
     function render() {
-      let h = '<div style="all:initial;display:flex;flex-direction:column;background:#111;border:2px solid #D4FF00;border-radius:20px;padding:24px;max-width:440px;width:90%;max-height:85vh;color:#fff;box-shadow:0 30px 60px rgba(0,0,0,0.8);box-sizing:border-box;font-family:sans-serif;">';
+      let h = '<div style="all:initial;display:flex;flex-direction:column;background:#111;border:2px solid #0078D7;border-radius:20px;padding:24px;max-width:440px;width:90%;max-height:85vh;color:#fff;box-shadow:0 30px 60px rgba(0,0,0,0.8);box-sizing:border-box;font-family:sans-serif;">';
       h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;box-sizing:border-box;"><strong style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-family:sans-serif;">📦 PS_COLLECTOR v4</strong><button id="__ps_x" style="background:#222;border:none;color:#fff;font-size:24px;cursor:pointer;line-height:1;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;">&times;</button></div>';
       h += '<div id="__ps_g" style="display:grid;grid-template-columns:repeat(5,1fr);row-gap:20px;column-gap:12px;margin-bottom:24px;overflow-y:auto;padding:4px;box-sizing:border-box;min-height:100px;max-height:50vh;scrollbar-width:none;">';
       
       imgs.forEach((src, i) => {
         const isS = sel.has(i);
-        h += '<div data-i="'+i+'" style="cursor:pointer;border-radius:8px;overflow:hidden;background:#222;border:2px solid '+(isS?'#D4FF00':'transparent')+';position:relative;padding:0;transition:all 0.1s;box-sizing:border-box;display:block;margin:0;width:100%;">';
+        h += '<div data-i="'+i+'" style="cursor:pointer;border-radius:8px;overflow:hidden;background:#222;border:2px solid '+(isS?'#0078D7':'transparent')+';position:relative;padding:0;transition:all 0.1s;box-sizing:border-box;display:block;margin:0;width:100%;">';
         h += '<div style="padding-bottom:100%;height:0;position:relative;width:100%;box-sizing:border-box;">';
         h += '<div style="position:absolute;inset:0;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;box-sizing:border-box;">';
         h += '<img src="'+src.replace(/"/g,'%22')+'" style="display:block;width:100%;height:100%;object-fit:cover;opacity:'+(isS?'1':'0.7')+';transition:opacity 0.2s;pointer-events:none;box-sizing:border-box;">';
         h += '</div></div>';
-        if(isS) h += '<div style="position:absolute;top:4px;right:4px;background:#D4FF00;color:#000;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:8px;box-shadow:0 2px 4px rgba(0,0,0,0.5);border:1.5px solid #000;box-sizing:border-box;z-index:2;">✓</div>';
+        if(isS) h += '<div style="position:absolute;top:4px;right:4px;background:#0078D7;color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:8px;box-shadow:0 2px 4px rgba(0,0,0,0.5);border:1.5px solid #000;box-sizing:border-box;z-index:2;">✓</div>';
         h += '</div>';
       });
 
       h += '</div><div style="display:flex;gap:12px;box-sizing:border-box;">';
-      h += '<button id="__ps_ok" style="flex:1;padding:14px;background:#D4FF00;color:#000;border:none;border-radius:14px;cursor:pointer;font-weight:900;text-transform:uppercase;font-size:13px;letter-spacing:0.05em;box-shadow:0 4px 15px rgba(212,255,0,0.3);box-sizing:border-box;">✓ IMPORT ('+sel.size+')</button>';
+      h += '<button id="__ps_ok" style="flex:1;padding:14px;background:#0078D7;color:#fff;border:none;border-radius:14px;cursor:pointer;font-weight:900;text-transform:uppercase;font-size:13px;letter-spacing:0.05em;box-shadow:0 4px 15px rgba(0,120,215,0.3);box-sizing:border-box;">✓ IMPORT ('+sel.size+')</button>';
       h += '<button id="__ps_c" style="padding:14px;background:#222;color:#fff;border:none;border-radius:14px;cursor:pointer;font-weight:bold;font-size:12px;box-sizing:border-box;">Cancel</button></div></div>';
       
       ov.innerHTML = h;
@@ -122,10 +122,10 @@
   const snapBtn = document.createElement('div');
   snapBtn.id = '__ps_snap_trigger';
   snapBtn.innerHTML = '📦 SNAP';
-  snapBtn.style.cssText = 'position:fixed;right:20px;bottom:100px;z-index:2147483646;background:#D4FF00;color:#000;padding:12px 20px;border-radius:50px;font-weight:900;font-size:14px;cursor:pointer;box-shadow:0 10px 30px rgba(212,255,0,0.4);border:3px solid #000;transition:all 0.2s;user-select:none;font-family:sans-serif;';
+  snapBtn.style.cssText = 'position:fixed;right:20px;bottom:100px;z-index:2147483646;background:#0078D7;color:#fff;padding:12px 20px;border-radius:50px;font-weight:900;font-size:14px;cursor:pointer;box-shadow:0 10px 30px rgba(0,120,215,0.4);border:3px solid #000;transition:all 0.2s;user-select:none;font-family:sans-serif;';
   
-  snapBtn.onmouseenter = () => { snapBtn.style.transform = 'scale(1.1) rotate(-3deg)'; snapBtn.style.background = '#fff'; };
-  snapBtn.onmouseleave = () => { snapBtn.style.transform = 'scale(1) rotate(0deg)'; snapBtn.style.background = '#D4FF00'; };
+  snapBtn.onmouseenter = () => { snapBtn.style.transform = 'scale(1.1) rotate(-3deg)'; snapBtn.style.background = '#fff'; snapBtn.style.color = '#000'; };
+  snapBtn.onmouseleave = () => { snapBtn.style.transform = 'scale(1) rotate(0deg)'; snapBtn.style.background = '#0078D7'; snapBtn.style.color = '#fff'; };
   
   snapBtn.onclick = () => {
     const images = collectImages();

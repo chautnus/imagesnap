@@ -332,7 +332,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       <div className="grid grid-cols-4 gap-2">
         {typeof chrome !== 'undefined' && chrome.tabs && (
           <button onClick={handleExtensionSnap} disabled={isExtracting || isAtLimit}
-            className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all h-20 ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(212,255,0,0.1)]'} active:scale-95`}
+            className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all h-20 ${isAtLimit ? 'opacity-30 cursor-not-allowed grayscale' : 'bg-accent/5 border-accent/20 text-accent hover:bg-accent/10 shadow-[0_0_15px_rgba(0,120,215,0.1)]'} active:scale-95`}
           >
             {isExtracting ? <RefreshCw size={18} className="animate-spin" /> : <GlobeIcon size={18} />}
             <span className="text-[10px] font-black tracking-tighter uppercase leading-tight text-center">{t('snapFromBrowser')}</span>
@@ -413,7 +413,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             })
             .map(cat => (
               <button key={cat.id} onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${selectedCategoryId === cat.id ? 'border-accent bg-accent/10 text-accent font-bold shadow-[0_0_10px_rgba(212,255,0,0.1)]' : 'border-line bg-card text-muted opacity-80'}`}
+                className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${selectedCategoryId === cat.id ? 'border-accent bg-accent/10 text-accent font-bold shadow-[0_0_10px_rgba(0,120,215,0.1)]' : 'border-line bg-card text-muted opacity-80'}`}
               >
                 <span className="text-sm">{cat.icon}</span>
                 <span className="text-[12px] uppercase tracking-tight truncate font-bold">{translate(cat.name, lang)}</span>

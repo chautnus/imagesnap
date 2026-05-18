@@ -55,7 +55,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
             <button 
               key={cat.id} 
               onClick={() => onSelectCategory(cat.id)}
-              className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${selectedCategoryId === cat.id ? 'border-accent bg-accent/10 text-accent font-bold shadow-[0_0_10px_rgba(212,255,0,0.1)]' : 'border-line bg-card text-muted opacity-80'}`}
+              className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${selectedCategoryId === cat.id ? 'border-accent bg-accent/10 text-accent font-bold shadow-[0_0_10px_rgba(0,120,215,0.1)]' : 'border-line bg-card text-muted opacity-80'}`}
             >
               <span className="text-sm">{cat.icon}</span>
               <span className="text-[12px] uppercase tracking-tight truncate font-bold">{translate(cat.name, lang)}</span>
