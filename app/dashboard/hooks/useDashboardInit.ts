@@ -200,6 +200,10 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
   useEffect(() => {
     const handleAuthExpired = () => {
       log('[AUTH] Token expired globally. Forcing re-login screen.');
+      
+      // Clear session cookie immediately to prevent infinite redirect loops on Home Client
+      fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
+      
       setAuthError("Phiên đăng nhập hết hạn. Vui lòng ấn Login để cấp lại quyền.");
       updateStage('COMPLETED');
     };

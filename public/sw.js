@@ -161,7 +161,12 @@ self.addEventListener('fetch', (event) => {
           self.swLog.step("INTERCEPT_SUCCESS_REDIRECTING");
           await new Promise(resolve => setTimeout(resolve, 500));
           const redirectUrl = new URL(`/dashboard?share_id=${sid}`, self.location.origin).href;
-          return Response.redirect(redirectUrl, 303);
+          return new Response(
+            `<script>window.location.replace("${redirectUrl}");</script>`,
+            {
+              headers: { 'Content-Type': 'text/html' }
+            }
+          );
 
         } catch (err) {
           self.swLog.error(`FATAL:${err.message || err}`);
@@ -176,7 +181,12 @@ self.addEventListener('fetch', (event) => {
           
           // Chuyển hướng sạch kèm cờ báo động lỗi
           const fatalRedirectUrl = new URL(`/dashboard?share_id=${sid}&sw_fatal_error=true`, self.location.origin).href;
-          return Response.redirect(fatalRedirectUrl, 303);
+          return new Response(
+            `<script>window.location.replace("${fatalRedirectUrl}");</script>`,
+            {
+              headers: { 'Content-Type': 'text/html' }
+            }
+          );
         }
       })()
     );

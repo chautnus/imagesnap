@@ -21,6 +21,18 @@ export default function HomeClient() {
         const res = await fetch('/api/auth/session');
         const sessionData = await res.json();
         if (sessionData.authenticated && window.location.pathname === '/') {
+          const token = sessionData.user?.token;
+          if (token) {
+            // Verify Google token validity before attempting redirect
+            const check = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!check.ok) {
+              console.warn("Session token has expired. Deleting session cookie.");
+              await fetch('/api/auth/session', { method: 'DELETE' });
+              return;
+            }
+          }
           window.location.href = '/dashboard';
         }
       } catch (e) {
