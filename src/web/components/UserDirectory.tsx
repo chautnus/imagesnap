@@ -45,8 +45,13 @@ export const UserDirectory: React.FC<UserDirectoryProps> = ({ user, subStatus, c
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/users?adminEmail=${encodeURIComponent(user.email)}`);
       if (!res.ok) {
-        const errData = await res.json();
-        alert(`Failed to fetch users: ${errData.error || 'Unknown error'}`);
+        const text = await res.text();
+        let errMsg = text;
+        try {
+          const json = JSON.parse(text);
+          errMsg = json.error || text;
+        } catch (e) {}
+        alert(`Failed to fetch users (Status ${res.status}): ${errMsg}`);
         return;
       }
       const data = await res.json() as Record<string, UserEntry>;
@@ -66,8 +71,13 @@ export const UserDirectory: React.FC<UserDirectoryProps> = ({ user, subStatus, c
         body: JSON.stringify({ adminEmail: user.email, targetEmail, updates })
       });
       if (!res.ok) {
-        const errData = await res.json();
-        alert(`Failed to update user: ${errData.error || 'Unknown error'}`);
+        const text = await res.text();
+        let errMsg = text;
+        try {
+          const json = JSON.parse(text);
+          errMsg = json.error || text;
+        } catch (e) {}
+        alert(`Failed to update user (Status ${res.status}): ${errMsg}`);
         return;
       }
       fetchUsers();
@@ -86,8 +96,13 @@ export const UserDirectory: React.FC<UserDirectoryProps> = ({ user, subStatus, c
         body: JSON.stringify({ adminEmail: user.email, targetEmail })
       });
       if (!res.ok) {
-        const errData = await res.json();
-        alert(`Failed to delete user: ${errData.error || 'Unknown error'}`);
+        const text = await res.text();
+        let errMsg = text;
+        try {
+          const json = JSON.parse(text);
+          errMsg = json.error || text;
+        } catch (e) {}
+        alert(`Failed to delete user (Status ${res.status}): ${errMsg}`);
         return;
       }
       fetchUsers();
