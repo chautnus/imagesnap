@@ -77,7 +77,13 @@ Multiple critical architectural bugs:
 5. **Divergent file field names:** Some sharing clients sent images under custom fields instead of the defined `"images"` field name in manifest.json.
 
 #### Fix Applied
-1. **Self-Healing DB across all endpoints:** Added `onupgradeneeded` to guarantee creation of the `shares` store in `useDashboardInit.ts`, `CaptureTab.tsx` (Next.js), `DiagnosticsWizard.tsx` (all opens), `sw.js` (`pruneOldShares`), and `sw-logger.js` (`writeErrorToIDB`).
+1. **Self-Healing DB across all endpoints (Recreation on NotFoundError):**
+   - Added `onupgradeneeded` to guarantee creation of the `shares` store in `useDashboardInit.ts`, `CaptureTab.tsx` (Next.js), `DiagnosticsWizard.tsx` (all opens), `App.tsx`, `sw.js` (`pruneOldShares`, `saveSharedData`), and `sw-logger.js` (`writeErrorToIDB`).
+   - Tích hợp khối lệnh **Self-Healing Try-Catch** tại tất cả các điểm gọi `db.transaction('shares')` trong ứng dụng. Nếu bắt gặp lỗi `NotFoundError` (do database phiên bản 2 trong browser của người dùng đã bị khởi tạo thiếu bảng ở các phiên bản cũ trước đó), hệ thống sẽ lập tức:
+     - Đóng kết nối: `db.close()`.
+     - Thực hiện xóa tận gốc DB cũ: `indexedDB.deleteDatabase(DB_NAME)`.
+     - Tự động gọi `window.location.reload()` để khởi tạo lại một database hoàn toàn sạch sẽ chứa đầy đủ các bảng dữ liệu mà không làm gián đoạn trải nghiệm người dùng.
+     - Trong luồng Service Worker, SW sẽ xóa DB và từ chối promise, kích hoạt trang Client tự nạp lại sạch sẽ.
 2. **Absolute Redirects:** Updated `sw.js` to redirect using absolute URLs constructed with `self.location.origin`.
 3. **Regex URL Extraction:** Implemented a robust fallback pattern using `/https?:\/\/[^\s]+/i` to extract links from `text` if `url` is empty.
 4. **Fallback Image Harvester:** Added an entries iterator (`formData.entries()`) to capture any shared file of type `image/*` as a fallback.
