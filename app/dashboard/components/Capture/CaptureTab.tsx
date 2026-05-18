@@ -213,14 +213,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
 
   return (
     <div className="pb-24 p-4 flex flex-col gap-5">
-      <div className="flex justify-end items-center">
-        <button onClick={onSwitchToHelp} className="text-[10px] bg-accent/10 text-accent font-black px-2.5 py-1 rounded-lg border border-accent/20 hover:bg-accent/20 transition-all uppercase">
-          Help Guide
-        </button>
-      </div>
-
       {/* Action Row */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <BurstCamera imageCount={images.length} onPhotoTaken={url => {
           if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Burst photo taken. Current images: ${images.length + 1}`);
           setImages(p => [...p, url]);

@@ -16,8 +16,8 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
     },
     {
       icon: <Camera className="text-accent" />,
-      title: "2. Browse and capture",
-      desc: "Click the extension on any image worth saving. Context fills automatically. Choose what matters, skip the rest."
+      title: "2. Browse and Capture",
+      desc: "Capture or Share any pictures worth saving. Capture the only matter context."
     },
     {
       icon: <Globe className="text-green-400" />,
@@ -38,9 +38,6 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
         {steps.map((step, idx) => (
           <div 
             key={idx}
-            
-            
-            
             className="bg-card/30 border border-white/5 p-5 rounded-2xl flex gap-4"
           >
             <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
@@ -60,7 +57,7 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
         </h4>
         <ul className="space-y-3">
           <li className="flex gap-3 text-xs font-bold text-white/80">
-            <span className="text-accent">â€¢</span>
+            <span className="text-accent">•</span>
             Use custom fields in Settings to adapt ImageSnap to your workflow.
           </li>
           <li className="flex gap-3 text-xs font-bold text-white/80">
@@ -68,7 +65,7 @@ export const HelpTab: React.FC<HelpTabProps> = ({ t }) => {
             For ecommerce sites, prices and titles are auto-extracted when possible.
           </li>
           <li className="flex gap-3 text-xs font-bold text-white/80">
-            <span className="text-accent">â€¢</span>
+            <span className="text-accent">•</span>
             All images are saved directly to your Google Drive to protect your privacy.
           </li>
         </ul>

@@ -145,6 +145,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
         try {
           await apiClient(`${API_BASE_URL}/api/increment-usage`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: currentUser.email })
           });
         } catch (e) { console.error("Failed to increment usage", e); }
