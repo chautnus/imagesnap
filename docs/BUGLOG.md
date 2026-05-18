@@ -5,6 +5,30 @@
 
 ---
 
+### [BUG-026] — Mobile PWA Share Target Failure & DB Ingestion Crash
+**Status**: CLOSED
+**Severity**: CRITICAL
+**Discovered**: [2026-05-18] | **Fixed**: [2026-05-18]
+
+#### Symptom
+Mobile PWA users could not share images, text, or links to the application from other apps (e.g. Gallery, Chrome). The application either threw a `TypeError` in the Service Worker or crashed inside the Next.js Dashboard with a `NotFoundError` (One of the specified object stores was not found).
+
+#### Root Cause
+Multiple critical architectural bugs:
+1. **Missing `onupgradeneeded` in client-side IndexedDB opening calls:** Both `useDashboardInit.ts` and `CaptureTab.tsx` opened the database `imagesnap-pwa-db` at version 2 without an `onupgradeneeded` listener. If opened on a clean browser, the database was created without the `shares` object store.
+2. **Missing `onupgradeneeded` in SW Activation:** The Service Worker `'activate'` handler called `pruneOldShares()` which opened the database version 2 without `onupgradeneeded`, silently creating a storeless database in the background before any share was processed.
+3. **Relative URL in `Response.redirect()` within Service Worker:** In `sw.js`, redirects were responded using `Response.redirect('/dashboard?share_id=...')` which throws a `TypeError` in modern mobile browsers since the Fetch API requires absolute URLs in SW context.
+4. **Chrome/Android URL text mismatch:** Mobile Chrome shares product links under the `text` field instead of `url`. Because the client dashboard did not extract links from `text`, the shared URL was ignored.
+5. **Divergent file field names:** Some sharing clients sent images under custom fields instead of the defined `"images"` field name in manifest.json.
+
+#### Fix Applied
+1. **Self-Healing DB across all endpoints:** Added `onupgradeneeded` to guarantee creation of the `shares` store in `useDashboardInit.ts`, `CaptureTab.tsx` (Next.js), `DiagnosticsWizard.tsx` (all opens), `sw.js` (`pruneOldShares`), and `sw-logger.js` (`writeErrorToIDB`).
+2. **Absolute Redirects:** Updated `sw.js` to redirect using absolute URLs constructed with `self.location.origin`.
+3. **Regex URL Extraction:** Implemented a robust fallback pattern using `/https?:\/\/[^\s]+/i` to extract links from `text` if `url` is empty.
+4. **Fallback Image Harvester:** Added an entries iterator (`formData.entries()`) to capture any shared file of type `image/*` as a fallback.
+
+#### Lesson Learned
+⚠ BÀI HỌC #026: In complex multi-entry architectures (Next.js client-side code, Service Worker context, error loggers) that interact with a single IndexedDB database, **every single database open call must include an `onupgradeneeded` handler** to guarantee schema safety. Never use relative URLs in Service Worker `Response.redirect()`, and always build fallback parsing for mobile sharing parameter mismatches.
 
 ---
 
@@ -506,7 +530,7 @@ Yêu cầu: xuất lại toàn bộ import block sau khi sửa, không chỉ đo
 ## STATS
 | Metric | Value |
 |--------|-------|
-| Total bugs logged | 25 |
+| Total bugs logged | 26 |
 | Open | 0 |
-| Closed | 25 |
+| Closed | 26 |
 | Patterns extracted | 2 |
