@@ -60,6 +60,13 @@ export const DiagnosticsWizard: React.FC<DiagnosticsWizardProps> = ({
     
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     
+    request.onupgradeneeded = (event: any) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    
     request.onerror = () => {
       setStep1Status('fail');
       setErrorDetails("Lỗi mở IndexedDB. Quyền lưu trữ bị từ chối.");
@@ -194,6 +201,12 @@ export const DiagnosticsWizard: React.FC<DiagnosticsWizardProps> = ({
     const DB_VERSION = 2;
     
     const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (event: any) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
     request.onsuccess = (event: any) => {
       const db = event.target.result;
       try {

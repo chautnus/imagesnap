@@ -37,6 +37,10 @@ async function pruneOldShares() {
 
   return new Promise((resolve) => {
     const request = indexedDB.open(DB_NAME, 2);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+    };
     request.onsuccess = (event) => {
       const db = event.target.result;
       try {
@@ -88,10 +92,28 @@ self.addEventListener('fetch', (event) => {
             throw new Error(`FormData parse failed: ${fdErr.message}`);
           }
           
-          let imageFiles = formData.getAll('images');
+          let imageFiles = formData.getAll('images') || [];
+          if (imageFiles.length === 0) {
+            // Fallback: Duyệt qua tất cả các trường trong formData để tìm File ảnh
+            for (const [key, value] of formData.entries()) {
+              if (value instanceof File && value.type.startsWith('image/')) {
+                imageFiles.push(value);
+              }
+            }
+          }
+
           const title = formData.get('title') || '';
           const text = formData.get('text') || '';
-          const link = formData.get('url') || '';
+          let link = formData.get('url') || '';
+
+          // Fallback: Nếu url rỗng nhưng text chứa URL, dùng Regex trích xuất URL
+          if (!link && text) {
+            const urlMatch = text.match(/https?:\/\/[^\s]+/i);
+            if (urlMatch) {
+              link = urlMatch[0];
+            }
+          }
+
           self.swLog.step(`PAYLOAD: images=${imageFiles.length}, title=${title ? 'yes' : 'no'}, text=${text ? 'yes' : 'no'}, url=${link ? 'yes' : 'no'}`);
 
           if (imageFiles.length > 0 || title || text || link) {
@@ -138,7 +160,8 @@ self.addEventListener('fetch', (event) => {
           // SUCCESS
           self.swLog.step("INTERCEPT_SUCCESS_REDIRECTING");
           await new Promise(resolve => setTimeout(resolve, 500));
-          return Response.redirect(`/dashboard?share_id=${sid}`, 303);
+          const redirectUrl = new URL(`/dashboard?share_id=${sid}`, self.location.origin).href;
+          return Response.redirect(redirectUrl, 303);
 
         } catch (err) {
           self.swLog.error(`FATAL:${err.message || err}`);
@@ -152,7 +175,8 @@ self.addEventListener('fetch', (event) => {
           }
           
           // Chuyển hướng sạch kèm cờ báo động lỗi
-          return Response.redirect(`/dashboard?share_id=${sid}&sw_fatal_error=true`, 303);
+          const fatalRedirectUrl = new URL(`/dashboard?share_id=${sid}&sw_fatal_error=true`, self.location.origin).href;
+          return Response.redirect(fatalRedirectUrl, 303);
         }
       })()
     );

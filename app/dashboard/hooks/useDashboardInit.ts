@@ -129,6 +129,13 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
 
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
+        request.onupgradeneeded = (event: any) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+
         request.onsuccess = (event: any) => {
           const db = event.target.result;
           try {

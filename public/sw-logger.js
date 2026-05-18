@@ -38,6 +38,11 @@ self.swLog = {
 
       const request = indexedDB.open(DB_NAME, DB_VERSION);
       
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+      };
+      
       request.onsuccess = (event) => {
         const db = event.target.result;
         try {
