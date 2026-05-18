@@ -87,6 +87,30 @@ export const UserDirectory: React.FC<UserDirectoryProps> = ({ user, subStatus, c
     }
   };
 
+  const handleCreateStaff = async (username: string, password: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/create-staff`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminEmail: user.email, username, password })
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        let errMsg = text;
+        try {
+          const json = JSON.parse(text);
+          errMsg = json.error || text;
+        } catch (e) {}
+        alert(`Failed to create staff (Status ${res.status}): ${errMsg}`);
+        return;
+      }
+      fetchUsers();
+    } catch (e: any) { 
+      console.error("Create staff error", e);
+      alert(`Network error creating staff: ${e.message}`);
+    }
+  };
+
   const handleDeleteUser = async (targetEmail: string) => {
     if (!confirm(`Delete user ${targetEmail}?`)) return;
     try {
@@ -152,10 +176,7 @@ export const UserDirectory: React.FC<UserDirectoryProps> = ({ user, subStatus, c
             <button
               onClick={async () => {
                 if (!staffUsername || !staffPassword) return;
-                await handleUpdateUser(`${staffUsername}@staff.imagesnap`, {
-                  username: staffUsername, password: staffPassword,
-                  role: 'staff', isPro: true, limit: 999999
-                });
+                await handleCreateStaff(staffUsername, staffPassword);
                 setStaffUsername(''); setStaffPassword(''); setShowStaffForm(false);
               }}
               className="btn btn-primary py-2 text-xs"

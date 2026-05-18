@@ -1,4 +1,9 @@
 import pg from 'pg';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env immediately for local/Express dev servers
+dotenv.config();
+
 const { Pool } = pg;
 
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -11,6 +16,26 @@ export const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
+
+let initPromise: Promise<void> | null = null;
+
+// Hàm bảo đảm DB được khởi tạo tuần tự trước khi chạy bất kỳ câu lệnh nào
+export function ensureDbInitialized(): Promise<void> {
+  if (!initPromise) {
+    initPromise = initDb();
+  }
+  return initPromise;
+}
+
+// Bọc pool.query để tự động đợi việc khởi tạo hoàn tất và kiểm tra kết nối
+const originalQuery = pool.query.bind(pool);
+pool.query = (async (...args: any[]) => {
+  if (!DATABASE_URL) {
+    throw new Error("DATABASE_URL is not configured. Please add the DATABASE_URL environment variable to your settings or create a local .env file with your PostgreSQL connection string (DATABASE_URL=postgres://...).");
+  }
+  await ensureDbInitialized();
+  return (originalQuery as any)(...args);
+}) as any;
 
 export async function initDb() {
   if (!DATABASE_URL) return;
@@ -38,6 +63,7 @@ export async function initDb() {
     `);
 
     // Self-healing migrations for existing deployments
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS registered_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS accessible_categories JSONB DEFAULT '[]'::jsonb`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT`);
@@ -68,5 +94,3 @@ export async function initDb() {
     client.release();
   }
 }
-
-initDb().catch(err => console.error('Immediate initDb failed:', err));

@@ -9,8 +9,13 @@ import { fileURLToPath } from "url";
 import fetch from "node-fetch";
 import crypto from "crypto";
 import fs from "fs";
+import dotenv from "dotenv";
+
+// Load environment variables immediately for local Express server execution
+dotenv.config();
+
 import { lemonSqueezySetup, createCheckout } from "@lemonsqueezy/lemonsqueezy.js";
-import { initDb } from "./src/db-postgres.js";
+import { initDb, pool } from "./src/db-postgres.js";
 import { 
   getSubscription, 
   getAllUsers, 
@@ -93,6 +98,32 @@ async function startServer() {
     if (!status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
     await deleteUser(targetEmail);
     res.json({ success: true });
+  });
+
+  app.post("/api/admin/create-staff", async (req, res) => {
+    try {
+      const { adminEmail, username, password } = req.body;
+      const status = await getSubscription(adminEmail || "");
+      if (!status || !status.isAdmin) return res.status(403).json({ error: "Unauthorized" });
+
+      if (!username || !password) return res.status(400).json({ error: "Username and password required" });
+      const email = `${username.toLowerCase()}@staff.imagesnap`;
+
+      const checkRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      if (checkRes.rows.length > 0) return res.status(409).json({ error: "Staff account already exists" });
+
+      const appId = crypto.randomUUID();
+      const newUser = await pool.query(
+        `INSERT INTO users (email, is_pro, is_admin, limit_count, usage_count, "role", app_id, username, password, registered_at) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) 
+         RETURNING *`,
+        [email, true, false, 999999, 0, 'staff', appId, username, password]
+      );
+      res.json({ success: true, user: newUser.rows[0] });
+    } catch (err: any) {
+      console.error("Create staff error:", err);
+      res.status(500).json({ error: err.message });
+    }
   });
 
   // --- STAFF & PROXY ROUTES ---

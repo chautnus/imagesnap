@@ -13,7 +13,7 @@ export async function getSubscription(email: string) {
     const isAdmin = ADMIN_EMAILS.includes(normalizedEmail);
     const appId = crypto.randomUUID();
     const newUser = await pool.query(
-      `INSERT INTO users (email, is_pro, is_admin, limit_count, usage_count, role, app_id, registered_at) 
+      `INSERT INTO users (email, is_pro, is_admin, limit_count, usage_count, "role", app_id, registered_at) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) 
        RETURNING *`,
       [normalizedEmail, isAdmin, isAdmin, isAdmin ? 999999 : 30, 0, isAdmin ? "admin" : "user", appId]
@@ -28,7 +28,7 @@ export async function getSubscription(email: string) {
   if (isAdmin && (!user.is_admin || user.limit_count < 999999)) {
     const updated = await pool.query(
       `UPDATE users 
-       SET is_pro = true, is_admin = true, limit_count = 999999, role = 'admin' 
+       SET is_pro = true, is_admin = true, limit_count = 999999, "role" = 'admin' 
        WHERE email = $1 
        RETURNING *`, 
       [normalizedEmail]
@@ -87,8 +87,8 @@ export async function updateUser(email: string, updates: any) {
   if (updates.isAdmin !== undefined) { fields.push(`is_admin = $${i++}`); values.push(updates.isAdmin); }
   if (updates.limit !== undefined) { fields.push(`limit_count = $${i++}`); values.push(updates.limit); }
   if (updates.usage !== undefined) { fields.push(`usage_count = $${i++}`); values.push(updates.usage); }
-  if (updates.role !== undefined) { fields.push(`role = $${i++}`); values.push(updates.role); }
-  if (updates.accessibleCategories !== undefined) { fields.push(`accessible_categories = $${i++}`); values.push(JSON.stringify(updates.accessibleCategories)); }
+  if (updates.role !== undefined) { fields.push(`"role" = $${i++}`); values.push(updates.role); }
+  if (updates.accessibleCategories !== undefined) { fields.push(`accessible_categories = $${i++}::jsonb`); values.push(JSON.stringify(updates.accessibleCategories)); }
   if (updates.username !== undefined) { fields.push(`username = $${i++}`); values.push(updates.username); }
   if (updates.password !== undefined) { fields.push(`password = $${i++}`); values.push(updates.password); }
 
