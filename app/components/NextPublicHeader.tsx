@@ -66,7 +66,7 @@ export const NextPublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
                 </button>
 
                 <button 
-                  onClick={() => { setShowLoginOptions(false); window.location.hash = '#staff'; router.push('/'); }}
+                  onClick={() => { setShowLoginOptions(false); router.push('/staff'); }}
                   className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
