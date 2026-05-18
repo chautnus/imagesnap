@@ -169,28 +169,46 @@ function DashboardContent() {
       />
 
       <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
-        {activeTab === 'capture' && (
-          <CaptureTab
-            categories={accessibleCategories}
-            productNames={appData.productNames}
-            onSave={async (product, imgs) => {
-              if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
-                alert(t('limitReached'));
-                handleUpgrade();
-                return;
+        {activeTab === 'capture' && (() => {
+          const combined = [
+            ...appData.productNames,
+            ...appData.products.map(p => ({ categoryId: p.categoryId, name: p.name }))
+          ];
+          const seen = new Set();
+          const uniqueProductNames: { categoryId: string; name: string }[] = [];
+          for (const item of combined) {
+            if (item.name) {
+              const nameStr = String(item.name).trim();
+              const key = `${item.categoryId}-${nameStr.toLowerCase()}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                uniqueProductNames.push({ categoryId: item.categoryId, name: nameStr });
               }
-              await handleSaveProduct(product, imgs);
-              if (user?.email && !localStorage.getItem('ps_is_staff')) fetchSubStatus(user.email);
-            }}
-            t={t}
-            lang={lang}
-            subStatus={subStatus}
-            onUpgrade={handleUpgrade}
-            shareTargetSid={shareTargetSid}
-            onSaveCategory={handleSaveCategory}
-            onSwitchToHelp={() => setActiveTab('help')}
-          />
-        )}
+            }
+          }
+          return (
+            <CaptureTab
+              categories={accessibleCategories}
+              productNames={uniqueProductNames}
+              onSave={async (product, imgs) => {
+                if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
+                  alert(t('limitReached'));
+                  handleUpgrade();
+                  return;
+                }
+                await handleSaveProduct(product, imgs);
+                if (user?.email && !localStorage.getItem('ps_is_staff')) fetchSubStatus(user.email);
+              }}
+              t={t}
+              lang={lang}
+              subStatus={subStatus}
+              onUpgrade={handleUpgrade}
+              shareTargetSid={shareTargetSid}
+              onSaveCategory={handleSaveCategory}
+              onSwitchToHelp={() => setActiveTab('help')}
+            />
+          );
+        })()}
         {activeTab === 'data' && (
           <DataTab
             categories={accessibleCategories}

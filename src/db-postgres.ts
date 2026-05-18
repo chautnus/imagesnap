@@ -37,6 +37,12 @@ export async function initDb() {
       )
     `);
 
+    // Self-healing migrations for existing deployments
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS accessible_categories JSONB DEFAULT '[]'::jsonb`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password TEXT`);
+
     // Config table (for masterSpreadsheetId, etc.)
     await client.query(`
       CREATE TABLE IF NOT EXISTS config (

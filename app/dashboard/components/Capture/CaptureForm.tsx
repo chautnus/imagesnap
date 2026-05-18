@@ -41,6 +41,9 @@ export const CaptureForm: React.FC<CaptureFormProps> = ({
             const label = translate(field.label, lang);
             const isKey = field.type === 'key';
             const currentVal = formData[field.id] || '';
+            const filteredSuggestions = isKey
+              ? suggestions.filter(s => s.name && String(s.name).toLowerCase().includes(String(currentVal).toLowerCase())).slice(0, 5)
+              : [];
             
             return (
               <div key={field.id} className={`flex flex-col gap-1.5 ${isKey ? 'p-3 bg-accent/5 rounded-xl border border-accent/20' : ''}`}>
@@ -76,21 +79,32 @@ export const CaptureForm: React.FC<CaptureFormProps> = ({
                       {field.type === 'date' && <Calendar className="absolute left-3 text-muted" size={14} />}
                     </div>
 
-                    {isKey && keySearchFocus === field.id && suggestions.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-line rounded-xl shadow-2xl z-50 overflow-hidden max-h-[200px] overflow-y-auto">
-                        {suggestions.map((s, idx) => (
+                    {isKey && keySearchFocus === field.id && filteredSuggestions.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-line rounded-xl shadow-2xl z-50 overflow-hidden max-h-[250px] flex flex-col">
+                        <div className="flex items-center justify-between px-3 py-2 bg-accent/5 border-b border-line text-[9px] font-black uppercase tracking-wider text-muted">
+                          <span>Suggestions (Top 5)</span>
                           <button 
-                            key={idx} 
-                            onMouseDown={e => { e.preventDefault(); onFieldChange(field.id, s.name); onKeySearchFocus(null); }}
-                            className="w-full text-left px-4 py-3 text-xs hover:bg-accent/10 flex items-center justify-between border-b border-line last:border-0 transition-colors"
+                            onMouseDown={(e) => { e.preventDefault(); onKeySearchFocus(null); }}
+                            className="hover:text-accent font-black transition-colors"
                           >
-                            <div className="flex items-center gap-2">
-                              <Command size={10} className="text-muted" />
-                              <span className="font-medium uppercase">{s.name}</span>
-                            </div>
-                            <span className="text-[8px] uppercase text-muted font-bold">Existing</span>
+                            CLOSE (X)
                           </button>
-                        ))}
+                        </div>
+                        <div className="overflow-y-auto flex-1">
+                          {filteredSuggestions.map((s, idx) => (
+                            <button 
+                              key={idx} 
+                              onMouseDown={e => { e.preventDefault(); onFieldChange(field.id, s.name); onKeySearchFocus(null); }}
+                              className="w-full text-left px-4 py-3 text-xs hover:bg-accent/10 flex items-center justify-between border-b border-line last:border-0 transition-colors"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Command size={10} className="text-muted" />
+                                <span className="font-medium uppercase">{s.name}</span>
+                              </div>
+                              <span className="text-[8px] uppercase text-muted font-bold">Existing</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

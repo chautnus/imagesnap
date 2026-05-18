@@ -56,6 +56,7 @@ export default function App() {
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(localStorage.getItem('ps_sheet_id'));
   const [subStatus, setSubStatus] = useState<SubscriptionStatus>({ isPro: false, limit: 30, usage: 0 });
   const [shareTargetNonce, setShareTargetNonce] = useState(0);
+  const [currentHash, setCurrentHash] = useState(typeof window !== 'undefined' ? window.location.hash : '');
   
   const { lang, t, toggleLang } = useI18n();
   const { 
@@ -159,6 +160,7 @@ export default function App() {
   useEffect(() => {
     const checkImport = async () => {
       let hash = window.location.hash;
+      setCurrentHash(hash);
       
       // 1. Handle privacy/staff routes
       if (hash === '#privacy') {
@@ -323,29 +325,47 @@ export default function App() {
         />
    
         <main className="min-h-[calc(100vh-240px)] overflow-y-auto">
-          {activeTab === 'capture' && (
-            <CaptureTab 
-              categories={accessibleCategories} 
-              productNames={appData.productNames}
-              onSave={async (product, imgs) => {
-                if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
-                  alert(t('limitReached'));
-                  handleUpgrade();
-                  return;
+          {activeTab === 'capture' && (() => {
+            const combined = [
+              ...appData.productNames,
+              ...appData.products.map(p => ({ categoryId: p.categoryId, name: p.name }))
+            ];
+            const seen = new Set();
+            const uniqueProductNames: { categoryId: string; name: string }[] = [];
+            for (const item of combined) {
+              if (item.name) {
+                const nameStr = String(item.name).trim();
+                const key = `${item.categoryId}-${nameStr.toLowerCase()}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  uniqueProductNames.push({ categoryId: item.categoryId, name: nameStr });
                 }
-                await handleSaveProduct(product, imgs);
-                // Refresh status after save to update usage count
-                if (user?.email) fetchSubStatus(user.email);
-              }} 
-              t={t} 
-              lang={lang}
-              subStatus={subStatus}
-              onUpgrade={handleUpgrade}
-              shareTargetNonce={shareTargetNonce}
-              onSaveCategory={handleSaveCategory}
-              onSwitchToHelp={() => setActiveTab('help')}
-            />
-          )}
+              }
+            }
+            return (
+              <CaptureTab 
+                categories={accessibleCategories} 
+                productNames={uniqueProductNames}
+                onSave={async (product, imgs) => {
+                  if (!subStatus.isPro && subStatus.usage >= subStatus.limit) {
+                    alert(t('limitReached'));
+                    handleUpgrade();
+                    return;
+                  }
+                  await handleSaveProduct(product, imgs);
+                  // Refresh status after save to update usage count
+                  if (user?.email) fetchSubStatus(user.email);
+                }} 
+                t={t} 
+                lang={lang}
+                subStatus={subStatus}
+                onUpgrade={handleUpgrade}
+                shareTargetNonce={shareTargetNonce}
+                onSaveCategory={handleSaveCategory}
+                onSwitchToHelp={() => setActiveTab('help')}
+              />
+            );
+          })()}
           {activeTab === 'data' && (
             <DataTab 
               categories={accessibleCategories} 
@@ -395,8 +415,8 @@ export default function App() {
     <Routes>
       <Route element={<PublicLayout onLogin={() => requestToken()} />}>
         <Route path="/" element={
-          window.location.hash === '#staff' ? (
-            <StaffLogin onLogin={handleStaffLogin} onBack={() => window.location.hash = ''} t={t} />
+          currentHash === '#staff' ? (
+            <StaffLogin onLogin={handleStaffLogin} onBack={() => { window.location.hash = ''; setCurrentHash(''); }} t={t} />
           ) : (
             <>
               <SEO 

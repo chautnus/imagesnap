@@ -202,7 +202,16 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       blobUrlsRef.current = [];
 
       setImages([]);
-      setFormData({});
+      const keptData: Record<string, any> = {};
+      const cat = categories.find(c => c.id === selectedCategoryId);
+      if (cat) {
+        cat.fields.forEach(f => {
+          if ((f.type === 'select' || f.type === 'date') && formData[f.id]) {
+            keptData[f.id] = formData[f.id];
+          }
+        });
+      }
+      setFormData(keptData);
     } catch (e: any) {
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Product save failed: ${e.message || e}`);
     } finally { setIsSaving(false); }
