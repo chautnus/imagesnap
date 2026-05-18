@@ -11,8 +11,9 @@ import crypto from "crypto";
 import fs from "fs";
 import dotenv from "dotenv";
 
-// Load environment variables immediately for local Express server execution
-dotenv.config();
+// Nạp an toàn cả .env.local và .env từ đường dẫn tuyệt đối cho máy chủ Express local
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 import { lemonSqueezySetup, createCheckout } from "@lemonsqueezy/lemonsqueezy.js";
 import { initDb, pool } from "./src/db-postgres.js";

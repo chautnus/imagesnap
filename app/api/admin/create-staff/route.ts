@@ -3,6 +3,8 @@ import { getSubscription } from "@src/db";
 import { pool } from "@src/db-postgres";
 import crypto from "crypto";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const { adminEmail, username, password } = await request.json();
