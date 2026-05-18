@@ -117,6 +117,15 @@ function DashboardContent() {
     }
   }, [searchParams, isAuthReady, handleShareTarget]);
 
+  // PWA Android back button trap: prevent navigating back to Google OAuth screen.
+  // Pushes a sentinel history entry on mount; re-pushes it whenever popstate fires.
+  useEffect(() => {
+    history.pushState({ pwa: true }, '');
+    const onPopState = () => history.pushState({ pwa: true }, '');
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
   // IDB Sync Side Effect: Once sid is pulled from IDB, pass it to CaptureTab
   // No need for confirmation signal, logic is now SID-based.
 
