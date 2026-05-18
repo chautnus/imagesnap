@@ -4,8 +4,10 @@ const { Pool } = pg;
 
 // Hàm định nghĩa động để lấy connection string sạch sẽ ở runtime (tránh static-replace của Webpack)
 function getDatabaseUrl(): string | undefined {
-  const rawUrl = process.env['DATABASE_URL'] || 
-                 process.env['POSTGRES_URL'] || 
+  const rawUrl = process.env['ImageSnap_DATABASE_URL'] ||
+                 process.env['ImageSnap_POSTGRES_URL'] ||
+                 process.env['DATABASE_URL'] ||
+                 process.env['POSTGRES_URL'] ||
                  process.env['DATABASE_PRIVATE_URL'];
   return rawUrl ? rawUrl.replace(/^\uFEFF/, '').trim() : undefined;
 }
