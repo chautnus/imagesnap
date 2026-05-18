@@ -49,7 +49,7 @@ Tính năng chia sẻ trực tiếp hoạt động tốt trên các dòng máy A
 
 ## 5. Hướng dẫn xử lý các lỗi hay gặp (Troubleshooting Guide)
 
-Kể từ phiên bản **`v1.10.124`**, ImageSnap đã được nâng cấp hệ thống debug toàn diện và tự động hóa xử lý sự cố. Dưới đây là các lỗi phổ biến và cách khắc phục trực tiếp trên điện thoại của bạn:
+Kể từ phiên bản **`v1.10.125`**, ImageSnap đã được nâng cấp hệ thống debug toàn diện và tự động hóa xử lý sự cố. Dưới đây là các lỗi phổ biến và cách khắc phục trực tiếp trên điện thoại của bạn:
 
 ### ⚠️ Lỗi 1: Mất Token hoặc Yêu cầu Đăng nhập lại
 *   **Triệu chứng:** Bị tự động đá ra màn hình Landing page hoặc không tải được danh sách Drive/Sheets.
@@ -64,7 +64,7 @@ Kể từ phiên bản **`v1.10.124`**, ImageSnap đã được nâng cấp hệ
 *   **Cách khắc phục:**
     1.  Chạm vào nút nổi **`🐛 LOGS`** ở góc dưới bên trái màn hình.
     2.  Nhấn nút **`[UNREG SW]`** để xóa bộ nhớ đệm và hủy đăng ký Service Worker cũ, trang web sẽ tự động reload lại sạch sẽ.
-    3.  Nhấn đăng nhập lại. Cơ chế tự dọn dẹp Session (`DELETE /api/auth/session`) trên `v1.10.124` sẽ tự động dọn sạch Cookies hỏng ngay khi phát hiện lỗi, giải quyết triệt để sự cố này.
+    3.  Nhấn đăng nhập lại. Cơ chế tự dọn dẹp Session (`DELETE /api/auth/session`) trên `v1.10.125` sẽ tự động dọn sạch Cookies hỏng ngay khi phát hiện lỗi, giải quyết triệt để sự cố này.
 
 ### ⚠️ Lỗi 3: Không chia sẻ được ảnh (Kẹt màn hình Icon PWA hoặc Preview trống)
 *   **Triệu chứng:** Chia sẻ ảnh từ Bộ sưu tập (Gallery) qua ImageSnap nhưng ứng dụng bị treo đứng vô hạn ở màn hình Icon (Splash Screen) của điện thoại, hoặc mở app lên nhưng ảnh preview không xuất hiện.
