@@ -297,8 +297,6 @@ export default function App() {
       <>
         <SEO title="Privacy Policy — ImageSnap.cloud" description="Our privacy policy and data protection commitment." />
         <PrivacyPolicy onBack={() => {
-          window.location.hash = '';
-          setView(user ? 'app' : 'landing');
           window.location.href = '/';
         }} />
       </>
@@ -416,7 +414,7 @@ export default function App() {
       <Route element={<PublicLayout onLogin={() => requestToken()} />}>
         <Route path="/" element={
           currentHash === '#staff' ? (
-            <StaffLogin onLogin={handleStaffLogin} onBack={() => { window.location.hash = ''; setCurrentHash(''); }} t={t} />
+            <StaffLogin onLogin={handleStaffLogin} onBack={() => { window.location.href = '/'; }} t={t} />
           ) : (
             <>
               <SEO 
