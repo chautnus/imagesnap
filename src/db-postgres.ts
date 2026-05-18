@@ -1,17 +1,22 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..');
 
 // Nạp an toàn cả .env.local và .env từ đường dẫn tuyệt đối thư mục gốc cho local Express
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(projectRoot, '.env.local') });
+dotenv.config({ path: path.resolve(projectRoot, '.env') });
 
 const { Pool } = pg;
 
-// Đọc động tránh bộ phân tích tĩnh của Turbopack và tự động lấy biến thích hợp (local & Vercel online)
-const rawUrl = process.env['DATABASE_URL'] || 
-               process.env['POSTGRES_URL'] || 
-               process.env['DATABASE_PRIVATE_URL'];
+// Đọc tĩnh chuẩn của Turbopack và tự động lấy biến thích hợp (local & Vercel online)
+const rawUrl = process.env.DATABASE_URL || 
+               process.env.POSTGRES_URL || 
+               process.env.DATABASE_PRIVATE_URL;
 
 // Làm sạch các ký tự điều hướng BOM (\uFEFF) của Windows và khoảng trắng thừa
 const DATABASE_URL = rawUrl ? rawUrl.replace(/^\uFEFF/, '').trim() : undefined;
