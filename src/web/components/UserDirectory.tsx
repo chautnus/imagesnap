@@ -44,33 +44,57 @@ export const UserDirectory: React.FC<UserDirectoryProps> = ({ user, subStatus, c
     setIsLoadingUsers(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/users?adminEmail=${encodeURIComponent(user.email)}`);
+      if (!res.ok) {
+        const errData = await res.json();
+        alert(`Failed to fetch users: ${errData.error || 'Unknown error'}`);
+        return;
+      }
       const data = await res.json() as Record<string, UserEntry>;
       setUsers(data);
-    } catch (e) { console.error("Fetch users error", e); }
+    } catch (e: any) { 
+      console.error("Fetch users error", e);
+      alert(`Network error fetching users: ${e.message}`);
+    }
     finally { setIsLoadingUsers(false); }
   };
 
   const handleUpdateUser = async (targetEmail: string, updates: any) => {
     try {
-      await fetch(`${API_BASE_URL}/api/admin/update-user`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/update-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminEmail: user.email, targetEmail, updates })
       });
+      if (!res.ok) {
+        const errData = await res.json();
+        alert(`Failed to update user: ${errData.error || 'Unknown error'}`);
+        return;
+      }
       fetchUsers();
-    } catch (e) { console.error("Update user error", e); }
+    } catch (e: any) { 
+      console.error("Update user error", e);
+      alert(`Network error updating user: ${e.message}`);
+    }
   };
 
   const handleDeleteUser = async (targetEmail: string) => {
     if (!confirm(`Delete user ${targetEmail}?`)) return;
     try {
-      await fetch(`${API_BASE_URL}/api/admin/delete-user`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/delete-user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminEmail: user.email, targetEmail })
       });
+      if (!res.ok) {
+        const errData = await res.json();
+        alert(`Failed to delete user: ${errData.error || 'Unknown error'}`);
+        return;
+      }
       fetchUsers();
-    } catch (e) { console.error("Delete user error", e); }
+    } catch (e: any) { 
+      console.error("Delete user error", e);
+      alert(`Network error deleting user: ${e.message}`);
+    }
   };
 
   if (!subStatus.isAdmin) return null;

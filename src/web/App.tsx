@@ -256,11 +256,11 @@ export default function App() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/user-status?email=${encodeURIComponent(email)}`);
       const data = await res.json();
-      setSubStatus({ ...data, isAdmin: data.isAdmin || isAdmin });
+      setSubStatus({ ...data, userEmail: email, isAdmin: data.isAdmin || isAdmin });
     } catch (e) { 
       console.error("Sub status fetch fail", e);
       // Use fallback if fetch fails
-      setSubStatus(prev => ({ ...prev, isAdmin }));
+      setSubStatus(prev => ({ ...prev, userEmail: email, isAdmin }));
     }
   };
 

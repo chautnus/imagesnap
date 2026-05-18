@@ -15,7 +15,7 @@ export function useSubStatus() {
       const res = await apiClient(`/api/user-status?email=${encodeURIComponent(email)}`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      const finalStatus = { ...data, isAdmin: data.isAdmin || isAdmin };
+      const finalStatus = { ...data, userEmail: email, isAdmin: data.isAdmin || isAdmin };
 
       if (finalStatus.isAdmin) {
         finalStatus.isPro = true;
@@ -24,7 +24,7 @@ export function useSubStatus() {
       setSubStatus(finalStatus);
       setDataStatus('success');
     } catch (e) {
-      setSubStatus(prev => ({ ...prev, isAdmin }));
+      setSubStatus(prev => ({ ...prev, userEmail: email, isAdmin }));
       setDataStatus('error');
       console.error("fetchSubStatus failed:", e);
     }

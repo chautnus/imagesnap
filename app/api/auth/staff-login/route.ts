@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const users = await getAllUsers();
     
     const userEntry = Object.values(users).find(
-      (u: any) => u.username === username && u.password === password
+      (u: any) => u.username?.toLowerCase() === username?.toLowerCase() && u.password === password
     );
 
     if (!userEntry) {

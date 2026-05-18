@@ -50,6 +50,7 @@ export async function getSubscription(email: string) {
 async function mapUser(dbUser: any) {
   return {
     email: dbUser.email,
+    userEmail: dbUser.email,
     isPro: dbUser.is_pro,
     isAdmin: dbUser.is_admin,
     limit: dbUser.limit_count,

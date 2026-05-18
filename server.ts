@@ -109,7 +109,7 @@ async function startServer() {
   app.post("/api/auth/staff-login", async (req, res) => {
     const { username, password } = req.body;
     const users = await getAllUsers();
-    const userEntry = Object.values(users).find((u: any) => u.username === username && u.password === password);
+    const userEntry = Object.values(users).find((u: any) => u.username?.toLowerCase() === username?.toLowerCase() && u.password === password);
     if (!userEntry) return res.status(401).json({ error: "Invalid credentials" });
     const masterSpreadsheetId = await getConfig('masterSpreadsheetId');
     res.json({ success: true, user: userEntry, masterSpreadsheetId });

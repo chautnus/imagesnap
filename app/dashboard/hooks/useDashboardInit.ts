@@ -83,7 +83,7 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       const isAdmin = email.toLowerCase() === 'chautnus@gmail.com' || email.toLowerCase() === 'admin@imagesnap.cloud';
-      const finalStatus = { ...data, isAdmin: data.isAdmin || isAdmin };
+      const finalStatus = { ...data, userEmail: email, isAdmin: data.isAdmin || isAdmin };
       
       if (finalStatus.isAdmin) {
         finalStatus.isPro = true;
