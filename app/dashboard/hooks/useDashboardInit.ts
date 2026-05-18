@@ -171,7 +171,18 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
               db.close();
               resolve();
             };
-          } catch (e) { log(`[FAIL] IDB Error: ${e}`); db.close(); resolve(); }
+          } catch (e: any) {
+            log(`[FAIL] IDB Error: ${e}`);
+            db.close();
+            if (e.name === 'NotFoundError') {
+              log('[HEAL] Shares store missing in DB. Purging and reloading...');
+              const delReq = indexedDB.deleteDatabase(DB_NAME);
+              delReq.onsuccess = () => {
+                window.location.reload();
+              };
+            }
+            resolve();
+          }
         };
         request.onerror = () => { log('[FAIL] IDB Open error'); resolve(); };
       });

@@ -154,6 +154,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         } catch (e: any) {
           if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Error in ingestion: ${e.message || e}`);
           db.close();
+          if (e.name === 'NotFoundError') {
+            console.warn('[HEAL] Shares store missing in CaptureTab. Deleting DB...');
+            const delReq = indexedDB.deleteDatabase(DB_NAME);
+            delReq.onsuccess = () => {
+              window.location.reload();
+            };
+          }
         }
       };
     }

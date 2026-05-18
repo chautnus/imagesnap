@@ -135,11 +135,19 @@ export const DiagnosticsWizard: React.FC<DiagnosticsWizardProps> = ({
             setLoading(false);
           };
         } catch (e: any) {
-          setStep1Status('fail');
-          setErrorDetails(`DB Error: ${e.message || e}`);
-          addLocalLog(`[CRASH] Lỗi biệt lệ: ${e.message}`);
           db.close();
-          setLoading(false);
+          if (e.name === 'NotFoundError') {
+            addLocalLog("[HEAL] Không tìm thấy bảng 'shares'. Tiến hành tự động xóa DB và tải lại trang...");
+            const delReq = indexedDB.deleteDatabase(DB_NAME);
+            delReq.onsuccess = () => {
+              window.location.reload();
+            };
+          } else {
+            setStep1Status('fail');
+            setErrorDetails(`DB Error: ${e.message || e}`);
+            addLocalLog(`[CRASH] Lỗi biệt lệ: ${e.message}`);
+            setLoading(false);
+          }
         }
       };
 

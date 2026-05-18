@@ -185,24 +185,43 @@ export default function App() {
         // Write to IDB to unify with PWA flow
         try {
           const dbRequest = indexedDB.open('imagesnap-pwa-db', 2);
+          
+          dbRequest.onupgradeneeded = (event: any) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('shares')) {
+              db.createObjectStore('shares');
+            }
+          };
+
           dbRequest.onsuccess = (event: any) => {
             const db = event.target.result;
-            const transaction = db.transaction('shares', 'readwrite');
-            const store = transaction.objectStore('shares');
-            
-            const sid = Date.now().toString();
-            store.put({
-              images: imgs ? imgs.split(',') : [],
-              url: sourceUrl || '',
-              title: (metadata as any).t || (metadata as any).title || '',
-              text: (metadata as any).d || (metadata as any).description || '',
-              timestamp: parseInt(sid)
-            }, sid);
+            try {
+              const transaction = db.transaction('shares', 'readwrite');
+              const store = transaction.objectStore('shares');
+              
+              const sid = Date.now().toString();
+              store.put({
+                images: imgs ? imgs.split(',') : [],
+                url: sourceUrl || '',
+                title: (metadata as any).t || (metadata as any).title || '',
+                text: (metadata as any).d || (metadata as any).description || '',
+                timestamp: parseInt(sid)
+              }, sid);
 
-            transaction.oncomplete = () => {
-              setShareTargetNonce(prev => prev + 1);
-              if (localStorage.getItem('ps_access_token')) setView('app');
-            };
+              transaction.oncomplete = () => {
+                setShareTargetNonce(prev => prev + 1);
+                if (localStorage.getItem('ps_access_token')) setView('app');
+              };
+            } catch (err: any) {
+              db.close();
+              if (err.name === 'NotFoundError') {
+                console.warn('[HEAL] Shares store missing in App.tsx. Deleting DB...');
+                const delReq = indexedDB.deleteDatabase('imagesnap-pwa-db');
+                delReq.onsuccess = () => {
+                  window.location.reload();
+                };
+              }
+            }
           };
         } catch (e) {
           console.error("Hash import failed", e);

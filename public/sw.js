@@ -61,6 +61,9 @@ async function pruneOldShares() {
         };
       } catch (e) {
         db.close();
+        if (e && e.name === 'NotFoundError') {
+          indexedDB.deleteDatabase(DB_NAME);
+        }
         resolve(false);
       }
     };
@@ -217,25 +220,33 @@ async function saveSharedData(sid, data) {
 
     request.onsuccess = (event) => {
       const db = (event.target).result;
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const putReq = store.put(data, sid);
-      
-      putReq.onsuccess = () => {
-        // Explicitly wait for transaction complete to guarantee persistence
-      };
-      putReq.onerror = (e) => {
-        reject(e.target.error);
-      };
-      
-      transaction.oncomplete = () => {
+      try {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const putReq = store.put(data, sid);
+        
+        putReq.onsuccess = () => {
+          // Explicitly wait for transaction complete to guarantee persistence
+        };
+        putReq.onerror = (e) => {
+          reject(e.target.error);
+        };
+        
+        transaction.oncomplete = () => {
+          db.close();
+          resolve(true);
+        };
+        transaction.onerror = () => {
+          db.close();
+          reject(transaction.error);
+        };
+      } catch (e) {
         db.close();
-        resolve(true);
-      };
-      transaction.onerror = () => {
-        db.close();
-        reject(transaction.error);
-      };
+        if (e && e.name === 'NotFoundError') {
+          indexedDB.deleteDatabase(DB_NAME);
+        }
+        reject(e);
+      }
     };
     request.onerror = () => reject(request.error);
   });
