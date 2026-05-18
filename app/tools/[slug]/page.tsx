@@ -1,32 +1,39 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ToolsClient } from './ToolsClient';
+import { ExifViewer } from '@web/pages/tools/ExifViewer';
+import { BulkPhotoRenamer } from '@web/pages/tools/BulkPhotoRenamer';
+import { DriveFolderGenerator } from '@web/pages/tools/DriveFolderGenerator';
+import { NextPublicLayout } from '../../components/NextPublicLayout';
 
-const TOOLS_PAGES: Record<string, {
+const TOOL_PAGES: Record<string, {
+  component: React.FC<any>;
   title: string;
   description: string;
 }> = {
   'exif-viewer': {
+    component: ExifViewer,
     title: "Free Online EXIF Viewer: Inspect Image Metadata — ImageSnap",
-    description: "View hidden EXIF metadata in any image. Inspect camera settings, GPS location, and timestamps for free.",
+    description: "View hidden EXIF metadata in any image. Inspect camera settings, GPS location, and timestamps for free — no upload required.",
   },
   'bulk-photo-renamer': {
-    title: "Bulk Photo Renamer: Batch Rename Files Online — ImageSnap",
-    description: "Rename hundreds of photos in seconds based on custom rules, dates, or metadata. Keep your Google Drive organized.",
+    component: BulkPhotoRenamer,
+    title: "Bulk Photo Renamer: Batch Rename Files for Google Drive — ImageSnap",
+    description: "Stop renaming photos one by one. ImageSnap captures images with structured metadata at the source — so your files are named correctly from the start, not fixed after the fact.",
   },
   'drive-folder-generator': {
+    component: DriveFolderGenerator,
     title: "Google Drive Folder Structure Generator — ImageSnap",
-    description: "Automatically generate complex nested folder structures in Google Drive for your projects and teams.",
+    description: "Automatically generate consistent Google Drive folder structures for every new project, client, or shoot. ImageSnap creates the right folders on first capture — no manual setup required.",
   },
 };
 
 export async function generateStaticParams() {
-  return Object.keys(TOOLS_PAGES).map((slug) => ({ slug }));
+  return Object.keys(TOOL_PAGES).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const page = TOOLS_PAGES[slug];
+  const page = TOOL_PAGES[slug];
   if (!page) return { title: 'Page Not Found' };
   const url = `https://www.imagesnap.cloud/tools/${slug}`;
   return {
@@ -42,10 +49,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function ToolsPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const page = TOOLS_PAGES[slug];
+  const page = TOOL_PAGES[slug];
   if (!page) notFound();
+
+  const Component = page.component;
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -58,12 +67,12 @@ export default async function ToolsPage({ params }: { params: Promise<{ slug: st
   };
 
   return (
-    <>
+    <NextPublicLayout>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <ToolsClient slug={slug} />
-    </>
+      <Component />
+    </NextPublicLayout>
   );
 }
