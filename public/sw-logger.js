@@ -5,7 +5,6 @@ self.swLog = {
   // 1. Khởi tạo phiên log mới
   start: function() {
     self._swTrace = ['SW_START'];
-    console.log("[SW_LOGGER] Diagnostics Session Started");
   },
 
   // 2. Ghi nhận một cột mốc
@@ -13,18 +12,6 @@ self.swLog = {
     var timestamp = new Date().toISOString().split('T')[1].split('Z')[0];
     var logItem = `[${timestamp}] ${name}`;
     self._swTrace.push(logItem);
-    console.log(`[SW_LOGGER_STEP] ${logItem}`);
-    
-    // Broadcast live to all open browser/PWA window clients
-    if (self.clients) {
-      self.clients.matchAll().then(function(clients) {
-        if (clients && clients.length > 0) {
-          clients.forEach(function(client) {
-            client.postMessage({ type: 'SW_DEBUG_LOG', msg: logItem });
-          });
-        }
-      }).catch(function() {});
-    }
   },
 
   // 3. Ghi nhận lỗi chí mạng
@@ -32,18 +19,6 @@ self.swLog = {
     var timestamp = new Date().toISOString().split('T')[1].split('Z')[0];
     var errItem = `[${timestamp}] ERR:${errMessage}`;
     self._swTrace.push(errItem);
-    console.error(`[SW_LOGGER_ERROR] ${errItem}`);
-    
-    // Broadcast live to all open browser/PWA window clients
-    if (self.clients) {
-      self.clients.matchAll().then(function(clients) {
-        if (clients && clients.length > 0) {
-          clients.forEach(function(client) {
-            client.postMessage({ type: 'SW_DEBUG_LOG', msg: errItem });
-          });
-        }
-      }).catch(function() {});
-    }
   },
 
   // 4. Trích xuất toàn bộ vết tích

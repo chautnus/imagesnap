@@ -51,9 +51,7 @@ export default function RootLayout({
     <html lang="en" className={outfit.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
-          window._pushDebug = function(msg) {
-            console.log(msg);
-          };
+          window._pushDebug = function(msg) {};
         `}} />
       </head>
       <body className="antialiased">

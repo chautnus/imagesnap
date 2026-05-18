@@ -37,10 +37,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       {/* Subscription Status */}
       <div className="flex flex-col gap-4">
         <h2 className="label-meta tracking-[0.3em]">PLAN_STATUS</h2>
-        <div className={`card p-6 flex flex-col gap-6 border-2 transition-all ${subStatus.isPro ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-accent/20'}`}>
+        <div className={`card p-6 flex flex-col gap-6 border-2 transition-all ${subStatus.isPro ? 'border-accent/30 bg-accent/[0.03]' : 'border-accent/20'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-5">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${subStatus.isPro ? 'bg-yellow-500 text-bg shadow-[4px_4px_0_rgba(0,0,0,0.5)]' : 'bg-accent/10 text-accent'}`}>
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${subStatus.isPro ? 'bg-accent text-bg shadow-[4px_4px_0_rgba(0,0,0,0.5)]' : 'bg-accent/10 text-accent'}`}>
                 {subStatus.isPro ? <Crown size={28} /> : <CreditCard size={28} />}
               </div>
               <div className="flex flex-col">
@@ -77,7 +77,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             </div>
             <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border-2 border-white/5">
               <div
-                className={`h-full transition-all duration-1000 ${subStatus.isPro ? 'w-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'bg-accent shadow-[0_0_10px_rgba(0,120,215,0.5)]'}`}
+                className={`h-full transition-all duration-1000 ${subStatus.isPro ? 'w-full bg-accent shadow-[0_0_10px_rgba(0,120,215,0.5)]' : 'bg-accent shadow-[0_0_10px_rgba(0,120,215,0.5)]'}`}
                 style={{ width: subStatus.isPro ? '100%' : `${Math.min(100, (subStatus.usage / subStatus.limit) * 100)}%` }}
               />
             </div>

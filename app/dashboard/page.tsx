@@ -232,7 +232,6 @@ function DashboardContent() {
 export default function Dashboard() {
   return (
     <>
-      <DebugOverlay />
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center bg-bg text-white">
           <div className="flex flex-col items-center gap-6 p-8 text-center">
