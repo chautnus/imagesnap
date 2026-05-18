@@ -159,6 +159,11 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
               };
             } else { resolve(); }
             transaction.oncomplete = () => db.close();
+            transaction.onerror = () => {
+              log(`[FAIL] IDB Transaction Error`);
+              db.close();
+              resolve();
+            };
           } catch (e) { log(`[FAIL] IDB Error: ${e}`); db.close(); resolve(); }
         };
         request.onerror = () => { log('[FAIL] IDB Open error'); resolve(); };

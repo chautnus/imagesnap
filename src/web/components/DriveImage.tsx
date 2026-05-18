@@ -127,10 +127,7 @@ export const DriveImage: React.FC<DriveImageProps> = ({ url, className, alt }) =
     fetchImage();
 
     return () => {
-      if (src && src.startsWith('blob:')) {
-        URL.revokeObjectURL(src);
-        delete blobCache[url];
-      }
+      // Audit Stage 2: Do not revoke or delete shared cache on unmount to prevent breaking concurrent images.
     };
   }, [url]);
 

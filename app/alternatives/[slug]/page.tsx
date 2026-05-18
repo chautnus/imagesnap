@@ -1,23 +1,22 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { PicsioAlternative } from '@web/pages/alternatives/PicsioAlternative';
-import { GooglePhotosVsImageSnap } from '@web/pages/alternatives/GooglePhotosVsImageSnap';
-import { NextPublicLayout } from '../../components/NextPublicLayout';
+import { AlternativeClient } from './AlternativeClient';
 
 const ALTERNATIVE_PAGES: Record<string, {
-  component: React.FC<any>;
   title: string;
   description: string;
 }> = {
   'pics-io-alternative': {
-    component: PicsioAlternative,
     title: "Pics.io Alternative: Simpler DAM Built on Google Drive — ImageSnap",
     description: "Looking for a Pics.io alternative? ImageSnap gives you structured asset management on top of Google Drive — with web capture, custom metadata fields, and Sheets logging. No new platform to learn.",
   },
   'google-photos-vs-imagesnap': {
-    component: GooglePhotosVsImageSnap,
     title: "Google Photos vs ImageSnap: Which is Right for Your Team? — ImageSnap",
     description: "Google Photos is great for personal memories. ImageSnap is built for professional workflows — web capture, structured metadata, Google Sheets logging, and Drive organization by project or client.",
+  },
+  'companycam-alternative': {
+    title: "Best CompanyCam Alternative for Teams Using Google Drive | ImageSnap",
+    description: "Looking for a CompanyCam alternative? ImageSnap syncs field photos directly to Google Drive with structured metadata. No proprietary lock-in, no per-seat fees.",
   },
 };
 
@@ -48,8 +47,6 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
   const page = ALTERNATIVE_PAGES[slug];
   if (!page) notFound();
 
-  const Component = page.component;
-
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -61,12 +58,12 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
   };
 
   return (
-    <NextPublicLayout>
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <Component />
-    </NextPublicLayout>
+      <AlternativeClient slug={slug} />
+    </>
   );
 }

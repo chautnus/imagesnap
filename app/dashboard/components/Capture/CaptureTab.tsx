@@ -94,7 +94,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       request.onsuccess = (event: any) => {
         const db = event.target.result;
         try {
-          const transaction = db.transaction(STORE_NAME, 'readonly');
+          const transaction = db.transaction(STORE_NAME, 'readwrite');
           const store = transaction.objectStore(STORE_NAME);
           const getReq = store.get(shareTargetSid);
           
@@ -125,6 +125,12 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
                 }
                 return next;
               });
+
+              // Cleanup: Delete from IDB after successful consumption (Audit Stage 2)
+              try {
+                store.delete(shareTargetSid);
+                if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Share target record deleted from IDB`);
+              } catch (delErr) {}
             }
           };
           transaction.oncomplete = () => {
@@ -132,6 +138,10 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
             localStorage.removeItem('imagesnap_pending_share_id');
             localStorage.removeItem('imagesnap_pending_share_time');
             localStorage.removeItem('imagesnap_pending_fatal_error');
+            db.close();
+          };
+          transaction.onerror = () => {
+            if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Coordinator: Ingestion transaction failed.`);
             db.close();
           };
         } catch (e: any) {
@@ -179,6 +189,13 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       }));
       await onSave({ categoryId: selectedCategoryId, data: { ...formData } }, processedImages);
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Product saved successfully to Google Sheets!`);
+      
+      // Revoke all blob URLs created in this session on successful save to prevent RAM leak (Audit Stage 2)
+      blobUrlsRef.current.forEach(url => {
+        try { URL.revokeObjectURL(url); } catch (e) {}
+      });
+      blobUrlsRef.current = [];
+
       setImages([]);
       setFormData({});
     } catch (e: any) {
@@ -253,7 +270,17 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         )}
       </div>
 
-      <ImageGrid images={images} onRemoveImage={idx => setImages(images.filter((_, i) => i !== idx))} />
+      <ImageGrid images={images} onRemoveImage={idx => {
+        const removedUrl = images[idx];
+        if (removedUrl && removedUrl.startsWith('blob:')) {
+          try {
+            URL.revokeObjectURL(removedUrl);
+            blobUrlsRef.current = blobUrlsRef.current.filter(url => url !== removedUrl);
+            if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Revoked manual removed blob URL: ${removedUrl}`);
+          } catch (e) {}
+        }
+        setImages(images.filter((_, i) => i !== idx));
+      }} />
 
       <CategorySelector 
         categories={categories} 

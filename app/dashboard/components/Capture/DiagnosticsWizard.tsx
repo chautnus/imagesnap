@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 interface DiagnosticsWizardProps {
@@ -22,6 +22,20 @@ export const DiagnosticsWizard: React.FC<DiagnosticsWizardProps> = ({
   const [rawRecord, setRawRecord] = useState<any>(null);
   const [blobUrls, setBlobUrls] = useState<string[]>([]);
   
+  const createdUrlsRef = useRef<string[]>([]);
+
+  // Dọn dẹp tất cả các Blob URL tạm thời khi component bị unmount (Audit Stage 2)
+  useEffect(() => {
+    return () => {
+      if (createdUrlsRef.current.length > 0) {
+        createdUrlsRef.current.forEach(url => {
+          try { URL.revokeObjectURL(url); } catch (e) {}
+        });
+        createdUrlsRef.current = [];
+      }
+    };
+  }, []);
+
   // Trạng thái các bước chẩn đoán
   const [step1Status, setStep1Status] = useState<'idle' | 'success' | 'fail'>('idle');
   const [step2Status, setStep2Status] = useState<'idle' | 'success' | 'fail'>('idle');
@@ -128,6 +142,7 @@ export const DiagnosticsWizard: React.FC<DiagnosticsWizardProps> = ({
         addLocalLog(`Giải mã ảnh ${idx + 1}: ${blob.type || 'image/jpeg'}, dung lượng: ${blob.size} bytes`);
         const url = URL.createObjectURL(blob);
         urls.push(url);
+        createdUrlsRef.current.push(url); // Lưu vào ref để dọn dẹp khi unmount (Audit Stage 2)
         addLocalLog(`Sinh URL thành công: ${url}`);
       });
       
