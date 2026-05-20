@@ -173,6 +173,8 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
             accessToken = token;
             authQueue.forEach(q => q.resolve(token));
             authQueue = [];
+            // Notify App.tsx via event (authQueue is empty in extension context since initGis early-returns)
+            window.dispatchEvent(new CustomEvent('SYS_AUTH_SUCCESS', { detail: { token } }));
           }
         }
       });
