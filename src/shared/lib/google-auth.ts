@@ -205,6 +205,14 @@ export const setAccessToken = (token: string | null) => {
   accessToken = token;
 };
 
+const getApiBase = () =>
+  typeof window !== 'undefined' &&
+  (window.location.protocol === 'chrome-extension:' ||
+   window.location.protocol === 'extension:' ||
+   window.location.protocol === 'ms-browser-extension:')
+    ? 'https://www.imagesnap.cloud'
+    : '';
+
 export const revokeToken = () => {
   const currentToken = accessToken;
   accessToken = null;
@@ -222,12 +230,12 @@ export const revokeToken = () => {
     }
   }
 
-  fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
+  fetch(`${getApiBase()}/api/auth/session`, { method: 'DELETE' }).catch(() => {});
 };
 
 export const establishSession = async (token: string, email: string, isStaff: boolean = false) => {
   try {
-    await fetch('/api/auth/session', {
+    await fetch(`${getApiBase()}/api/auth/session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, email, isStaff })
