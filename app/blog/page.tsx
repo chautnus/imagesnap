@@ -20,10 +20,22 @@ export const metadata: Metadata = {
   },
 };
 
+const blogSchema = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "ImageSnap Blog",
+  "url": "https://www.imagesnap.cloud/blog",
+  "description": "Research & productivity insights for ecommerce teams and visual researchers.",
+  "publisher": { "@type": "Organization", "name": "ImageSnap", "url": "https://www.imagesnap.cloud" },
+};
+
 export default function BlogListPage() {
   return (
-    <NextPublicLayout>
-      <BlogPage />
-    </NextPublicLayout>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }} />
+      <NextPublicLayout>
+        <BlogPage />
+      </NextPublicLayout>
+    </>
   );
 }

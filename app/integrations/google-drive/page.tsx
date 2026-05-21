@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { GenericSEOPage } from '@web/pages/GenericSEOPage';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
+import { imagesnapSoftwareSchema } from '../../components/featureSchema';
 
 export const metadata: Metadata = {
-  title: "Google Drive Integration — The Best Chrome Extension for Drive | ImageSnap",
-  description: "ImageSnap is the best Google Drive Chrome extension for research teams. Save images from any website directly to Drive with custom metadata — all in one click.",
+  title: "Google Drive Chrome Extension — ImageSnap Integration",
+  description: "Save images from any website directly to Google Drive with custom metadata — all in one click. The best Drive Chrome extension for research teams.",
   alternates: { canonical: "https://www.imagesnap.cloud/integrations/google-drive" },
   openGraph: {
     title: "Google Drive Integration — ImageSnap Chrome Extension",
@@ -16,13 +17,16 @@ export const metadata: Metadata = {
 
 export default function GoogleDriveIntegrationPage() {
   return (
-    <NextPublicLayout>
-      <GenericSEOPage
-        title="Google Drive Integration — The Best Chrome Extension for Drive | ImageSnap"
-        headline="The Best Google Drive Extension"
-        description="ImageSnap plugs directly into Google Drive. Every image you capture goes into a structured folder with full metadata logged to Sheets — automatically."
-        onLogin={() => { window.location.href = '/'; }}
-      />
-    </NextPublicLayout>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(imagesnapSoftwareSchema) }} />
+      <NextPublicLayout>
+        <GenericSEOPage
+          title="Google Drive Integration — The Best Chrome Extension for Drive | ImageSnap"
+          headline="The Best Google Drive Extension"
+          description="ImageSnap plugs directly into Google Drive. Every image you capture goes into a structured folder with full metadata logged to Sheets — automatically."
+          onLogin={() => { window.location.href = '/'; }}
+        />
+      </NextPublicLayout>
+    </>
   );
 }

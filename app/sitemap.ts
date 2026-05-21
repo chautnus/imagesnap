@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes: Route[] = [
     { path: '', priority: 1.0, lastMod: '2026-05-17', changeFreq: 'weekly' },
     { path: '/pricing', priority: 0.9, lastMod: '2026-05-17' },
-    { path: '/blog', priority: 0.8, lastMod: '2026-05-17', changeFreq: 'weekly' },
+    { path: '/blog', priority: 0.8, lastMod: '2026-05-20', changeFreq: 'weekly' },
 
     { path: '/blog/why-copy-paste-research-breaks-at-scale', priority: 0.7, lastMod: '2026-05-05' },
     { path: '/blog/building-competitor-database-without-scraper', priority: 0.7, lastMod: '2026-05-03' },
@@ -46,7 +46,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/tools/bulk-photo-renamer', priority: 0.7, lastMod: '2026-05-17' },
     { path: '/tools/drive-folder-generator', priority: 0.7, lastMod: '2026-05-17' },
 
-    { path: '/privacy', priority: 0.3, lastMod: '2026-05-06', changeFreq: 'yearly' },
+    { path: '/privacy', priority: 0.3, lastMod: '2026-05-20', changeFreq: 'yearly' },
   ]
 
   return routes.map(({ path, priority, lastMod, changeFreq }) => ({

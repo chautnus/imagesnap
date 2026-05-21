@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { GenericSEOPage } from '@web/pages/GenericSEOPage';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
+import { imagesnapSoftwareSchema } from '../../components/featureSchema';
 
 export const metadata: Metadata = {
   title: "Auto Folder Organization for Google Drive — ImageSnap",
-  description: "ImageSnap automatically creates and organizes Google Drive folders by category, project, or custom rules. Stop manually sorting files — let structure happen at capture.",
+  description: "ImageSnap auto-creates Google Drive folders by category or project. Stop manually sorting files — structure happens at the moment of capture.",
   alternates: { canonical: "https://www.imagesnap.cloud/features/auto-folder-organization" },
   openGraph: {
     title: "Auto Folder Organization for Google Drive — ImageSnap",
@@ -16,13 +17,16 @@ export const metadata: Metadata = {
 
 export default function AutoFolderPage() {
   return (
-    <NextPublicLayout>
-      <GenericSEOPage
-        title="Auto Folder Organization for Google Drive — ImageSnap"
-        headline="Automatic Folder Structure"
-        description="ImageSnap creates your Drive folder hierarchy automatically — by category, project, or any custom rule you define. Stop sorting manually."
-        onLogin={() => { window.location.href = '/'; }}
-      />
-    </NextPublicLayout>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(imagesnapSoftwareSchema) }} />
+      <NextPublicLayout>
+        <GenericSEOPage
+          title="Auto Folder Organization for Google Drive — ImageSnap"
+          headline="Automatic Folder Structure"
+          description="ImageSnap creates your Drive folder hierarchy automatically — by category, project, or any custom rule you define. Stop sorting manually."
+          onLogin={() => { window.location.href = '/'; }}
+        />
+      </NextPublicLayout>
+    </>
   );
 }

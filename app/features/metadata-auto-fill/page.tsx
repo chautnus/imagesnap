@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { GenericSEOPage } from '@web/pages/GenericSEOPage';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
+import { imagesnapSoftwareSchema } from '../../components/featureSchema';
 
 export const metadata: Metadata = {
   title: "Metadata Auto-fill from Any Webpage — ImageSnap",
@@ -16,13 +17,16 @@ export const metadata: Metadata = {
 
 export default function MetadataAutoFillPage() {
   return (
-    <NextPublicLayout>
-      <GenericSEOPage
-        title="Metadata Auto-fill from Any Webpage — ImageSnap"
-        headline="Automatic Metadata Extraction"
-        description="When you capture an image, ImageSnap reads the page and pre-fills the context fields — title, price, description, URL. You just confirm and save."
-        onLogin={() => { window.location.href = '/'; }}
-      />
-    </NextPublicLayout>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(imagesnapSoftwareSchema) }} />
+      <NextPublicLayout>
+        <GenericSEOPage
+          title="Metadata Auto-fill from Any Webpage — ImageSnap"
+          headline="Automatic Metadata Extraction"
+          description="When you capture an image, ImageSnap reads the page and pre-fills the context fields — title, price, description, URL. You just confirm and save."
+          onLogin={() => { window.location.href = '/'; }}
+        />
+      </NextPublicLayout>
+    </>
   );
 }

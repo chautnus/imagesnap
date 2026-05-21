@@ -13,7 +13,7 @@ const USE_CASE_PAGES: Record<string, { component: any, props?: any, title: strin
   'competitor-tracking-beyond-keyword-tools': {
     component: CompetitorTracking,
     title: "Competitor Tracking Beyond Keyword Tools | ImageSnap",
-    description: "Build a visual database of competitor moves, pricing, and positioning. Learn how to track market changes visually and stay ahead without expensive keyword tools."
+    description: "Build a visual competitor database with pricing and positioning data. Track market changes visually and stay ahead — without expensive keyword tools."
   },
   'swipe-file-tool': {
     component: SwipeFileTool,
@@ -28,17 +28,17 @@ const USE_CASE_PAGES: Record<string, { component: any, props?: any, title: strin
   'ecommerce-studios': {
     component: EcommerceStudios,
     title: "E-commerce Product Photo Management for Studios — ImageSnap",
-    description: "Stop losing product shots in unstructured Drive folders. ImageSnap lets e-commerce studios capture product images with SKU, variant, and client data — auto-organized to Google Drive and logged in Sheets."
+    description: "Stop losing product shots in messy Drive folders. ImageSnap captures images with SKU, variant, and client data — auto-organized to Drive and logged in Sheets."
   },
   'real-estate-photographers': {
     component: RealEstatePhotographers,
-    title: "ImageSnap for Real Estate Photographers: Organize Property Photos — ImageSnap",
-    description: "Deliver property photos to agents and clients faster. ImageSnap organizes real estate shoots by address, MLS number, and room type — auto-saved to Google Drive and logged in Sheets."
+    title: "Real Estate Photo Organization — Google Drive | ImageSnap",
+    description: "Deliver property photos faster. ImageSnap organizes real estate shoots by address and MLS number — auto-saved to Google Drive and logged in Sheets."
   },
   'field-inspections': {
     component: FieldInspections,
     title: "Field Inspection Photo Documentation — ImageSnap",
-    description: "Capture site photos directly to Google Drive with location, inspector, and defect data attached. ImageSnap turns field inspection documentation into a searchable, auditable record — no app downloads required."
+    description: "Capture site photos to Google Drive with location and defect data attached. ImageSnap turns field inspection docs into a searchable, auditable record."
   },
 };
 

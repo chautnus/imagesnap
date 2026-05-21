@@ -8,11 +8,11 @@ const ALTERNATIVE_PAGES: Record<string, {
 }> = {
   'pics-io-alternative': {
     title: "Pics.io Alternative: Simpler DAM Built on Google Drive — ImageSnap",
-    description: "Looking for a Pics.io alternative? ImageSnap gives you structured asset management on top of Google Drive — with web capture, custom metadata fields, and Sheets logging. No new platform to learn.",
+    description: "Looking for a Pics.io alternative? ImageSnap gives you structured asset management on Google Drive — web capture, custom metadata, and Sheets logging. No new platform.",
   },
   'google-photos-vs-imagesnap': {
-    title: "Google Photos vs ImageSnap: Which is Right for Your Team? — ImageSnap",
-    description: "Google Photos is great for personal memories. ImageSnap is built for professional workflows — web capture, structured metadata, Google Sheets logging, and Drive organization by project or client.",
+    title: "Google Photos vs ImageSnap: Which is Right for You?",
+    description: "Google Photos is for personal memories. ImageSnap is built for professionals — web capture, structured metadata, Sheets logging, and Drive organization by project.",
   },
   'companycam-alternative': {
     title: "Best CompanyCam Alternative for Teams Using Google Drive | ImageSnap",
