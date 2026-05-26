@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { WebImageImport } from '@web/pages/features/WebImageImport';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
 import { imagesnapSoftwareSchema } from '../../components/featureSchema';
+import WebImageImportClient from './WebImageImportClient';
 
 export const metadata: Metadata = {
   title: "Web Image Import — Capture Any Image to Google Drive | ImageSnap",
@@ -20,7 +20,7 @@ export default function WebImageImportPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(imagesnapSoftwareSchema) }} />
       <NextPublicLayout>
-        <WebImageImport onLogin={() => { window.location.href = '/'; }} />
+        <WebImageImportClient />
       </NextPublicLayout>
     </>
   );

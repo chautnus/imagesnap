@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { GenericSEOPage } from '@web/pages/GenericSEOPage';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
 import { imagesnapSoftwareSchema } from '../../components/featureSchema';
+import AutoFolderClient from './AutoFolderClient';
 
 export const metadata: Metadata = {
   title: "Auto Folder Organization for Google Drive — ImageSnap",
@@ -20,12 +20,7 @@ export default function AutoFolderPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(imagesnapSoftwareSchema) }} />
       <NextPublicLayout>
-        <GenericSEOPage
-          title="Auto Folder Organization for Google Drive — ImageSnap"
-          headline="Automatic Folder Structure"
-          description="ImageSnap creates your Drive folder hierarchy automatically — by category, project, or any custom rule you define. Stop sorting manually."
-          onLogin={() => { window.location.href = '/'; }}
-        />
+        <AutoFolderClient />
       </NextPublicLayout>
     </>
   );

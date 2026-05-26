@@ -1,4 +1,4 @@
-import { initGis, setAccessToken, getUserInfo } from '@shared/lib/google-auth';
+import { initGis, setAccessToken, getUserInfo, requestSilentToken, saveTokenToExtStorage, loadTokenFromExtStorage, clearExtStorage } from '@shared/lib/google-auth';
 import { findOrCreateWorkspace } from '@shared/lib/sheets';
 import { SubscriptionStatus } from '@shared/lib/types';
 
@@ -19,6 +19,103 @@ export interface AuthFlowHandlers {
   refreshData: (id: string) => void;
 }
 
+export async function restoreSession(handlers: AuthFlowHandlers): Promise<boolean> {
+  const { onSetUser, onSetIsAuthReady, onSetView, onSetSpreadsheetId, onSetSubStatus, onSetIsStaff, refreshData } = handlers;
+
+  // Extension: server-side cookies don't work cross-origin — use chrome.storage.local instead
+  const isExtension = typeof window !== 'undefined' &&
+    (window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension'));
+
+  if (isExtension) {
+    const stored = await loadTokenFromExtStorage();
+    if (stored?.token) {
+      const profile = await getUserInfo(stored.token);
+      if (profile) {
+        setAccessToken(stored.token);
+        onSetUser(profile);
+        onSetIsAuthReady(true);
+        onSetView('app');
+        fetchSubStatus(profile.email, onSetSubStatus);
+        const storedId = localStorage.getItem('ps_sheet_id');
+        if (storedId) { onSetSpreadsheetId(storedId); refreshData(storedId); }
+        else await initializeWorkspace(onSetSpreadsheetId, refreshData);
+        return true;
+      }
+      // Token expired (Google access tokens last ~1h) — clear and show login
+      clearExtStorage();
+    }
+    return false;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/session`);
+    if (!res.ok) return false;
+    const { authenticated, user } = await res.json();
+    if (!authenticated || !user?.email) return false;
+
+    // Staff session — no Google token needed
+    if (user.role === 'staff') {
+      onSetUser({ ...user, email: user.email });
+      onSetIsStaff(true);
+      onSetSpreadsheetId(user.masterSpreadsheetId || null);
+      onSetIsAuthReady(true);
+      onSetView('app');
+      if (user.masterSpreadsheetId) refreshData(user.masterSpreadsheetId);
+      return true;
+    }
+
+    // Google user — validate stored token
+    if (user.token) {
+      const profile = await getUserInfo(user.token);
+      if (profile) {
+        setAccessToken(user.token);
+        onSetUser(profile);
+        onSetIsAuthReady(true);
+        onSetView('app');
+        fetchSubStatus(profile.email, onSetSubStatus);
+        const storedId = localStorage.getItem('ps_sheet_id');
+        if (storedId) { onSetSpreadsheetId(storedId); refreshData(storedId); }
+        else await initializeWorkspace(onSetSpreadsheetId, refreshData);
+        return true;
+      }
+    }
+
+    // Token expired but session cookie is still valid — restore from session data immediately
+    // so user stays logged in (especially in PWA where silent GIS re-auth is unreliable).
+    // Attempt silent token refresh in background; dispatch SYS_AUTH_EXPIRED only if it fails
+    // and a Google API call is actually needed.
+    if (user.email) {
+      const sessionUser = { email: user.email, name: user.email };
+      onSetUser(sessionUser);
+      onSetIsAuthReady(true);
+      onSetView('app');
+      fetchSubStatus(user.email, onSetSubStatus);
+      const storedId = localStorage.getItem('ps_sheet_id');
+      if (storedId) { onSetSpreadsheetId(storedId); refreshData(storedId); }
+      else await initializeWorkspace(onSetSpreadsheetId, refreshData);
+
+      // Background silent token refresh — update profile + session cookie if successful
+      requestSilentToken((freshToken) => {
+        setAccessToken(freshToken);
+        fetch(`${API_BASE_URL}/api/auth/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email, token: freshToken, role: user.role }),
+        }).catch(() => {});
+        getUserInfo(freshToken).then((p) => { if (p) onSetUser(p); }).catch(() => {});
+      }, () => {
+        // Silent refresh failed (e.g. PWA, ITP) — user stays logged in with session data
+        // but will need to re-authenticate when calling Google APIs
+        window.dispatchEvent(new CustomEvent('SYS_TOKEN_REFRESH_FAILED'));
+      });
+
+      return true;
+    }
+  } catch {
+    return false;
+  }
+}
+
 export function initAuthListener(handlers: AuthFlowHandlers) {
   const {
     onSetUser, onSetIsAuthReady, onSetView,
@@ -30,6 +127,7 @@ export function initAuthListener(handlers: AuthFlowHandlers) {
     try {
       const profile = await getUserInfo(token);
       if (profile) {
+        saveTokenToExtStorage(token, profile.email);
         onSetUser(profile);
         onSetIsAuthReady(true);
         onSetView('app');
