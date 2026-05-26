@@ -205,6 +205,29 @@ export const setAccessToken = (token: string | null) => {
   accessToken = token;
 };
 
+const EXT_STORAGE_KEY = 'imagesnap_auth';
+
+export const saveTokenToExtStorage = (token: string, email: string) => {
+  if ((window as any).chrome?.storage?.local) {
+    (window as any).chrome.storage.local.set({ [EXT_STORAGE_KEY]: { token, email } });
+  }
+};
+
+export const loadTokenFromExtStorage = (): Promise<{ token: string; email: string } | null> => {
+  return new Promise((resolve) => {
+    if (!(window as any).chrome?.storage?.local) { resolve(null); return; }
+    (window as any).chrome.storage.local.get(EXT_STORAGE_KEY, (result: any) => {
+      resolve(result?.[EXT_STORAGE_KEY] ?? null);
+    });
+  });
+};
+
+export const clearExtStorage = () => {
+  if ((window as any).chrome?.storage?.local) {
+    (window as any).chrome.storage.local.remove(EXT_STORAGE_KEY);
+  }
+};
+
 const getApiBase = () =>
   typeof window !== 'undefined' &&
   (window.location.protocol === 'chrome-extension:' ||
@@ -216,9 +239,12 @@ const getApiBase = () =>
 export const revokeToken = () => {
   const currentToken = accessToken;
   accessToken = null;
+  clearExtStorage();
   localStorage.removeItem('ps_staff_token');
   localStorage.removeItem('ps_staff_email');
   localStorage.removeItem('ps_is_staff');
+  localStorage.removeItem('ps_pwa_token');
+  localStorage.removeItem('ps_pwa_email');
 
   if (currentToken) {
     const google = (window as any).google;
@@ -243,6 +269,46 @@ export const establishSession = async (token: string, email: string, isStaff: bo
   } catch (e) {
     console.error('Failed to establish secure session', e);
   }
+};
+
+export const requestSilentToken = (onSuccess: (token: string) => void, onFailure: () => void) => {
+  if (typeof window === 'undefined') { onFailure(); return; }
+  const isExtension = window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension');
+
+  // Extension: use chrome.identity.getAuthToken for silent token refresh (handles expiry automatically)
+  if (isExtension) {
+    const chromeIdentity = (window as any).chrome?.identity;
+    if (chromeIdentity?.getAuthToken) {
+      chromeIdentity.getAuthToken({ interactive: false }, (token: string | undefined) => {
+        if ((window as any).chrome?.runtime?.lastError || !token) {
+          onFailure();
+          return;
+        }
+        accessToken = token;
+        onSuccess(token);
+      });
+    } else {
+      onFailure();
+    }
+    return;
+  }
+
+  ensureGsiScript().then(() => {
+    const google = (window as any).google;
+    if (!google?.accounts?.oauth2) { onFailure(); return; }
+
+    const silentClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: SCOPES,
+      prompt: '',
+      callback: (response: any) => {
+        if (response.error || !response.access_token) { onFailure(); return; }
+        accessToken = response.access_token;
+        onSuccess(response.access_token);
+      },
+    });
+    silentClient.requestAccessToken({ prompt: '' });
+  }).catch(() => onFailure());
 };
 
 export const reauthenticate = (): Promise<string> => {

@@ -47,11 +47,72 @@ export async function restoreSession(handlers: AuthFlowHandlers): Promise<boolea
     return false;
   }
 
+  // PWA localStorage backup restore — runs when cookie is missing (iOS clears PWA storage)
+  const pwaRestoreFromLocalStorage = async (): Promise<boolean> => {
+    const cachedToken = localStorage.getItem('ps_pwa_token');
+    const cachedEmail = localStorage.getItem('ps_pwa_email');
+    if (!cachedToken || !cachedEmail) return false;
+
+    // Validate cached token with Google
+    const profile = await getUserInfo(cachedToken);
+    if (profile) {
+      setAccessToken(cachedToken);
+      // Rebuild server session cookie
+      fetch(`${API_BASE_URL}/api/auth/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: profile.email, token: cachedToken }),
+      }).catch(() => {});
+      onSetUser(profile);
+      onSetIsAuthReady(true);
+      onSetView('app');
+      fetchSubStatus(profile.email, onSetSubStatus);
+      const storedId = localStorage.getItem('ps_sheet_id');
+      if (storedId) { onSetSpreadsheetId(storedId); refreshData(storedId); }
+      else await initializeWorkspace(onSetSpreadsheetId, refreshData);
+      return true;
+    }
+
+    // Cached token expired — try silent re-auth with stored email hint
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => resolve(false), 6000);
+      requestSilentToken((freshToken) => {
+        clearTimeout(timeout);
+        setAccessToken(freshToken);
+        localStorage.setItem('ps_pwa_token', freshToken);
+        fetch(`${API_BASE_URL}/api/auth/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cachedEmail, token: freshToken }),
+        }).catch(() => {});
+        getUserInfo(freshToken).then((p) => {
+          if (p) {
+            onSetUser(p);
+            onSetIsAuthReady(true);
+            onSetView('app');
+            fetchSubStatus(p.email, onSetSubStatus);
+            const storedId = localStorage.getItem('ps_sheet_id');
+            if (storedId) { onSetSpreadsheetId(storedId); refreshData(storedId); }
+            else initializeWorkspace(onSetSpreadsheetId, refreshData);
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        }).catch(() => resolve(false));
+      }, () => { clearTimeout(timeout); resolve(false); });
+    });
+  };
+
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/session`);
-    if (!res.ok) return false;
+    if (!res.ok) {
+      // Cookie missing — try PWA localStorage fallback before giving up
+      return await pwaRestoreFromLocalStorage();
+    }
     const { authenticated, user } = await res.json();
-    if (!authenticated || !user?.email) return false;
+    if (!authenticated || !user?.email) {
+      return await pwaRestoreFromLocalStorage();
+    }
 
     // Staff session — no Google token needed
     if (user.role === 'staff') {
@@ -128,6 +189,10 @@ export function initAuthListener(handlers: AuthFlowHandlers) {
       const profile = await getUserInfo(token);
       if (profile) {
         saveTokenToExtStorage(token, profile.email);
+        // PWA backup: persist token + email in localStorage so session can be
+        // restored even when the server cookie is cleared by the browser
+        localStorage.setItem('ps_pwa_token', token);
+        localStorage.setItem('ps_pwa_email', profile.email);
         onSetUser(profile);
         onSetIsAuthReady(true);
         onSetView('app');
