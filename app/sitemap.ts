@@ -11,8 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://www.imagesnap.cloud'
 
   const routes: Route[] = [
-    { path: '', priority: 1.0, lastMod: '2026-05-17', changeFreq: 'weekly' },
-    { path: '/pricing', priority: 0.9, lastMod: '2026-05-17' },
+    { path: '', priority: 1.0, lastMod: '2026-05-28', changeFreq: 'weekly' },
+    { path: '/pricing', priority: 0.9, lastMod: '2026-05-28' },
     { path: '/blog', priority: 0.8, lastMod: '2026-05-20', changeFreq: 'weekly' },
 
     { path: '/blog/why-copy-paste-research-breaks-at-scale', priority: 0.7, lastMod: '2026-05-05' },

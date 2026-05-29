@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "Web Image Import — Capture Any Image to Google Drive | ImageSnap",
     description: "Import images from any website directly to Google Drive with one click.",
     url: "https://www.imagesnap.cloud/features/web-image-import",
-    images: [{ url: "https://www.imagesnap.cloud/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "https://www.imagesnap.cloud/api/og?title=Web+Image+Import&category=features", width: 1200, height: 630 }],
   },
 };
 

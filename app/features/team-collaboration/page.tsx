@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "Team Collaboration on Google Drive & Sheets — ImageSnap",
     description: "Share structured image databases with your team using Google Drive and Sheets — tools they already use.",
     url: "https://www.imagesnap.cloud/features/team-collaboration",
-    images: [{ url: "https://www.imagesnap.cloud/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "https://www.imagesnap.cloud/api/og?title=Team+Collaboration&category=features", width: 1200, height: 630 }],
   },
 };
 

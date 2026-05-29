@@ -23,14 +23,15 @@ export const metadata: Metadata = {
     type: "website",
     title: "ImageSnap | Save Images with Context to Google Drive & Sheets",
     description: "Capture any image from the web with custom context fields. Auto-save to Google Drive, log details to Google Sheets.",
-    images: [{ url: "https://www.imagesnap.cloud/og-image.png" }],
+    images: [{ url: "https://www.imagesnap.cloud/api/og?title=ImageSnap&category=homepage", width: 1200, height: 630 }],
     url: "https://www.imagesnap.cloud/",
   },
   twitter: {
     card: "summary_large_image",
+    site: "@imagesnap",
     title: "ImageSnap | Save Images with Context to Google Drive & Sheets",
     description: "Capture any image from the web with custom context fields. Auto-save to Google Drive, log details to Google Sheets.",
-    images: ["https://www.imagesnap.cloud/og-image.png"],
+    images: ["https://www.imagesnap.cloud/api/og?title=ImageSnap&category=homepage"],
   },
   alternates: {
     canonical: "https://www.imagesnap.cloud/",

@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: post.description,
       url,
       type: "article",
-      images: [{ url: "https://www.imagesnap.cloud/og-image.png" }],
+      images: [{ url: `https://www.imagesnap.cloud/api/og?title=${encodeURIComponent(post.title.split('|')[0].trim())}&category=blog`, width: 1200, height: 630 }],
     },
   };
 }

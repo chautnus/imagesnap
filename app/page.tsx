@@ -1,4 +1,24 @@
+import type { Metadata } from 'next';
 import HomeClient from './HomeClient';
+
+export const metadata: Metadata = {
+  title: "ImageSnap | Save Images with Context to Google Drive & Sheets",
+  description: "Capture any image from the web with custom context fields. Auto-save to Google Drive, log details to Google Sheets. Free plan: 30 captures/month.",
+  alternates: { canonical: "https://www.imagesnap.cloud/" },
+  openGraph: {
+    type: "website",
+    title: "ImageSnap | Save Images with Context to Google Drive & Sheets",
+    description: "Capture any image from the web with custom context fields. Auto-save to Google Drive, log details to Google Sheets.",
+    url: "https://www.imagesnap.cloud/",
+    images: [{ url: "https://www.imagesnap.cloud/api/og?title=ImageSnap&category=homepage", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ImageSnap | Save Images with Context to Google Drive & Sheets",
+    description: "Capture any image from the web with custom context fields. Auto-save to Google Drive, log details to Google Sheets.",
+    images: ["https://www.imagesnap.cloud/api/og?title=ImageSnap&category=homepage"],
+  },
+};
 
 const softwareSchema = {
   "@context": "https://schema.org",
@@ -10,7 +30,7 @@ const softwareSchema = {
   "description": "Save any image with your designed context. Images in Google Drive, context in Google Sheets. Research once, use forever.",
   "offers": [
     { "@type": "Offer", "price": "0", "priceCurrency": "USD", "name": "Free — 30 captures/month" },
-    { "@type": "Offer", "price": "19", "priceCurrency": "USD", "name": "Solo — Unlimited captures" }
+    { "@type": "Offer", "price": "9.99", "priceCurrency": "USD", "name": "Solo — Unlimited captures" }
   ],
   "featureList": [
     "One-click capture: images + designed context from any page",

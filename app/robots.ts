@@ -5,6 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
+      disallow: ['/dashboard', '/auth', '/staff'],
     },
     sitemap: 'https://www.imagesnap.cloud/sitemap.xml',
   }

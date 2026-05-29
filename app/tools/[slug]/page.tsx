@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: page.title,
       description: page.description,
       url,
-      images: [{ url: 'https://www.imagesnap.cloud/og-image.png' }],
+      images: [{ url: `https://www.imagesnap.cloud/api/og?title=${encodeURIComponent(page.title.split(':')[0].split('—')[0].trim())}&category=tools`, width: 1200, height: 630 }],
     },
   };
 }

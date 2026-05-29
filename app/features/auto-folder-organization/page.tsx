@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "Auto Folder Organization for Google Drive — ImageSnap",
     description: "Automatically create and organize Google Drive folders by category at the moment of capture.",
     url: "https://www.imagesnap.cloud/features/auto-folder-organization",
-    images: [{ url: "https://www.imagesnap.cloud/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "https://www.imagesnap.cloud/api/og?title=Auto+Folder+Organization&category=features", width: 1200, height: 630 }],
   },
 };
 

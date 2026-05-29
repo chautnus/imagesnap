@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "Metadata Auto-fill from Any Webpage — ImageSnap",
     description: "Auto-fill product title, price, and description from any webpage. Zero manual data entry.",
     url: "https://www.imagesnap.cloud/features/metadata-auto-fill",
-    images: [{ url: "https://www.imagesnap.cloud/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "https://www.imagesnap.cloud/api/og?title=Metadata+Auto-fill&category=features", width: 1200, height: 630 }],
   },
 };
 
