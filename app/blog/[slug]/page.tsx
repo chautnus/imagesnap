@@ -5,6 +5,9 @@ import { BlogPost_WhyCopyPasteBreaks } from '@web/pages/blog/WhyCopyPasteBreaks'
 import { BlogPost_BuildingDatabase } from '@web/pages/blog/BuildingDatabase';
 import { BlogPost_HumanGuided } from '@web/pages/blog/HumanGuided';
 import { BlogPost_WhyIBuild } from '@web/pages/blog/WhyIBuild';
+import { BlogPost_SwipeFileChaos } from '@web/pages/blog/SwipeFileChaos';
+import { BlogPost_OrganizeProductImages } from '@web/pages/blog/OrganizeProductImages';
+import { BlogPost_GoogleDriveMetadata } from '@web/pages/blog/GoogleDriveMetadata';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
 import { Metadata } from 'next';
 
@@ -28,7 +31,22 @@ const BLOG_POSTS: Record<string, { component: React.FC<any>, title: string, desc
     component: BlogPost_WhyIBuild,
     title: "Why I Built ImageSnap | Founder's Story",
     description: "The story behind ImageSnap: the tool that helps you capture context, not just pixels. Learn why I built a solution for ecommerce researchers to own their data."
-  }
+  },
+  'swipe-file-chaos-how-to-fix': {
+    component: BlogPost_SwipeFileChaos,
+    title: "Swipe File Chaos — How to Fix Your Ad Inspiration Folder | ImageSnap",
+    description: "Your swipe file is probably a mess of screenshots with no context. Here's why that happens and how to turn it into a searchable database you'll actually use."
+  },
+  'organize-product-images-ecommerce': {
+    component: BlogPost_OrganizeProductImages,
+    title: "How to Organize Product Images for Ecommerce Research | ImageSnap",
+    description: "Stop losing product images in a Downloads folder. Here's the system ecommerce researchers use to keep images linked to prices, suppliers, and notes — at any scale."
+  },
+  'google-drive-metadata-images': {
+    component: BlogPost_GoogleDriveMetadata,
+    title: "Google Drive Image Metadata — The Missing Layer | ImageSnap",
+    description: "Google Drive stores your images but can't understand them. Here's how to add searchable metadata to your Drive images without switching platforms."
+  },
 };
 
 export async function generateStaticParams() {

@@ -6,6 +6,8 @@ import { ConstructionTeams } from '@web/pages/use-cases/ConstructionTeams';
 import { EcommerceStudios } from '@web/pages/use-cases/EcommerceStudios';
 import { RealEstatePhotographers } from '@web/pages/use-cases/RealEstatePhotographers';
 import { FieldInspections } from '@web/pages/use-cases/FieldInspections';
+import { AliexpressResearch } from '@web/pages/use-cases/AliexpressResearch';
+import { ShopifyCompetitorTracking } from '@web/pages/use-cases/ShopifyCompetitorTracking';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
 import { Metadata } from 'next';
 
@@ -39,6 +41,16 @@ const USE_CASE_PAGES: Record<string, { component: any, props?: any, title: strin
     component: FieldInspections,
     title: "Field Inspection Photo Documentation — ImageSnap",
     description: "Capture site photos to Google Drive with location and defect data attached. ImageSnap turns field inspection docs into a searchable, auditable record."
+  },
+  'aliexpress-product-research': {
+    component: AliexpressResearch,
+    title: "AliExpress Product Research — Organize Images & Data in One Click | ImageSnap",
+    description: "Stop copy-pasting between AliExpress, Google Sheets, and Drive. ImageSnap captures product images with price, supplier, and custom notes — automatically organized."
+  },
+  'shopify-competitor-tracking': {
+    component: ShopifyCompetitorTracking,
+    title: "Shopify Competitor Tracking — Build a Visual Database | ImageSnap",
+    description: "Track Shopify competitor products, pricing, and positioning visually. ImageSnap captures what you see — images to Drive, data to Sheets — without scraping scripts."
   },
 };
 

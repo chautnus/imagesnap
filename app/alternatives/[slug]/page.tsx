@@ -18,6 +18,18 @@ const ALTERNATIVE_PAGES: Record<string, {
     title: "Best CompanyCam Alternative for Teams Using Google Drive | ImageSnap",
     description: "Looking for a CompanyCam alternative? ImageSnap syncs field photos directly to Google Drive with structured metadata. No proprietary lock-in, no per-seat fees.",
   },
+  'foreplay-alternative': {
+    title: "Foreplay Alternative — Swipe File Tool at $9.99/month | ImageSnap",
+    description: "Foreplay costs $249/month. ImageSnap gives you a structured swipe file with images in Google Drive and data in Sheets — for $9.99. Your data, your Drive, no lock-in.",
+  },
+  'magicbrief-alternative': {
+    title: "MagicBrief Alternative — No Custom Quote, No $249/month | ImageSnap",
+    description: "MagicBrief requires a custom quote and costs $249+/month. ImageSnap is $9.99/month, no sales call required. Capture ads with custom fields to your own Google Drive.",
+  },
+  'dam-alternative-google-drive': {
+    title: "Affordable DAM Alternative on Google Drive — $9.99/month | ImageSnap",
+    description: "Enterprise DAMs cost $500+/month. ImageSnap adds structured metadata and custom fields on top of Google Drive you already use — for $9.99/month. No new platform.",
+  },
 };
 
 export async function generateStaticParams() {
