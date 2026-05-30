@@ -23,6 +23,14 @@ import { BlogPost_WhyCopyPasteBreaks } from '../pages/blog/WhyCopyPasteBreaks';
 import { BlogPost_BuildingDatabase } from '../pages/blog/BuildingDatabase';
 import { BlogPost_HumanGuided } from '../pages/blog/HumanGuided';
 import { BlogPost_WhyIBuild } from '../pages/blog/WhyIBuild';
+import { BlogPost_SwipeFileChaos } from '../pages/blog/SwipeFileChaos';
+import { BlogPost_OrganizeProductImages } from '../pages/blog/OrganizeProductImages';
+import { BlogPost_GoogleDriveMetadata } from '../pages/blog/GoogleDriveMetadata';
+import { AliexpressResearch } from '../pages/use-cases/AliexpressResearch';
+import { ShopifyCompetitorTracking } from '../pages/use-cases/ShopifyCompetitorTracking';
+import { ForeplayAlternative } from '../pages/alternatives/ForeplayAlternative';
+import { MagicBriefAlternative } from '../pages/alternatives/MagicBriefAlternative';
+import { DamAlternative } from '../pages/alternatives/DamAlternative';
 import { requestToken } from '@shared/lib/google-auth';
 
 interface PublicRoutesProps {
@@ -90,6 +98,16 @@ export const PublicRoutes: React.FC<PublicRoutesProps> = ({
       <Route path="/blog/building-competitor-database-without-scraper" element={<BlogPost_BuildingDatabase onLogin={() => requestToken()} />} />
       <Route path="/blog/human-guided-capture-vs-full-automation" element={<BlogPost_HumanGuided onLogin={() => requestToken()} />} />
       <Route path="/blog/why-i-built-imagesnap" element={<BlogPost_WhyIBuild onLogin={() => requestToken()} />} />
+      <Route path="/blog/swipe-file-chaos-how-to-fix" element={<BlogPost_SwipeFileChaos onLogin={() => requestToken()} />} />
+      <Route path="/blog/organize-product-images-ecommerce" element={<BlogPost_OrganizeProductImages onLogin={() => requestToken()} />} />
+      <Route path="/blog/google-drive-metadata-images" element={<BlogPost_GoogleDriveMetadata onLogin={() => requestToken()} />} />
+
+      <Route path="/use-cases/aliexpress-product-research" element={<AliexpressResearch onLogin={() => requestToken()} />} />
+      <Route path="/use-cases/shopify-competitor-tracking" element={<ShopifyCompetitorTracking onLogin={() => requestToken()} />} />
+
+      <Route path="/alternatives/foreplay-alternative" element={<ForeplayAlternative onLogin={() => requestToken()} />} />
+      <Route path="/alternatives/magicbrief-alternative" element={<MagicBriefAlternative onLogin={() => requestToken()} />} />
+      <Route path="/alternatives/dam-alternative-google-drive" element={<DamAlternative onLogin={() => requestToken()} />} />
     </Route>
 
     <Route path="/privacy" element={
