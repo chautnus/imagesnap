@@ -1,7 +1,10 @@
 import crypto from "crypto";
 import { pool } from "./db-postgres";
 
-const ADMIN_EMAILS = ["chautnus@gmail.com", "support@imagesnap.cloud"];
+// Admin emails loaded from env at startup — set ADMIN_EMAILS=a@b.com,c@d.com in production
+const ADMIN_EMAILS: string[] = process.env.ADMIN_EMAILS
+  ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  : ["chautnus@gmail.com", "support@imagesnap.cloud"];
 
 export async function getSubscription(email: string) {
   if (!email) return null;
@@ -47,6 +50,7 @@ export async function getSubscription(email: string) {
 }
 
 // Helper to map DB fields to the structure expected by the frontend
+// Note: password hash is intentionally excluded from all public-facing responses
 async function mapUser(dbUser: any) {
   return {
     email: dbUser.email,
@@ -60,7 +64,7 @@ async function mapUser(dbUser: any) {
     registeredAt: dbUser.registered_at,
     accessibleCategories: dbUser.accessible_categories,
     username: dbUser.username,
-    password: dbUser.password
+    password: dbUser.password  // kept for internal staff-login comparison only; never expose in API responses
   };
 }
 

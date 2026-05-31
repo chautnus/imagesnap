@@ -10,6 +10,8 @@ import fetch from "node-fetch";
 import crypto from "crypto";
 import fs from "fs";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
+import rateLimit from "express-rate-limit";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,20 +44,43 @@ async function startServer() {
   const LS_WEBHOOK_SECRET = process.env.LEMON_SQUEEZY_WEBHOOK_SECRET;
   if (LS_API_KEY) lemonSqueezySetup({ apiKey: LS_API_KEY });
 
-  // CORS
+  // CORS — credentials only allowed for specific origins (extensions), never for wildcard
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-    if (origin && (origin.startsWith('chrome-extension://') || origin.startsWith('extension://') || origin.startsWith('ms-browser-extension://'))) {
+    const isExtensionOrigin = origin && (
+      origin.startsWith('chrome-extension://') ||
+      origin.startsWith('extension://') ||
+      origin.startsWith('ms-browser-extension://')
+    );
+    if (isExtensionOrigin) {
       res.header("Access-Control-Allow-Origin", origin);
+      res.header("Access-Control-Allow-Credentials", "true");
     } else {
       res.header("Access-Control-Allow-Origin", "*");
+      // Never set Allow-Credentials with wildcard origin — spec violation
     }
     res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-signature");
-    res.header("Access-Control-Allow-Credentials", "true");
     if (req.method === 'OPTIONS') return res.status(200).send();
     next();
   });
+
+  // Rate limiting — brute-force protection for auth and admin endpoints
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many attempts, please try again later" },
+  });
+  const adminLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use("/api/auth/staff-login", authLimiter);
+  app.use("/api/admin", adminLimiter);
 
   app.use(express.json({
     verify: (req: any, _res, buf) => { req.rawBody = buf; }
@@ -116,11 +141,12 @@ async function startServer() {
       if (checkRes.rows.length > 0) return res.status(409).json({ error: "Staff account already exists" });
 
       const appId = crypto.randomUUID();
+      const passwordHash = await bcrypt.hash(password, 12);
       const newUser = await pool.query(
-        `INSERT INTO users (email, is_pro, is_admin, limit_count, usage_count, "role", app_id, username, password, registered_at) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) 
+        `INSERT INTO users (email, is_pro, is_admin, limit_count, usage_count, "role", app_id, username, password, registered_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
          RETURNING *`,
-        [email, true, false, 999999, 0, 'staff', appId, username, password]
+        [email, true, false, 999999, 0, 'staff', appId, username, passwordHash]
       );
       res.json({ success: true, user: newUser.rows[0] });
     } catch (err: any) {
@@ -142,11 +168,19 @@ async function startServer() {
 
   app.post("/api/auth/staff-login", async (req, res) => {
     const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: "Username and password required" });
     const users = await getAllUsers();
-    const userEntry = Object.values(users).find((u: any) => u.username?.toLowerCase() === username?.toLowerCase() && u.password === password);
-    if (!userEntry) return res.status(401).json({ error: "Invalid credentials" });
+    const userEntry = Object.values(users).find((u: any) =>
+      u.username?.toLowerCase() === username.toLowerCase()
+    ) as any;
+    if (!userEntry?.password) return res.status(401).json({ error: "Invalid credentials" });
+
+    const isMatch = await bcrypt.compare(password, userEntry.password).catch(() => false);
+    if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+
     const masterSpreadsheetId = await getConfig('masterSpreadsheetId');
-    res.json({ success: true, user: userEntry, masterSpreadsheetId });
+    const { password: _pw, ...safeUser } = userEntry;
+    res.json({ success: true, user: safeUser, masterSpreadsheetId });
   });
 
   app.post("/api/proxy/save-product", async (req, res) => {
