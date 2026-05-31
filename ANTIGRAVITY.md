@@ -25,9 +25,10 @@
 
 ## Trạng thái hiện tại
  
-**Last updated**: 2026-05-18
-**Last session by**: Antigravity (v1.11.7)
-**Current sprint focus**: Runtime Environment Variables & Webpack Static Replacement Fix.
+**Last updated**: 2026-05-31
+**Last session by**: Claude (claude-sonnet-4-6)
+**Current version**: v1.11.9
+**Current sprint focus**: Hoàn thành — Security hardening + SEO expansion.
 
 ---
 
@@ -46,27 +47,34 @@
 ## Context tóm tắt
 
 ### Đang làm gì?
-Đã triển khai kiến trúc **Single-Signal (Tín hiệu Đơn)** và sửa lỗi build SSR (window is not defined) để ổn định hệ thống (v1.7.6).
+Dự án đang ở trạng thái ổn định sau hai sprint lớn trong phiên 2026-05-31:
+1. **SEO Expansion**: 8 trang nội dung mới đã được triển khai và commit.
+2. **Security Hardening**: Các lỗ hổng bảo mật quan trọng đã được vá.
 
-### Đã làm gì trong phiên trước?
-- **Next.js Migration (v1.4.0)**: Chuyển đổi thành công sang Next.js App Router.
-- **Single-Signal Architecture (v1.7.5)**: 
-    - Loại bỏ `BroadcastChannel` cho luồng nhận dữ liệu mới, chuyển hoàn toàn sang dùng `share_id` trên URL điều hướng 303.
-    - Cập nhật `sw.js` sử dụng `sid` (Share ID) làm Primary Key trong IndexedDB.
-    - Sửa lỗi nhân đôi ảnh trong `CaptureTab.tsx` bằng cơ chế lọc trùng `Set`.
-- **SSR Fixes (v1.7.6)**:
-    - Sửa lỗi `ReferenceError: window is not defined` tại trang Dashboard trong quá trình build (prerendering).
-    - Thêm kiểm tra `typeof window !== 'undefined'` cho các truy cập `localStorage` và `window.location`.
+### Đã làm gì trong phiên trước? (2026-05-31)
 
-## TỔNG KẾT TRẠNG THÁI (v1.11.7 - Runtime Environment Variables & Webpack Static Replacement Fix)
-- **Sửa lỗi DATABASE_URL is not configured (Status 500)**: Khắc phục triệt để lỗi biên dịch tĩnh (static replacement) của Webpack Next.js khi đóng gói serverless function bằng cách chuyển đổi toàn bộ truy cập biến môi trường Postgres sang **Bracket Notation** (`process.env['DATABASE_URL']`, `process.env['POSTGRES_URL']`, `process.env['DATABASE_PRIVATE_URL']`).
-- **Khử xung đột nạp biến môi trường (dotenvx)**: Loại bỏ hoàn toàn các cuộc gọi `dotenv.config()` dư thừa trong [src/db-postgres.ts](file:///c:/dev/imagesnap/src/db-postgres.ts) để tránh việc `dotenvx` ghi đè/nạp đè không mong muốn và gây ô nhiễm log.
-- **Neo nạp động Runtime hoàn toàn**: Đọc động các biến kết nối và thực hiện kiểm định kết nối động tại thời điểm truy vấn thực thi bằng hàm `getDatabaseUrl()`.
-- **Versioning**: v1.11.7.
+**SEO — 8 trang mới:**
+- `src/web/pages/use-cases/AliexpressResearch.tsx` — Dropshipping workflow
+- `src/web/pages/use-cases/ShopifyCompetitorTracking.tsx` — Visual competitor tracking
+- `src/web/pages/blog/SwipeFileChaos.tsx` — Swipe file organization
+- `src/web/pages/blog/OrganizeProductImages.tsx` — Product image organization
+- `src/web/pages/blog/GoogleDriveMetadata.tsx` — Metadata layer on Drive
+- `src/web/pages/alternatives/ForeplayAlternative.tsx` — $9.99 vs $249/month
+- `src/web/pages/alternatives/MagicBriefAlternative.tsx` — No custom quote
+- `src/web/pages/alternatives/DamAlternative.tsx` — Affordable DAM for SMBs
+- Đã cập nhật Next.js routes: `app/use-cases/[slug]/page.tsx`, `app/blog/[slug]/page.tsx`, `app/alternatives/[slug]/page.tsx`
+- Đã cập nhật Vite/Extension routes: `src/web/routes/PublicRoutes.tsx`
+
+**Security Hardening:**
+- `server.ts`: bcrypt (cost 12) cho staff passwords; CORS fix (credentials chỉ với extension origins, không bao giờ với `*`); Rate limiting (authLimiter: 10 req/15min trên staff-login, adminLimiter: 60 req/min trên /api/admin)
+- `src/db.ts`: ADMIN_EMAILS từ env var `process.env.ADMIN_EMAILS` (fallback: hardcoded list)
+- `src/db-postgres.ts`: Xóa hardcoded SQL auto-admin grant
+- `package.json`: Bổ sung `bcrypt`, `express-rate-limit`; xóa `stripe`
+- `src/shared/services/dataService.ts`: Thêm named constants cho column indices
 
 ### Dừng ở đâu?
-- Các biến môi trường nhạy cảm kết nối Neon Postgres đã được bảo vệ khỏi bộ tối ưu hóa tĩnh Webpack của Next.js.
-- Tính ổn định khi Admin truy cập phần cài đặt (Settings Tab) đã được khôi phục hoàn chỉnh.
+- Branch `claude/imagesnap-feedback-HNaAY` đã được push với tất cả thay đổi.
+- Codebase sạch, không có uncommitted changes.
 
 ---
 
@@ -77,6 +85,13 @@
 [x] [DEV-2026W19-12-FIX] Resolve SSR build errors (window/localStorage).
 [ ] [DEV-2026W19-13] Verify PWA sharing reliability on multiple devices (Android/iOS).
 [ ] [DEV-2026W19-14] Promote PWA installation to mobile users via UI banner.
+[x] [DEV-2026W22-01] SEO: 8 new content pages (use-cases, blog, alternatives).
+[x] [DEV-2026W22-02] Security: bcrypt passwords, CORS fix, rate limiting, admin env vars.
+[ ] [DEV-2026W22-03] PRODUCTION ACTION: Set ADMIN_EMAILS env var on Vercel.
+                     Value: chautnus@gmail.com,support@imagesnap.cloud
+[ ] [DEV-2026W22-04] PRODUCTION ACTION: Reset existing staff passwords via admin UI
+                     (existing plaintext passwords in DB must be reset to trigger bcrypt hashing).
+[ ] [DEV-2026W22-05] SEO: Submit updated sitemap to Google Search Console after merge to main.
 ```
 
 ---
@@ -85,10 +100,23 @@
 
 ### Dependency versions (critical)
 ```
-node:     >=18.0.0
-next:     ^16.2.4
-react:    ^19.0.0
-pg:     ^8.20.0
+node:               >=18.0.0
+next:               ^16.2.4
+react:              ^19.0.0
+pg:                 ^8.20.0
+bcrypt:             ^6.0.0
+express-rate-limit: ^8.5.2
+```
+
+### Dual build pipeline (CRITICAL — always update both)
+- **Next.js routes**: `app/[segment]/[slug]/page.tsx` — SSR web
+- **Vite/Extension routes**: `src/web/routes/PublicRoutes.tsx` — Chrome extension side panel
+- Khi thêm trang mới, PHẢI cập nhật CẢ HAI nơi.
+
+### Column indices cho Google Sheets (dataService.ts)
+```
+COL_ID = 0, COL_CREATED_AT = 1, COL_IMAGES = 2, COL_NAME = 3,
+COL_TAGS = 4, COL_AUTHOR_ID = 5, COL_AUTHOR_NAME = 6, COL_CUSTOM_FIELDS_START = 7
 ```
 
 ---
@@ -98,3 +126,5 @@ pg:     ^8.20.0
 - **QUY TẮC PHÊ DUYỆT**: Luôn đợi user gõ "Approve" mới được sửa file.
 - Luồng Share Target hiện tại dựa hoàn toàn vào `share_id` từ URL. Không được thêm lại `BroadcastChannel` cho tín hiệu này.
 - Khi thêm logic client-side mới, luôn chú ý kiểm tra `typeof window !== 'undefined'` để tránh lỗi build SSR.
+- Staff login dùng bcrypt: `mapUser()` giữ `password` field cho internal comparison only — KHÔNG BAO GIỜ trả ra API response. Luồng login đã strip: `const { password: _pw, ...safeUser } = userEntry`.
+- Existing staff accounts có plaintext password trong DB — admin phải reset qua `/api/admin/update-user` để trigger bcrypt hashing.

@@ -138,3 +138,46 @@
 - Hệ thống tài liệu cũ khá chi tiết nhưng thiếu sự liên kết chặt chẽ. Việc chuẩn hóa sẽ giúp AI Agent hiểu bối cảnh dự án tốt hơn.
 
 ---
+
+## [DEV-2026W22] Tuần 22/2026 (25 May – 31 May)
+
+### ✅ Completed
+
+- [DEV-2026W22-01] User Research — Đánh giá nhu cầu người dùng tiềm năng
+  - Nghiên cứu 5 phân khúc: E-commerce/dropship, Marketing/swipe file, Studio/nhiếp ảnh, Construction, Real estate.
+  - Nguồn: Reddit, Product Hunt, G2, Capterra, Chrome Web Store reviews.
+  - Output: `docs/memory/Revisit imagesnap opportunity.md`
+  - Top pain points: (1) manual copy-paste khi research sản phẩm, (2) swipe file thiếu context/metadata, (3) Google Drive không có metadata layer, (4) DAM quá đắt cho SMB, (5) competitor tracking tốn công.
+
+- [DEV-2026W22-02] SEO Expansion — 8 trang nội dung mới
+  - Use Cases: `aliexpress-product-research`, `shopify-competitor-tracking`
+  - Blog: `swipe-file-chaos-how-to-fix`, `organize-product-images-ecommerce`, `google-drive-metadata-images`
+  - Alternatives: `foreplay-alternative` ($9.99 vs $249/mo), `magicbrief-alternative`, `dam-alternative-google-drive`
+  - Files changed: 12 files (page components + Next.js routes + Vite routes)
+  - SEO plan: `ImageSnap SEO/SEO imagesnap 30May2026.md`
+
+- [DEV-2026W22-03] Security Hardening — Vá các lỗ hổng quan trọng
+  - **Passwords**: Implement bcrypt (cost 12) cho staff password create và verify. Strip password field khỏi API response (`{ password: _pw, ...safeUser }`).
+  - **CORS**: Fix spec violation — `Allow-Credentials: true` không được dùng với `Allow-Origin: *`. Chỉ set credentials header khi origin là extension.
+  - **Rate limiting**: `authLimiter` (10 req/15min) trên `/api/auth/staff-login`; `adminLimiter` (60 req/min) trên `/api/admin/*`.
+  - **Admin emails**: Chuyển sang env var `ADMIN_EMAILS` (comma-separated). Xóa hardcoded auto-admin SQL khỏi `initDb()`.
+  - **Dependencies**: Thêm `bcrypt ^6.0.0`, `express-rate-limit ^8.5.2`. Xóa `stripe`.
+  - **Column constants**: Thêm named constants (`COL_ID`, `COL_NAME`, etc.) trong `dataService.ts`.
+  - Files changed: `server.ts`, `src/db.ts`, `src/db-postgres.ts`, `src/shared/services/dataService.ts`, `package.json`
+  - Version: v1.11.9
+
+### ⚠️ Production Actions Required (không phải code)
+- Set `ADMIN_EMAILS=chautnus@gmail.com,support@imagesnap.cloud` trên Vercel env vars.
+- Reset existing staff passwords qua `/api/admin/update-user` để migrate từ plaintext sang bcrypt.
+- Submit updated sitemap lên Google Search Console sau khi merge to main.
+
+### 💡 Decisions Made
+- [DEV-2026W22-D01] Không implement Stripe — dùng Lemon Squeezy làm payment processor duy nhất. Xóa Stripe dependency.
+- [DEV-2026W22-D02] Dual build pipeline discovery: Next.js và Vite/Extension có route registries riêng biệt. Phải cập nhật cả hai khi thêm trang.
+
+### 🐛 Bugs Fixed
+- CORS wildcard + credentials spec violation (server.ts)
+- Staff passwords stored plaintext — vá bằng bcrypt
+- Hardcoded auto-admin SQL trong initDb() — đã xóa
+
+---
