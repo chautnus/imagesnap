@@ -22,27 +22,19 @@ export async function saveProduct(
   const catFolderId = await findOrCreateFolder(cat.name || 'Other', rootFolderId, providedToken);
   const keyFolderId = await findOrCreateFolder(keyValue.toString(), catFolderId, providedToken);
 
-  const imageUrls = [];
-  for (let i = 0; i < base64Images.length; i++) {
-    const img = base64Images[i];
-    const fileName = `${keyValue}-${(i + 1).toString().padStart(3, '0')}.jpg`;
-    
-    try {
-      if (img.startsWith('data:')) {
-        const url = await uploadBase64Image(img, fileName, keyFolderId, providedToken);
-        imageUrls.push(url);
-      } else if (img.startsWith('http')) {
-        // Attempt to upload remote URL. If CORS fails, it returns original URL.
-        const url = await uploadUrlImage(img, fileName, keyFolderId, providedToken);
-        imageUrls.push(url);
-      } else {
-        imageUrls.push(img);
+  const imageUrls = await Promise.all(
+    base64Images.map(async (img, i) => {
+      const fileName = `${keyValue}-${(i + 1).toString().padStart(3, '0')}.jpg`;
+      try {
+        if (img.startsWith('data:')) return await uploadBase64Image(img, fileName, keyFolderId, providedToken);
+        if (img.startsWith('http')) return await uploadUrlImage(img, fileName, keyFolderId, providedToken);
+        return img;
+      } catch (err) {
+        console.error(`Failed to handle image ${i}:`, err);
+        return img;
       }
-    } catch (err) {
-      console.error(`Failed to handle image ${i}:`, err);
-      imageUrls.push(img); // Fallback to raw string
-    }
-  }
+    })
+  );
 
   const sheetTitle = cat.name.substring(0, 31);
   const headers = ['ID', 'Created At', 'Images', 'Name', 'Tags', 'Author ID', 'Author Name', ...cat.fields.map(f => f.label)];

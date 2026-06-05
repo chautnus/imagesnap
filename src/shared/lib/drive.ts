@@ -1,14 +1,46 @@
 import { getAccessToken } from './google-auth';
 
+// In-memory folder ID cache (session-scoped, works in ext/web/PWA)
+const _folderCache = new Map<string, string>();
+
+function _folderKey(name: string, parentId?: string) {
+  return `${parentId ?? 'root'}::${name}`;
+}
+
+function _getCachedFolder(name: string, parentId?: string): string | null {
+  const key = _folderKey(name, parentId);
+  if (_folderCache.has(key)) return _folderCache.get(key)!;
+  try {
+    const raw = localStorage.getItem(`imgsnap_fid_${key}`);
+    if (raw) {
+      const { id, ts } = JSON.parse(raw);
+      if (Date.now() - ts < 86_400_000) { // 24h TTL
+        _folderCache.set(key, id);
+        return id;
+      }
+    }
+  } catch {}
+  return null;
+}
+
+function _setCachedFolder(name: string, parentId: string | undefined, id: string) {
+  const key = _folderKey(name, parentId);
+  _folderCache.set(key, id);
+  try {
+    localStorage.setItem(`imgsnap_fid_${key}`, JSON.stringify({ id, ts: Date.now() }));
+  } catch {}
+}
+
 /**
- * Ensures a folder exists and returns its ID.
+ * Ensures a folder exists and returns its ID. Results are cached for 24h.
  */
 export async function findOrCreateFolder(name: string, parentId?: string, providedToken?: string) {
+  const cached = _getCachedFolder(name, parentId);
+  if (cached) return cached;
+
   const token = providedToken || getAccessToken();
   let query = `name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-  if (parentId) {
-    query += ` and '${parentId}' in parents`;
-  }
+  if (parentId) query += ` and '${parentId}' in parents`;
 
   const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}`;
   const response = await fetch(searchUrl, {
@@ -17,16 +49,13 @@ export async function findOrCreateFolder(name: string, parentId?: string, provid
   const data = await response.json();
 
   if (data.files && data.files.length > 0) {
+    _setCachedFolder(name, parentId, data.files[0].id);
     return data.files[0].id;
   }
 
-  // Create folder
   const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       name,
       mimeType: 'application/vnd.google-apps.folder',
@@ -34,6 +63,7 @@ export async function findOrCreateFolder(name: string, parentId?: string, provid
     })
   });
   const created = await createResponse.json();
+  _setCachedFolder(name, parentId, created.id);
   return created.id;
 }
 
@@ -42,43 +72,27 @@ export async function findOrCreateFolder(name: string, parentId?: string, provid
  */
 export async function uploadBase64Image(base64: string, name: string, parentId: string, providedToken?: string) {
   const token = providedToken || getAccessToken();
-  
-  // Strip metadata from base64 string
-  const base64Data = base64.split(',')[1] || base64;
-  const byteCharacters = atob(base64Data);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: 'image/jpeg' });
 
-  const metadata = {
-    name,
-    parents: [parentId],
-    mimeType: 'image/jpeg'
-  };
+  // Use native fetch to decode data URL — ~10x faster than manual charCodeAt loop
+  const blob = await fetch(base64).then(r => r.blob());
 
+  const metadata = { name, parents: [parentId], mimeType: 'image/jpeg' };
   const form = new FormData();
   form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
   form.append('file', blob);
 
-  const uploadResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink,thumbnailLink', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
-    body: form
-  });
+  const [uploadData] = await Promise.all([
+    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink,thumbnailLink', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: form
+    }).then(r => r.json())
+  ]);
 
-  const uploadData = await uploadResponse.json();
-  
-  // Make file public if needed, or just return view link
-  // (Architecture says: Public view link (anyone with link))
-  await fetch(`https://www.googleapis.com/drive/v3/files/${uploadData.id}/permissions`, {
+  // Set public permission in parallel with nothing else to await — fire and return
+  fetch(`https://www.googleapis.com/drive/v3/files/${uploadData.id}/permissions`, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ role: 'reader', type: 'anyone' })
   });
 

@@ -7,48 +7,31 @@ interface NavigationProps {
   t: (key: string) => string;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, t }) => {
-  return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-bg/80 backdrop-blur-lg border-t border-line flex justify-around items-center px-6 py-3 z-50">
-      <button 
-        onClick={() => setActiveTab('capture')}
-        className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'capture' ? 'text-accent' : 'text-muted'}`}
-      >
-        <div className={`p-2 rounded-xl transition-all ${activeTab === 'capture' ? 'bg-accent/10' : ''}`}>
-          <Camera size={22} />
-        </div>
-        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'capture' ? 'opacity-100' : 'opacity-40'}`}>{t('capture')}</span>
-      </button>
+const tabs = [
+  { id: 'capture', icon: Camera, label: (t: (k: string) => string) => t('capture') },
+  { id: 'data',    icon: TableProperties, label: (t: (k: string) => string) => t('data') },
+  { id: 'help',    icon: HelpCircle, label: () => 'Help' },
+  { id: 'settings',icon: Settings, label: (t: (k: string) => string) => t('settings') },
+] as const;
 
-      <button 
-        onClick={() => setActiveTab('data')}
-        className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'data' ? 'text-accent' : 'text-muted'}`}
-      >
-        <div className={`p-2 rounded-xl transition-all ${activeTab === 'data' ? 'bg-accent/10' : ''}`}>
-          <TableProperties size={22} />
-        </div>
-        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'data' ? 'opacity-100' : 'opacity-40'}`}>{t('data')}</span>
-      </button>
-
-      <button 
-        onClick={() => setActiveTab('help')}
-        className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'help' ? 'text-accent' : 'text-muted'}`}
-      >
-        <div className={`p-2 rounded-xl transition-all ${activeTab === 'help' ? 'bg-accent/10' : ''}`}>
-          <HelpCircle size={22} />
-        </div>
-        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'help' ? 'opacity-100' : 'opacity-40'}`}>Help</span>
-      </button>
-
-      <button 
-        onClick={() => setActiveTab('settings')}
-        className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'settings' ? 'text-accent' : 'text-muted'}`}
-      >
-        <div className={`p-2 rounded-xl transition-all ${activeTab === 'settings' ? 'bg-accent/10' : ''}`}>
-          <Settings size={22} />
-        </div>
-        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${activeTab === 'settings' ? 'opacity-100' : 'opacity-40'}`}>{t('settings')}</span>
-      </button>
-    </nav>
-  );
-};
+export const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab, t }) => (
+  <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-line flex justify-around items-center px-4 py-2 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
+    {tabs.map(({ id, icon: Icon, label }) => {
+      const active = activeTab === id;
+      return (
+        <button
+          key={id}
+          onClick={() => setActiveTab(id)}
+          className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-2xl transition-all"
+        >
+          <div className={`p-2 rounded-xl transition-all ${active ? 'bg-accent/10' : ''}`}>
+            <Icon size={21} className={active ? 'text-accent' : 'text-muted'} strokeWidth={active ? 2.5 : 1.8} />
+          </div>
+          <span className={`text-[11px] font-semibold transition-all capitalize ${active ? 'text-accent' : 'text-muted'}`}>
+            {label(t)}
+          </span>
+        </button>
+      );
+    })}
+  </nav>
+);
