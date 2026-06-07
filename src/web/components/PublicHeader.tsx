@@ -77,7 +77,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
         )}
       </div>
 
-      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-black">
+      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/10 bg-[#0a0a0c]">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onLogin }) => {
               
               
               
-              className="lg:hidden bg-bg border-b border-white/5 overflow-hidden"
+              className="lg:hidden bg-[#0a0a0c] border-b border-white/10 overflow-hidden"
             >
               <div className="p-6 flex flex-col gap-6 text-muted font-bold uppercase tracking-widest text-xs">
                 <Link href="/#how-it-works" className="hover:text-white" onClick={() => setIsMenuOpen(false)}>How it works</Link>

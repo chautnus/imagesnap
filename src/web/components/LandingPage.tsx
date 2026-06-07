@@ -13,7 +13,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
   };
 
   return (
-    <div className="bg-bg text-white font-sans antialiased min-h-screen">
+    <div className="bg-[#0a0a0c] text-white font-sans antialiased min-h-screen">
       {showLoginOptions && (
         <LoginModal onLogin={onLogin} onClose={() => setShowLoginOptions(false)} />
       )}
@@ -69,7 +69,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
       </section>
 
       {/* SOLUTION SECTION */}
-      <section id="how-it-works" className="py-32 border-y border-white/5 bg-white/[0.01]">
+      <section id="how-it-works" className="py-32 border-y border-white/5 bg-white/[0.02]">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-4xl md:text-6xl font-black text-center mb-24 tracking-tighter italic">Save the image. <br/><span className="text-accent">Keep the meaning.</span></h2>
           <div className="grid md:grid-cols-3 gap-16">
@@ -164,7 +164,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void, 
       </section>
 
       {/* FOOTER */}
-      <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-white/5 text-center">
+      <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-white/10 text-center">
         <p className="text-muted text-sm font-bold uppercase tracking-widest">
           © 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED. <span className="ml-4 opacity-50">{APP_VERSION}</span>
         </p>

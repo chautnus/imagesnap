@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const PublicFooter: React.FC = () => {
   return (
-    <footer className="mt-32 border-t border-white/5 bg-bg">
+    <footer className="mt-32 border-t border-white/10 bg-[#0a0a0c]">
       <div className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 font-bold uppercase tracking-widest text-[10px]">
           <div className="flex flex-col gap-4">

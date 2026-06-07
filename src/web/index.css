@@ -31,11 +31,16 @@
   .glow-accent {
     box-shadow: 0 0 30px -5px var(--color-accent);
   }
+  /* Dark glass — used by marketing/landing pages */
   .glass {
-    @apply bg-white/60 backdrop-blur-xl border border-white/80;
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
   }
   .glass-dark {
-    @apply bg-white/80 backdrop-blur-2xl border border-line;
+    @apply bg-black/80 backdrop-blur-2xl border border-white/10;
+  }
+  /* Light glass — use in app UI if needed */
+  .glass-light {
+    @apply bg-white/60 backdrop-blur-xl border border-white/80;
   }
   .custom-scrollbar::-webkit-scrollbar { width: 4px; }
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
