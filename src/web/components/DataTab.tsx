@@ -122,8 +122,8 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
                 {cat.icon}
               </div>
               <div>
-                <div className="font-bold text-sm tracking-tight">{translate(cat.name, lang)}</div>
-                <div className="text-[9px] text-muted font-mono mt-1">{categoryCounts[cat.id] || 0} ITEMS</div>
+                <div className="font-semibold text-[15px] text-ink tracking-tight">{translate(cat.name, lang)}</div>
+                <div className="text-[11px] text-muted font-mono mt-0.5">{categoryCounts[cat.id] || 0} items</div>
               </div>
             </button>
           ))}

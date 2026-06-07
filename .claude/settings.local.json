@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(session-init)",
+      "Skill(session-init:*)",
+      "Bash(python3 -c \"s='Capture product images & context. Auto-save to Google Drive, log metadata to Google Sheets. Perfect for ecommerce research, competitor tracking, and sourcing.'; print\\(len\\(s\\)\\)\")"
+    ]
+  }
+}

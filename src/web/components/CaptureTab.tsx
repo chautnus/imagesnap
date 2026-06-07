@@ -152,13 +152,15 @@ export const CaptureTab: React.FC<CaptureTabProps> = (props) => {
             })
             .map(cat => (
               <button key={cat.id} onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all text-left
+                className={`px-3 py-2.5 rounded-xl border flex items-center gap-2 transition-all text-left
                   ${selectedCategoryId === cat.id
-                    ? 'border-accent bg-accent/10 text-accent font-semibold shadow-sm'
-                    : 'border-line bg-card text-muted hover:border-accent/40'}`}
+                    ? 'border-accent bg-accent/10 shadow-sm'
+                    : 'border-line bg-card hover:border-accent/40'}`}
               >
-                <span className="text-sm">{cat.icon}</span>
-                <span className="text-[12px] truncate font-medium">{translate(cat.name, lang)}</span>
+                <span className="text-base">{cat.icon}</span>
+                <span className={`text-[13px] truncate font-semibold ${selectedCategoryId === cat.id ? 'text-accent' : 'text-ink'}`}>
+                  {translate(cat.name, lang)}
+                </span>
               </button>
             ))}
         </div>
