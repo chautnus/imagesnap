@@ -61,10 +61,10 @@ export const CategoryEditor: React.FC<CategoryEditorProps> = ({
           {categories.filter(c => !c._deleted).map((cat, idx) => (
             <div key={cat.id} className="card p-4 flex items-center justify-between group bg-white/5 border-transparent hover:border-line transition-all">
               <div className="flex items-center gap-3">
-                <span className="text-xl opacity-30 font-mono">{(idx + 1).toString().padStart(2, '0')}</span>
+                <span className="text-xl opacity-30 font-mono text-ink">{(idx + 1).toString().padStart(2, '0')}</span>
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{cat.icon}</span>
-                  <span className="font-bold text-base">{translate(cat.name, lang)}</span>
+                  <span className="font-bold text-base text-ink">{translate(cat.name, lang)}</span>
                 </div>
               </div>
               <div className="flex gap-2">
