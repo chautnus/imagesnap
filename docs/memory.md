@@ -1,50 +1,120 @@
 # Project Memory: ImageSnap
 
-## Project Overview (v1.3.1)
-ImageSnap is a high-performance product cataloging platform for e-commerce marketers. It enables rapid snapping, categorization, and uploading of product images from any website or live camera directly to Google Drive and Google Sheets. 
+## Project Overview (v1.11.10)
+ImageSnap là nền tảng cataloging ảnh sản phẩm tốc độ cao cho e-commerce marketers. Cho phép chụp, phân loại và upload ảnh từ bất kỳ trang web hoặc camera trực tiếp lên Google Drive và Google Sheets. Hoạt động trên 3 platform chia sẻ chung `src/shared/`: PWA, Chrome Extension, Web.
 
-## Key Updates & Decisions
+---
 
-### 🚀 Architecture (v1.3.1)
-- **Centralized Header**: Unified user information (Role, Email, Quota) and version tracking into a global `Header` component for absolute UI consistency.
-- **In-App Documentation**: Introduced `HelpTab` and integrated it into the main navigation to eliminate external redirects and maintain user context.
-- **Persistent Quota**: Replaced in-memory usage tracking with a file-based JSON store (`user_db.json`) in `server.ts`.
+## Current State (v1.11.10 — 2026-06-06)
 
-### 🎨 Design Standards (v1.3.1)
-- **High-Impact UI**: Established a new standard with base font size **16px** for inputs and **14px** for secondary labels.
-- **Information Density**: Refined `CaptureTab` to remove redundant information, focusing on actionable controls and high-speed snapping.
+### 🎨 Design System
+- **Theme engine**: `src/web/styles/theme.ts` — file DUY NHẤT chứa mọi màu sắc
+  - `PUB.*` — dark theme cho marketing/public pages
+  - `APP.*` — light theme cho app dashboard
+- **Palette app**: bg `#F0F4FF`, card `#FFFFFF`, accent `#4F6EF7` (indigo), ink `#1E293B`
+- **Palette public**: bg `#0a0a0c`, text white, glass `bg-white/5`
+- **PublicPageShell**: wrapper dark cho mọi public page — import từ `theme.ts`
+- **Quy tắc**: KHÔNG hardcode `bg-*`, `text-*`, `border-*` trong component. Luôn dùng token từ `theme.ts` hoặc CSS vars trong `index.css`
+
+### 📐 Font & Input Standards (PWA)
+- `.input`: `text-base` (16px) — bắt buộc để tránh iOS auto-zoom
+- `.label-meta`: `text-[13px]` semibold uppercase
+- Category name pills: `text-[13px] text-ink` (inactive), `text-accent` (active)
+
+### 🗂 Component Architecture
+```
+src/web/
+  styles/theme.ts           ← Centralized color tokens (PUB + APP)
+  components/
+    PublicPageShell.tsx     ← Dark wrapper for all public pages
+    CaptureTab.tsx          ← 202 lines (orchestrator)
+    useCaptureState.ts      ← Camera state + business logic
+    CaptureFormFields.tsx   ← Dynamic form fields + autocomplete
+    CaptureQuickAddModal.tsx← Quick add category modal
+    DataTab.tsx             ← 198 lines (orchestrator)
+    DataSearchBar.tsx       ← Search input + filter panel
+    DataProductCard.tsx     ← List/Grid card (layout prop)
+    DataProductDetail.tsx   ← Full-screen detail view
+    Header.tsx              ← App header (light theme)
+    Navigation.tsx          ← Bottom nav (pill active, sentence case)
+    BurstCamera.tsx         ← 60 lines (trigger + compose)
+    useBurstCamera.ts       ← Camera state, refs, all handlers
+    BurstCameraOverlay.tsx  ← Fullscreen overlay JSX
+    PrivacyPolicy.tsx       ← Wrapped in PublicPageShell (dark)
+```
+
+### ⚡ Performance (drive.ts + productService.ts)
+- Folder cache: 2-tier (Map + localStorage 24h TTL) — 0 API call từ lần 2
+- Base64 decode: `fetch(dataUrl)` native — ~10x nhanh hơn charCodeAt loop
+- Upload parallel: `Promise.all` — 3 ảnh từ 3× xuống ~1× latency
+- setPermissions: fire-and-forget — không block return
+
+### 🔐 Auth
+- Session: 30 ngày + rolling renewal (mỗi GET /api/auth/session reset timer)
+- restoreSession chạy trước initAuthListener trong App.tsx
+
+---
+
+## Pending Work
+→ Xem chi tiết: [`docs/pending-todo.md`](pending-todo.md)
+
+**Ngay bây giờ:**
+- UserDirectory.tsx (266 dòng) — gần SYSTEM LOCK, cần `/split-plan` trước khi sửa
+
+**Cần verify:**
+- Test PWA trên Android, Extension side-panel
+- PrivacyPolicy — đã fix theme, chưa test thực tế
+
+---
 
 ## Project Structure
 
-### 📁 Root
-- `server.ts`: Node.js server handling API, persistence, and image proxying.
-- `user_db.json`: Persistent storage for user plans and usage quotas.
-- `dist-ext/`: Final production build for the Browser Extension.
+### 📁 src/shared/ (dùng chung cả 3 platform)
+- `lib/drive.ts` — Google Drive API + folder cache
+- `lib/sheets.ts` — Google Sheets API
+- `lib/version.ts` — `APP_VERSION = 'v1.11.10'`
+- `services/productService.ts` — save product (parallel upload)
+
+### 📁 src/web/
+- `styles/theme.ts` — ⭐ centralized color tokens
+- `components/` — React components (xem bên trên)
+- `pages/` — SEOPage (wrapper 15+ trang), PricingPage, BlogPage...
+- `index.css` — CSS vars + `.btn`, `.card`, `.input`, `.label-meta`, `.glass`
+
+### 📁 src/extension/
+- `manifest.json` — version 1.11.10
 
 ### 📁 docs/
-- `ARCHITECTURE.md`: Technical flows and component mappings.
-- `BUGLOG.md`: Detailed bug & fix knowledge base.
-- `DEVLOG.md`: Weekly development milestone tracking.
-
-### 📁 src/
-- `src/web/`: Main React PWA frontend.
-- `src/extension/`: Extension-specific entry points and manifest.
-- `src/shared/`: Shared logic, types, and hooks (Crucial for sync).
-
-## Development Constraints
-- **Deployment**: Configured for Railway/Node-compatible environments (Port 8080).
-- **Build**: `npm run build` generates both Web and Extension production bundles.
+- `MEMORY.md` — file này (master index)
+- `pending-todo.md` — ⭐ việc chờ làm
+- `changelog/INDEX.md` — lịch sử phiên bản
+- `memory/INDEX.md` — memory files index
 
 ---
+
+## Development Rules
+
+### SYSTEM LOCK (> 250 dòng)
+Không sửa file > 250 dòng khi chưa chạy `/split-plan`. Files hiện tại cần chú ý:
+- `BurstCamera.tsx` — 60 dòng ✅ (đã split)
+- `UserDirectory.tsx` — 266 dòng 🟡
+- `CategoryEditor.tsx` — 234 dòng ✅ (< 250, còn OK)
+
+### Theme Rule
+Mọi màu sắc → `src/web/styles/theme.ts`. Không exception.
+
+### Upload Pattern
+`findOrCreateFolder` → check cache trước, API sau. Cache key: `imgsnap_fid_${parentId}::${name}`.
+
+---
+
 ## Domain Indexes
 
 | Domain | Path | Index |
 |--------|------|-------|
+| Pending work | `docs/` | [pending-todo.md](pending-todo.md) |
 | Memory (all) | `docs/memory/` | [INDEX.md](memory/INDEX.md) |
-| Project decisions | `docs/memory/project/` | [INDEX.md](memory/INDEX.md) |
-| Feedback / rules | `docs/memory/feedback/` | [INDEX.md](memory/INDEX.md) |
 | Changelog | `docs/changelog/` | [INDEX.md](changelog/INDEX.md) |
-| PRD | `docs/prd/` | (browse directly) |
 
 ---
-*Last Updated: 2026-06-05 — v1.11.10*
+*Last Updated: 2026-06-06 — v1.11.10 patch*

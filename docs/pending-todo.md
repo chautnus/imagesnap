@@ -6,21 +6,6 @@ _Last updated: 2026-06-06 | v1.11.10_
 
 ## 🔴 SYSTEM LOCK — Cần split trước khi sửa
 
-### BurstCamera.tsx (291 dòng)
-**Vấn đề cần sửa sau split:**
-- Dòng 193: `text-bg` → `text-white` (trigger button khi camera active)
-- Dòng 265, 268, 272: `text-bg` → `text-white` (overlay buttons: grid, aspect, torch khi active)
-
-**Kế hoạch split đã phê duyệt:**
-```
-useBurstCamera.ts       (~130 dòng)  — state, refs, tất cả handlers
-BurstCameraOverlay.tsx  (~95 dòng)   — fullscreen overlay JSX
-BurstCamera.tsx         (~45 dòng)   — trigger button + compose
-```
-**Thực thi:** `/split-execute src/web/components/BurstCamera.tsx "Tạo useBurstCamera.ts chứa toàn bộ state, refs, useEffect và handlers. Tạo BurstCameraOverlay.tsx chứa fullscreen camera overlay JSX. BurstCamera.tsx giữ trigger button và compose."`
-
----
-
 ### UserDirectory.tsx (266 dòng)
 **Cần kiểm tra:** Có thể có màu hardcode dark mode (`text-white`, `bg-black`, v.v.)
 **Hành động:** Chạy `/split-plan` nếu cần sửa nội dung.
@@ -36,16 +21,21 @@ BurstCamera.tsx         (~45 dòng)   — trigger button + compose
 - [ ] Blog / Use-case pages — dark theme qua PublicPageShell + SEOPage
 - [ ] Pricing page — dark theme
 - [ ] Login modal — dark theme
-
-### Màu sắc còn nghi ngờ
-- [ ] `StaffLogin.tsx` — chưa kiểm tra, có thể còn dark mode colors
-- [ ] `PrivacyPolicy.tsx` — chưa kiểm tra, có thể còn dark mode colors
-- [ ] `CategoryEditor.tsx` (234 dòng) — chưa kiểm tra colors
-- [ ] `ImagePicker.tsx` (132 dòng) — chưa kiểm tra colors
+- [ ] PrivacyPolicy — dark theme (đã fix, chưa test thực tế)
 
 ---
 
 ## 🟢 ĐÃ HOÀN THÀNH (session 2026-06-06)
+
+### BurstCamera split + fixes
+- [x] `BurstCamera.tsx` 291→60 dòng: `useBurstCamera.ts`, `BurstCameraOverlay.tsx`
+- [x] Fix `text-bg` → `text-white` ở 4 điểm trong BurstCamera (trigger + 3 overlay buttons)
+- [x] `PrivacyPolicy.tsx` — wrap `PublicPageShell`, bỏ `bg-bg` + 6x `text-white` hardcode
+
+### Màu sắc đã kiểm tra sạch
+- [x] `StaffLogin.tsx` — không có màu hardcode
+- [x] `CategoryEditor.tsx` — glass effects intentional (`bg-white/5`, `bg-black/80`)
+- [x] `ImagePicker.tsx` — dark modal overlay intentional
 
 ### Performance
 - [x] Drive folder cache 24h (localStorage + Map) — tiết kiệm 1-2 API call/save
@@ -65,10 +55,12 @@ BurstCamera.tsx         (~45 dòng)   — trigger button + compose
 - [x] `SEOPage.tsx` — wrap PublicPageShell → fix tất cả 15+ blog/alt/tools
 - [x] `LandingPage`, `PricingPage`, `BlogPage` — dùng theme.ts
 - [x] `PublicHeader`, `PublicFooter`, `LoginModal` — dùng theme.ts
+- [x] `PrivacyPolicy.tsx` — dùng PublicPageShell, bỏ hardcode
 
 ### Split & Refactor
 - [x] `DataTab.tsx` 597→198 dòng: `DataSearchBar`, `DataProductCard`, `DataProductDetail`
 - [x] `CaptureTab.tsx` 537→202 dòng: `useCaptureState`, `CaptureFormFields`, `CaptureQuickAddModal`
+- [x] `BurstCamera.tsx` 291→60 dòng: `useBurstCamera`, `BurstCameraOverlay`
 - [x] Data grid/list layout toggle — persist localStorage
 
 ### Bug fixes
@@ -76,6 +68,8 @@ BurstCamera.tsx         (~45 dòng)   — trigger button + compose
 - [x] Font sizes PWA: label-meta 11→13px, input text-base (16px, tránh iOS zoom)
 - [x] Category pill text: text-muted → text-ink (inactive state)
 - [x] Landing page dark theme tách khỏi CSS variable bg-bg
+- [x] BurstCamera overlay buttons: text-bg → text-white (4 điểm)
+- [x] PrivacyPolicy: white-on-light-bg → PublicPageShell dark theme
 
 ### Version
 - [x] v1.11.9 → v1.11.10
