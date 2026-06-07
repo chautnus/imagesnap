@@ -40,9 +40,11 @@ ImageSnap is a high-performance product cataloging platform for e-commerce marke
 
 | Domain | Path | Index |
 |--------|------|-------|
-| Project decisions | `docs/memory/project/` | [INDEX.md](memory/project/INDEX.md) |
+| Memory (all) | `docs/memory/` | [INDEX.md](memory/INDEX.md) |
+| Project decisions | `docs/memory/project/` | [INDEX.md](memory/INDEX.md) |
+| Feedback / rules | `docs/memory/feedback/` | [INDEX.md](memory/INDEX.md) |
 | Changelog | `docs/changelog/` | [INDEX.md](changelog/INDEX.md) |
 | PRD | `docs/prd/` | (browse directly) |
 
 ---
-*Last Updated: 2026-05-16 — v1.10.7*
+*Last Updated: 2026-06-05 — v1.11.10*

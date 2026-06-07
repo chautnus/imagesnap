@@ -130,6 +130,12 @@ export async function restoreSession(handlers: AuthFlowHandlers): Promise<boolea
       const profile = await getUserInfo(user.token);
       if (profile) {
         setAccessToken(user.token);
+        // Refresh cookie with latest token to reset the 30-day expiry
+        fetch(`${API_BASE_URL}/api/auth/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: profile.email, token: user.token, role: user.role }),
+        }).catch(() => {});
         onSetUser(profile);
         onSetIsAuthReady(true);
         onSetView('app');
@@ -141,36 +147,11 @@ export async function restoreSession(handlers: AuthFlowHandlers): Promise<boolea
       }
     }
 
-    // Token expired but session cookie is still valid — restore from session data immediately
-    // so user stays logged in (especially in PWA where silent GIS re-auth is unreliable).
-    // Attempt silent token refresh in background; dispatch SYS_AUTH_EXPIRED only if it fails
-    // and a Google API call is actually needed.
+    // Token expired (cookie still valid but Google token ~1h lifetime).
+    // Try localStorage backup → silent GIS refresh → if all fail, return false
+    // so initAuthListener is called and the user can re-authenticate interactively.
     if (user.email) {
-      const sessionUser = { email: user.email, name: user.email };
-      onSetUser(sessionUser);
-      onSetIsAuthReady(true);
-      onSetView('app');
-      fetchSubStatus(user.email, onSetSubStatus);
-      const storedId = localStorage.getItem('ps_sheet_id');
-      if (storedId) { onSetSpreadsheetId(storedId); refreshData(storedId); }
-      else await initializeWorkspace(onSetSpreadsheetId, refreshData);
-
-      // Background silent token refresh — update profile + session cookie if successful
-      requestSilentToken((freshToken) => {
-        setAccessToken(freshToken);
-        fetch(`${API_BASE_URL}/api/auth/session`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: user.email, token: freshToken, role: user.role }),
-        }).catch(() => {});
-        getUserInfo(freshToken).then((p) => { if (p) onSetUser(p); }).catch(() => {});
-      }, () => {
-        // Silent refresh failed (e.g. PWA, ITP) — user stays logged in with session data
-        // but will need to re-authenticate when calling Google APIs
-        window.dispatchEvent(new CustomEvent('SYS_TOKEN_REFRESH_FAILED'));
-      });
-
-      return true;
+      return await pwaRestoreFromLocalStorage();
     }
   } catch {
     return false;

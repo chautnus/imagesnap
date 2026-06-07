@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       role: role || (isStaff ? 'staff' : 'user'),
       token,
       masterSpreadsheetId: masterSpreadsheetId || null,
-      expires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+      expires: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
     // Encrypt or encode the payload (for now, base64 as a placeholder, in prod use Jose or Iron-Session)
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 24 * 60 * 60, // 24 hours
+      maxAge: 30 * 24 * 60 * 60, // 30 days
       path: "/",
     });
 
@@ -54,6 +54,15 @@ export async function GET() {
       cookieStore.delete("imagesnap_session");
       return NextResponse.json({ authenticated: false, reason: "expired" }, { status: 401 });
     }
+    // Rolling renewal: extend session on each use
+    const renewed = { ...payload, expires: Date.now() + 30 * 24 * 60 * 60 * 1000 };
+    cookieStore.set("imagesnap_session", Buffer.from(JSON.stringify(renewed)).toString('base64'), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60,
+      path: "/",
+    });
     return NextResponse.json({ authenticated: true, user: payload });
   } catch (e) {
     return NextResponse.json({ authenticated: false, reason: "invalid" }, { status: 401 });

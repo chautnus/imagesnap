@@ -8,7 +8,7 @@ import { useAppData } from '@shared/hooks/useAppData';
 import { useI18n } from '@shared/lib/i18n';
 import { SubscriptionStatus } from '@shared/lib/types';
 import { APP_VERSION } from '@shared/lib/version';
-import { initAuthListener, handleStaffLogin } from './hooks/useAuthFlow';
+import { initAuthListener, handleStaffLogin, restoreSession } from './hooks/useAuthFlow';
 import { PublicRoutes } from './routes/PublicRoutes';
 
 export default function App() {
@@ -39,7 +39,12 @@ export default function App() {
 
     const handlers = { onSetUser: setUser, onSetIsAuthReady: setIsAuthReady, onSetView: setView, onSetSpreadsheetId: setSpreadsheetId, onSetSubStatus: setSubStatus, onSetIsStaff: setIsStaff, refreshData };
     let cleanup: (() => void) | undefined;
-    const runInit = () => { cleanup = initAuthListener(handlers); };
+    const runInit = async () => {
+      const restored = await restoreSession(handlers);
+      if (!restored) {
+        cleanup = initAuthListener(handlers);
+      }
+    };
     if (document.readyState === 'complete') { runInit(); } else {
       window.addEventListener('load', runInit);
       return () => window.removeEventListener('load', runInit);
