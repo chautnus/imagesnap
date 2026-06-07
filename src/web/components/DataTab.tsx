@@ -152,10 +152,10 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
             return (
               <button key={name}
                 onClick={() => { setSelectedProdName(name); setView('items'); }}
-                className="card p-3 flex items-center justify-between hover:border-accent group bg-white/5 border-transparent hover:border-line"
+                className="card p-3 flex items-center justify-between hover:border-accent hover:shadow-md group transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-black rounded-lg overflow-hidden border border-line">
+                  <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden border border-line">
                     <DriveImage url={firstImg || ''} className="w-full h-full object-cover" />
                   </div>
                   <div className="font-bold text-base text-left">{name}</div>

@@ -29,92 +29,87 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   categories, onSaveCategory, onDeleteCategory,
   toggleLang, lang, spreadsheetId, t, user, subStatus, onUpgrade, onLogout
 }) => {
-  return (
-    <div className="pb-24 p-6 flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-      </div>
+  const usagePct = Math.min(100, (subStatus.usage / subStatus.limit) * 100);
 
-      {/* Subscription Status */}
-      <div className="flex flex-col gap-4">
-        <h2 className="label-meta tracking-[0.3em]">PLAN_STATUS</h2>
-        <div className={`card p-6 flex flex-col gap-6 border-2 transition-all ${subStatus.isPro ? 'border-accent/30 bg-accent/[0.03]' : 'border-accent/20'}`}>
+  return (
+    <div className="pb-24 p-5 flex flex-col gap-6">
+
+      {/* Plan Status */}
+      <div className="flex flex-col gap-3">
+        <h2 className="label-meta">Plan Status</h2>
+        <div className={`card p-5 flex flex-col gap-5 border-2 ${subStatus.isPro ? 'border-accent/40 bg-accent/[0.03]' : 'border-line'}`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-5">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${subStatus.isPro ? 'bg-accent text-bg shadow-[4px_4px_0_rgba(0,0,0,0.5)]' : 'bg-accent/10 text-accent'}`}>
-                {subStatus.isPro ? <Crown size={28} /> : <CreditCard size={28} />}
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${subStatus.isPro ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
+                {subStatus.isPro ? <Crown size={24} /> : <CreditCard size={24} />}
               </div>
-              <div className="flex flex-col">
-                <span className="font-display font-black text-2xl tracking-tighter uppercase leading-none mb-1">
-                  {subStatus.isPro ? 'PRO_LIFETIME' : 'FREE_TIER'}
+              <div className="flex flex-col gap-0.5">
+                <span className="font-bold text-lg text-ink">
+                  {subStatus.isPro ? 'Pro Lifetime' : 'Free Tier'}
                 </span>
-                <span className="text-[12px] font-mono font-black text-accent">{user?.email || 'OFFLINE_USER'}</span>
+                <span className="text-sm text-muted">{user?.email || 'Offline'}</span>
                 {subStatus.appId && (
-                  <span className="text-[9px] font-mono opacity-30 mt-0.5">APP_ID: {subStatus.appId}</span>
+                  <span className="text-[9px] font-mono text-muted/50">ID: {subStatus.appId}</span>
                 )}
               </div>
             </div>
             {!subStatus.isPro && (
-              <button onClick={onUpgrade} className="btn btn-primary text-[12px] py-2 px-4 font-black shadow-[4px_4px_0_#000] tracking-widest">
-                UPGRADE
+              <button onClick={onUpgrade} className="btn btn-primary text-sm py-2 px-4">
+                Upgrade
               </button>
             )}
           </div>
 
-          <div className="flex flex-col gap-3 pt-2 border-t border-line/10">
-            <div className="flex justify-between items-end">
-              <div className="flex flex-col gap-1">
-                <span className="label-meta text-accent opacity-60">CURRENT_USAGE</span>
-                <span className="text-3xl font-black font-mono tracking-tighter">
-                  {subStatus.isPro ? '∞' : subStatus.usage}
-                </span>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className="label-meta opacity-60 text-right">PLAN_LIMIT</span>
-                <span className="text-xl font-bold font-mono text-muted">
-                  {subStatus.isPro ? 'UNLIMITED' : `/ ${subStatus.limit} SNAPS`}
-                </span>
-              </div>
+          <div className="flex flex-col gap-2 pt-4 border-t border-line">
+            <div className="flex justify-between items-baseline">
+              <span className="label-meta">Usage</span>
+              <span className="text-sm font-semibold text-ink">
+                {subStatus.isPro ? '∞ Unlimited' : `${subStatus.usage} / ${subStatus.limit} snaps`}
+              </span>
             </div>
-            <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border-2 border-white/5">
+            <div className="w-full h-2 bg-line rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-1000 ${subStatus.isPro ? 'w-full bg-accent shadow-[0_0_10px_rgba(0,120,215,0.5)]' : 'bg-accent shadow-[0_0_10px_rgba(0,120,215,0.5)]'}`}
-                style={{ width: subStatus.isPro ? '100%' : `${Math.min(100, (subStatus.usage / subStatus.limit) * 100)}%` }}
+                className="h-full bg-accent rounded-full transition-all duration-700"
+                style={{ width: subStatus.isPro ? '100%' : `${usagePct}%` }}
               />
             </div>
-
-            {subStatus.isAdmin && (
-              <button
-                onClick={async () => {
-                  const token = getAccessToken();
-                  if (!token || !spreadsheetId) return;
-                  await fetch(`${API_BASE_URL}/api/admin/set-master-workspace`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminEmail: user.email, spreadsheetId, accessToken: token })
-                  });
-                  alert("Workspace Published! Staff can now save to your Drive.");
-                }}
-                className="w-full py-3 bg-accent text-bg font-black uppercase tracking-widest text-[10px] rounded shadow-[4px_4px_0_#000] hover:scale-[0.98] transition-transform"
-              >
-                PUBLISH AS MASTER WORKSPACE
-              </button>
-            )}
           </div>
+
+          {subStatus.isAdmin && (
+            <button
+              onClick={async () => {
+                const token = getAccessToken();
+                if (!token || !spreadsheetId) return;
+                await fetch(`${API_BASE_URL}/api/admin/set-master-workspace`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ adminEmail: user.email, spreadsheetId, accessToken: token })
+                });
+                alert("Workspace Published! Staff can now save to your Drive.");
+              }}
+              className="btn btn-primary w-full text-sm font-semibold"
+            >
+              Publish as Master Workspace
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Language Toggle */}
-      <div className="card p-6 flex items-center justify-between border-2 border-accent/20">
-        <div className="flex items-center gap-4">
-          <Globe size={24} className="text-accent" />
-          <div className="flex flex-col">
-            <span className="text-lg font-display font-black">LOCALIZATION</span>
-            <span className="label-meta">Current: {lang === 'en' ? 'EN_US' : 'VI_VN'}</span>
+      {/* Language */}
+      <div className="flex flex-col gap-3">
+        <h2 className="label-meta">Language</h2>
+        <div className="card p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Globe size={20} className="text-accent" />
+            <div>
+              <span className="font-semibold text-ink text-sm">Localization</span>
+              <p className="text-xs text-muted">Current: {lang === 'en' ? 'English' : 'Tiếng Việt'}</p>
+            </div>
           </div>
+          <button onClick={toggleLang} className="btn btn-secondary text-sm py-2 px-4">
+            Switch
+          </button>
         </div>
-        <button onClick={toggleLang} className="btn btn-primary text-[12px] font-black tracking-widest">
-          SWITCH_LANG
-        </button>
       </div>
 
       {/* User Directory (Admin only) */}
@@ -133,10 +128,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       {/* Logout */}
       <button
         onClick={onLogout}
-        className="btn btn-secondary mt-12 border-red-900/30 text-red-500 flex items-center justify-center gap-3 grayscale hover:grayscale-0 bg-red-500/5"
+        className="btn btn-secondary mt-8 border-red-200 text-red-500 flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"
       >
-        <LogOut size={18} />
-        TERMINATE_SESSION
+        <LogOut size={16} />
+        Sign Out
       </button>
     </div>
   );
