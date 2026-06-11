@@ -23,8 +23,8 @@ const COLS = [
   ]},
   { heading: 'Legal', links: [
     { href: '/privacy', label: 'Privacy Policy' },
-    { href: '#',        label: 'Terms of Service' },
-    { href: '#',        label: 'Cookie Policy' },
+    { href: '/terms',          label: 'Terms of Service' },
+    { href: '/privacy#cookies', label: 'Cookie Policy' },
   ]},
 ];
 
