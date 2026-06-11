@@ -20,7 +20,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void; 
       {/* Hero */}
       <header className="max-w-6xl mx-auto px-6 pt-32 pb-20 text-center">
         <h1 className={`text-6xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9] ${PUB.textPrimary}`}>
-          Your pictures are <span className={`${PUB.textAccent} italic`}>worthless</span> without context.
+          Save web images to Google Drive — with <span className={`${PUB.textAccent} italic`}>context</span> that lasts.
         </h1>
         <p className={`text-xl mb-12 max-w-3xl mx-auto font-medium leading-relaxed ${PUB.textMuted}`}>
           ImageSnap captures any image with your <span className={PUB.textPrimary}>designed context</span> — the fields you choose, the categories you define, the details that make each picture useful forever.
@@ -136,7 +136,7 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void; 
 
       {/* FAQ */}
       <section id="faq" className="max-w-4xl mx-auto px-6 py-32">
-        <h2 className={`text-4xl font-black mb-16 text-center italic ${PUB.textPrimary}`}>Questions?</h2>
+        <h2 className={`text-4xl font-black mb-16 text-center italic ${PUB.textPrimary}`}>Frequently Asked Questions</h2>
         <div className="space-y-4">
           {[
             { q: "What is \"designed context\"?", a: "It means you decide what information gets attached to each image. ImageSnap auto-fills what it can from the page, but you can add any custom fields — project name, rating, supplier, status, notes — whatever makes the image useful for your work." },

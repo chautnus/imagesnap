@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Google Drive Chrome Extension — ImageSnap Integration",
   description: "Save images from any website directly to Google Drive with custom metadata — all in one click. The best Drive Chrome extension for research teams.",
   alternates: { canonical: "https://www.imagesnap.cloud/integrations/google-drive" },
+  robots: { index: false, follow: false },
   openGraph: {
     title: "Google Drive Chrome Extension — ImageSnap Integration",
     description: "Save images from any website directly to Google Drive with structured metadata. The best Drive integration for researchers.",

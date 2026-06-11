@@ -13,7 +13,7 @@ export const PricingPage = ({ onLogin }: { onLogin?: () => void }) => (
       />
 
       <div className="text-center mb-24">
-        <h1 className={`text-5xl md:text-7xl font-black mb-6 tracking-tight ${PUB.textPrimary}`}>Transparent Pricing.</h1>
+        <h1 className={`text-5xl md:text-7xl font-black mb-6 tracking-tight ${PUB.textPrimary}`}>ImageSnap Pricing — Free &amp; Pro Plans.</h1>
         <p className={`text-xl max-w-2xl mx-auto font-medium ${PUB.textMuted}`}>No hidden fees. Scale your asset management as your business grows.</p>
       </div>
 

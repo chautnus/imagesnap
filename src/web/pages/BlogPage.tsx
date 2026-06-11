@@ -19,7 +19,7 @@ export const BlogPage = () => (
 
       <div className="text-center mb-20">
         <h1 className={`text-5xl md:text-7xl font-black mb-6 tracking-tight ${PUB.textPrimary}`}>
-          The <span className={`${PUB.textAccent} italic`}>Context</span> Blog
+          ImageSnap <span className={`${PUB.textAccent} italic`}>Blog</span>
         </h1>
         <p className={`text-xl max-w-2xl mx-auto font-medium ${PUB.textMuted}`}>
           Insights on product research, market intelligence, and building better workflows.
