@@ -3,24 +3,36 @@ import React from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { requestToken } from '@shared/lib/google-auth';
 import { PublicPageShell } from '../components/PublicPageShell';
+import { SEO } from '../components/SEO';
 import { PUB } from '../styles/theme';
 
 interface SEOPageProps {
   title: string;
   description: string;
   headline: React.ReactNode;
-  subheadline: React.ReactNode;
+  subheadline?: React.ReactNode;
   content: React.ReactNode;
   ctaText?: string;
   onCtaClick?: () => void;
+  keywords?: string;
+  faqItems?: { q: string; a: string }[];
+  blogPosting?: {
+    headline: string;
+    datePublished: string;
+    dateModified?: string;
+    author?: string;
+    url: string;
+  };
 }
 
 export const SEOPage: React.FC<SEOPageProps> = ({
   title, description, headline, subheadline, content,
-  ctaText = "Get Started for Free", onCtaClick
+  ctaText = "Get Started for Free", onCtaClick,
+  keywords, faqItems, blogPosting,
 }) => {
   return (
     <PublicPageShell>
+      <SEO title={title} description={description} keywords={keywords} faqItems={faqItems} blogPosting={blogPosting} />
       <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
 
         <div className="text-center mb-20">

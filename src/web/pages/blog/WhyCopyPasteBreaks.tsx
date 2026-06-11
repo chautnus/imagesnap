@@ -3,13 +3,14 @@ import { SEOPage } from '../SEOPage';
 
 export const BlogPost_WhyCopyPasteBreaks = ({ onLogin }: { onLogin?: () => void }) => {
   return (
-    <SEOPage 
+    <SEOPage
       title="Why Copy-Paste Research Breaks at Scale"
       description="Copy-paste product research works for 10 products. At 100, it falls apart. Here's why — and what to do instead."
       headline={<>Why Copy-Paste Research Breaks at <span className="text-accent italic">Scale</span></>}
       subheadline="Every product researcher starts with copy-paste. But at scale, the mistakes compound and the time cost explodes. Here's how to fix your workflow."
       onCtaClick={onLogin}
       ctaText="Try a faster workflow"
+      blogPosting={{ headline: "Why Copy-Paste Research Breaks at Scale", datePublished: "2026-05-05", author: "ImageSnap Founder", url: "https://www.imagesnap.cloud/blog/why-copy-paste-research-breaks-at-scale" }}
       content={
         <div className="space-y-16">
           <section>

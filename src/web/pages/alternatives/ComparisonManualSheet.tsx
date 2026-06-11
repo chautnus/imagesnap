@@ -1,14 +1,21 @@
 import React from 'react';
 import { SEOPage } from '../SEOPage';
 
+const FAQ_ITEMS = [
+  { q: "Does ImageSnap replace my Google Sheet?", a: "No. ImageSnap writes directly into your Google Sheet. It replaces the copy-paste process, not the spreadsheet." },
+  { q: "Can I keep my existing Sheet columns?", a: "Yes. You define your own fields — ImageSnap captures into the structure you set up." },
+  { q: "Is my data stored on ImageSnap servers?", a: "No. Images go to your Google Drive. Context goes to your Google Sheet. We don't store your research data." },
+];
+
 export const ComparisonManualSheet = ({ onLogin }: { onLogin?: () => void }) => {
   return (
-    <SEOPage 
-      title="Still Copy-Pasting Product Data into Google Sheets?"
-      description="Stop wasting hours on manual copy-paste. ImageSnap captures product images and details into your Google Sheet in one click. Compare the two workflows."
+    <SEOPage
+      title="ImageSnap vs Manual Google Sheets — Stop Copy-Pasting Product Data"
+      description="Stop wasting hours on manual copy-paste. ImageSnap captures product images and details into your Google Sheet in one click — 30x faster than manual entry. Compare the two workflows."
       headline={<>Still <span className="text-accent italic">Copy-Pasting</span> Product Data?</>}
       subheadline="For 50 products, that's 4+ hours of your day — doing work that adds zero insight to your research. There's a faster way."
       onCtaClick={onLogin}
+      faqItems={FAQ_ITEMS}
       content={
         <div className="space-y-16">
           <section>
@@ -113,11 +120,7 @@ export const ComparisonManualSheet = ({ onLogin }: { onLogin?: () => void }) => 
           <section id="faq" className="space-y-6">
             <h2 className="text-3xl font-black mb-6">FAQ</h2>
             <div className="space-y-4">
-              {[
-                { q: "Does ImageSnap replace my Google Sheet?", a: "No. ImageSnap writes directly into your Google Sheet. It replaces the copy-paste process, not the spreadsheet." },
-                { q: "Can I keep my existing Sheet columns?", a: "Yes. You define your own fields — ImageSnap captures into the structure you set up." },
-                { q: "Is my data stored on ImageSnap servers?", a: "No. Images go to your Google Drive. Context goes to your Google Sheet. We don't store your research data." }
-              ].map((item, i) => (
+              {FAQ_ITEMS.map((item, i) => (
                 <details key={i} className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 group">
                   <summary className="font-bold cursor-pointer list-none flex justify-between items-center text-lg">
                     {item.q}

@@ -3,13 +3,14 @@ import { SEOPage } from '../SEOPage';
 
 export const BlogPost_BuildingDatabase = ({ onLogin }: { onLogin?: () => void }) => {
   return (
-    <SEOPage 
+    <SEOPage
       title="Building a Competitor Database Without a Scraper"
       description="You don't need a web scraper to track competitors. Here's how to build a structured competitor database using your browser and Google Sheets."
       headline={<>Building a Competitor Database <span className="text-accent italic">Without</span> a Scraper</>}
       subheadline="You don't need a data engineer or a complex scraping setup to track your competitors. All you need is a browser, a Google Sheet, and a system."
       onCtaClick={onLogin}
       ctaText="Start your competitor database"
+      blogPosting={{ headline: "Building a Competitor Database Without a Scraper", datePublished: "2026-05-03", author: "ImageSnap Founder", url: "https://www.imagesnap.cloud/blog/building-competitor-database-without-scraper" }}
       content={
         <div className="space-y-16">
           <section>

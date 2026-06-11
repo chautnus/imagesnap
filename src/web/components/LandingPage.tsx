@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from 'react';
 import { ArrowRight, Share2, Database, ShieldCheck, ChevronDown, Check } from 'lucide-react';
-import { APP_VERSION } from '@shared/lib/version';
 import { PublicPageShell } from './PublicPageShell';
 import { LoginModal } from './landing/LoginModal';
 import { PUB } from '../styles/theme';
@@ -155,12 +154,6 @@ export const LandingPage = ({ onLogin, t, variant = 0 }: { onLogin: () => void; 
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className={`max-w-6xl mx-auto px-6 py-12 border-t ${PUB.divider} text-center`}>
-        <p className={`text-sm font-bold uppercase tracking-widest ${PUB.textMuted}`}>
-          © 2026 IMAGESNAP CLOUD. ALL RIGHTS RESERVED. <span className="ml-4 opacity-50">{APP_VERSION}</span>
-        </p>
-      </footer>
     </PublicPageShell>
   );
 };

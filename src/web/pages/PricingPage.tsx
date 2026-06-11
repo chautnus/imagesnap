@@ -8,8 +8,8 @@ export const PricingPage = ({ onLogin }: { onLogin?: () => void }) => (
   <PublicPageShell>
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
       <SEO
-        title="Pricing — ImageSnap.cloud"
-        description="Choose the plan that's right for you. Start for free and upgrade as your team grows."
+        title="ImageSnap Pricing — Free & Pro Plans | Google Drive Image Capture"
+        description="Start for free with 100 image captures, or go Pro for unlimited snaps, batch uploads, and priority support. No hidden fees — your data stays in your own Google Drive."
       />
 
       <div className="text-center mb-24">

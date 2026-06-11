@@ -14,12 +14,13 @@ interface SEOProps {
     author?: string;
     url: string;
   };
+  faqItems?: { q: string; a: string }[];
 }
 
 const BASE_URL = "https://www.imagesnap.cloud";
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
 
-export const SEO: React.FC<SEOProps> = ({ title, description, keywords, ogImage, blogPosting }) => {
+export const SEO: React.FC<SEOProps> = ({ title, description, keywords, ogImage, blogPosting, faqItems }) => {
   const canonical = `${BASE_URL}${typeof window !== 'undefined' ? window.location.pathname : '/'}`;
   const resolvedOgImage = ogImage || DEFAULT_OG_IMAGE;
 
@@ -47,6 +48,16 @@ export const SEO: React.FC<SEOProps> = ({ title, description, keywords, ogImage,
     "mainEntityOfPage": { "@type": "WebPage", "@id": blogPosting.url }
   }) : null;
 
+  const faqSchema = faqItems && faqItems.length > 0 ? JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map(item => ({
+      "@type": "Question",
+      "name": item.q,
+      "acceptedAnswer": { "@type": "Answer", "text": item.a }
+    }))
+  }) : null;
+
   return (
     <Helmet>
       <title>{title}</title>
@@ -68,8 +79,8 @@ export const SEO: React.FC<SEOProps> = ({ title, description, keywords, ogImage,
       <meta property="twitter:description" content={description} />
       <meta property="twitter:image" content={resolvedOgImage} />
 
-      {/* BlogPosting schema (injected when prop is provided) */}
       {blogSchema && <script type="application/ld+json">{blogSchema}</script>}
+      {faqSchema && <script type="application/ld+json">{faqSchema}</script>}
     </Helmet>
   );
 };

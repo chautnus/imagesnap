@@ -15,7 +15,7 @@ const posts = [
 export const BlogPage = () => (
   <PublicPageShell>
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-      <SEO title="Blog — ImageSnap" description="Tips and tricks for product research, competitive intelligence, and visual organization." />
+      <SEO title="Blog — ImageSnap | Product Research & Competitive Intelligence" description="Insights on product research, competitive intelligence, and building faster visual workflows. Practical guides for e-commerce researchers and marketers." />
 
       <div className="text-center mb-20">
         <h1 className={`text-5xl md:text-7xl font-black mb-6 tracking-tight ${PUB.textPrimary}`}>

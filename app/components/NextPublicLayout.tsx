@@ -11,7 +11,7 @@ interface PublicLayoutProps {
 
 export const NextPublicLayout: React.FC<PublicLayoutProps> = ({ onLogin, children }) => {
   return (
-    <div className="min-h-screen bg-bg text-white selection:bg-accent/30 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-accent/30 font-sans overflow-x-hidden">
       <NextPublicHeader onLogin={onLogin} />
       <main>
         {children}
