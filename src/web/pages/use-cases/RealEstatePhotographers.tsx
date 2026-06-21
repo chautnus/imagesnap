@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const RealEstatePhotographers = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="ImageSnap for Real Estate Photographers: Organize Property Photos — ImageSnap"
-      description="Deliver property photos to agents and clients faster. ImageSnap organizes real estate shoots by address, MLS number, and room type — auto-saved to Google Drive and logged in Sheets."
+
       headline={<>Property photos, <span className="text-accent italic">delivered on time.</span></>}
       subheadline="Tag each shot with address, MLS number, and room type at capture time. Every photo lands in the right Drive folder automatically — no renaming, no sorting, no lost files."
       onCtaClick={onLogin}
@@ -102,7 +101,7 @@ export const RealEstatePhotographers = ({ onLogin }: { onLogin?: () => void }) =
           </section>
 
           <section id="faq" className="space-y-4">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             {[
               { q: "Does ImageSnap work for video walkthroughs too?", a: "ImageSnap currently focuses on image capture and organization. For video files, you can still create the same folder structure in Google Drive manually and log the videos as rows in your Sheet — but the capture tool itself is image-specific." },
               { q: "Can I give agents direct access to upload requests or notes?", a: "Agents can be shared on the Google Sheet with comment or edit permissions. They can add notes, flag photos for reshoot, or mark delivery confirmed — all within the familiar Sheets interface." },

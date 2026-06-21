@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const SwipeFileTool = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="The Swipe File Tool Marketers Have Been Waiting For"
-      description="Stop losing marketing inspiration in screenshot folders. ImageSnap turns your swipe file into a structured, searchable database with images in Drive and data in Sheets."
+
       headline={<>A Swipe File Tool That Actually <span className="text-accent italic">Works.</span></>}
       subheadline="Stop digital hoarding. Transform your inspiration into a structured database of marketing intelligence you can search, filter, and reuse."
       onCtaClick={onLogin}
@@ -111,7 +110,7 @@ export const SwipeFileTool = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-6">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
                 { q: "Can I capture ads from social media?", a: "Yes. If you can see it in your browser, you can capture it. Facebook ads, Instagram, Twitter — images save to Drive, context to Sheets." },

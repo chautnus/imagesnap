@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const ComparisonScrapingAPI = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="Do You Actually Need a Scraping API?"
-      description="Scraping APIs like Apify and ScrapingBee are powerful — but expensive and complex. ImageSnap offers a simpler path for curated product research. Compare both."
+
       headline={<>Do You Actually Need a <span className="text-accent italic">Scraping API?</span></>}
       subheadline="Don't use a rocket ship to go to the grocery store. For curated research, simplicity beats complexity every time."
       onCtaClick={onLogin}
@@ -110,7 +109,7 @@ export const ComparisonScrapingAPI = ({ onLogin }: { onLogin?: () => void }) => 
           </section>
 
           <section id="faq" className="space-y-6">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
                 { q: "Is ImageSnap an API?", a: "No. ImageSnap is a browser extension. There's no API to configure, no webhooks to set up, and no coding required." },

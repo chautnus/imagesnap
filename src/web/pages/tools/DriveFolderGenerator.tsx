@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const DriveFolderGenerator = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="Google Drive Folder Structure Generator — ImageSnap"
-      description="Automatically generate consistent Google Drive folder structures for every new project, client, or shoot. ImageSnap creates the right folders on first capture — no manual setup required."
+
       headline={<>The right folder structure, <span className="text-accent italic">every time.</span></>}
       subheadline="Stop creating Drive folders by hand. ImageSnap generates your project folder structure automatically when you start a new capture — based on rules you define once."
       onCtaClick={onLogin}
@@ -102,7 +101,7 @@ export const DriveFolderGenerator = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-4">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             {[
               { q: "Can I change the folder structure template after I've already started capturing?", a: "Yes. You can update the template at any time. Future captures will use the new template. Existing captures stay in their original folders — ImageSnap won't move files that are already in Drive." },
               { q: "What happens if two team members capture at the same time?", a: "Google Drive handles concurrent folder creation gracefully — if both users trigger folder creation at the same moment, Drive deduplicates and both captures land in the same folder." },

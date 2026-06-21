@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const ComparisonCustomScraper = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="Tired of Maintaining a Product Scraper?"
-      description="Custom scrapers break, cost money to maintain, and risk policy violations. ImageSnap offers human-guided capture without the overhead. Compare both approaches."
+
       headline={<>Tired of Maintaining a <span className="text-accent italic">Product Scraper?</span></>}
       subheadline="Scrapers break. Proxies cost money. Maintenance is a headache. There's a better approach for curated research."
       onCtaClick={onLogin}
@@ -133,7 +132,7 @@ export const ComparisonCustomScraper = ({ onLogin }: { onLogin?: () => void }) =
           </section>
 
           <section id="faq" className="space-y-6">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
                 { q: "Is ImageSnap just a scraper with a UI?", a: "No. A scraper sends automated requests. ImageSnap works inside your browser session — it captures data from pages you're already viewing normally." },

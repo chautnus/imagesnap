@@ -10,8 +10,7 @@ const FAQ_ITEMS = [
 export const ComparisonManualSheet = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="ImageSnap vs Manual Google Sheets — Stop Copy-Pasting Product Data"
-      description="Stop wasting hours on manual copy-paste. ImageSnap captures product images and details into your Google Sheet in one click — 30x faster than manual entry. Compare the two workflows."
+
       headline={<>Still <span className="text-accent italic">Copy-Pasting</span> Product Data?</>}
       subheadline="For 50 products, that's 4+ hours of your day — doing work that adds zero insight to your research. There's a faster way."
       onCtaClick={onLogin}
@@ -118,7 +117,7 @@ export const ComparisonManualSheet = ({ onLogin }: { onLogin?: () => void }) => 
           </section>
 
           <section id="faq" className="space-y-6">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {FAQ_ITEMS.map((item, i) => (
                 <details key={i} className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 group">

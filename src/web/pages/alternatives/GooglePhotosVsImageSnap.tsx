@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const GooglePhotosVsImageSnap = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="Google Photos vs ImageSnap: Which is Right for Your Team? — ImageSnap"
-      description="Google Photos is great for personal memories. ImageSnap is built for professional workflows — web capture, structured metadata, Google Sheets logging, and Drive organization by project or client."
+
       headline={<>Google Photos is for memories. <span className="text-accent italic">ImageSnap is for work.</span></>}
       subheadline="Both sync to Google. Only one lets you attach custom context to every image, organize by project, log to Sheets, and capture directly from any website."
       onCtaClick={onLogin}
@@ -94,7 +93,7 @@ export const GooglePhotosVsImageSnap = ({ onLogin }: { onLogin?: () => void }) =
           </section>
 
           <section id="faq" className="space-y-4">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             {[
               { q: "Can ImageSnap replace Google Photos for my team?", a: "For professional use cases — yes. For personal phone photo backup, Google Photos is still the right tool. ImageSnap is designed for structured work workflows, not personal memory storage." },
               { q: "Does ImageSnap use Google Drive storage quota?", a: "Yes. Images captured by ImageSnap are stored in your Google Drive and count toward your storage quota, like any other Drive file." },

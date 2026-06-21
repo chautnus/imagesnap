@@ -4,9 +4,8 @@ import { SEOPage } from '../SEOPage';
 export const BulkPhotoRenamer = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="Bulk Photo Renamer: Batch Rename Files for Google Drive — ImageSnap"
-      description="Stop renaming photos one by one. ImageSnap captures images with structured metadata at the source — so your files are named correctly from the start, not fixed after the fact."
-      headline={<>Never rename a photo <span className="text-accent italic">again.</span></>}
+
+      headline={<>Bulk Photo Renamer for Google Drive — <span className="text-accent italic">Never Name a File Again.</span></>}
       subheadline="The best renaming strategy is capturing with the right context from the start. ImageSnap tags every image with your metadata fields at capture — the filename and log are correct before the file hits Drive."
       onCtaClick={onLogin}
       ctaText="Try ImageSnap free"
@@ -101,7 +100,7 @@ export const BulkPhotoRenamer = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-4">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             {[
               { q: "Can ImageSnap rename existing files already in Google Drive?", a: "ImageSnap manages new captures going forward — it doesn't retroactively rename or reorganize existing Drive files. For existing files, use a standalone bulk rename tool, then use ImageSnap for all new captures." },
               { q: "Does ImageSnap set the actual filename in Google Drive?", a: "The file is saved to Drive with a system-generated name. The meaningful metadata — SKU, client, project — lives in the Google Sheet row alongside a link to the file. This separation means the Sheet is the searchable index, not the filename." },

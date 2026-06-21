@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Team Collaboration on Google Drive & Sheets — ImageSnap",
   description: "Share product research and visual databases with your team via Google Drive. ImageSnap keeps everyone on the same structured data — no extra tools needed.",
   alternates: { canonical: "https://www.imagesnap.cloud/features/team-collaboration" },
+  robots: { index: false, follow: false },
   openGraph: {
     title: "Team Collaboration on Google Drive & Sheets — ImageSnap",
     description: "Share structured image databases with your team using Google Drive and Sheets — tools they already use.",

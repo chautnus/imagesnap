@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const PicsioAlternative = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="Pics.io Alternative: Simpler DAM Built on Google Drive — ImageSnap"
-      description="Looking for a Pics.io alternative? ImageSnap gives you structured asset management on top of Google Drive — with web capture, custom metadata fields, and Sheets logging. No new platform to learn."
+
       headline={<>DAM without the <span className="text-accent italic">overhead.</span></>}
       subheadline="Pics.io is a full DAM platform. If you live in Google Drive and need to capture, tag, and organize assets fast — ImageSnap does that without the onboarding, the pricing tiers, or the extra tool to maintain."
       onCtaClick={onLogin}
@@ -103,7 +102,7 @@ export const PicsioAlternative = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-4">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             {[
               { q: "Can ImageSnap replace Pics.io for a team of 10+?", a: "For teams whose primary need is capturing and tagging assets from the web into an organized Google Drive library — yes. If you need AI duplicate detection, multi-cloud ingestion, or enterprise compliance features, you'll want to stay on a full DAM." },
               { q: "What happens to my existing Pics.io assets if I switch?", a: "Your Pics.io assets are separate from ImageSnap. ImageSnap adds new assets to your Google Drive going forward. You can export your existing assets from Pics.io and drop them into Drive manually — or run both in parallel during a transition." },

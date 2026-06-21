@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const FieldInspections = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="Field Inspection Photo Documentation — ImageSnap"
-      description="Capture site photos directly to Google Drive with location, inspector, and defect data attached. ImageSnap turns field inspection documentation into a searchable, auditable record — no app downloads required."
+
       headline={<>Field photos that <span className="text-accent italic">document themselves.</span></>}
       subheadline="Capture site conditions, tag with location and inspector name, and have every photo land in the right Drive folder — with a full audit log in Google Sheets."
       onCtaClick={onLogin}
@@ -80,7 +79,7 @@ export const FieldInspections = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-4">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             {[
               { q: "Does ImageSnap work offline during site inspections?", a: "ImageSnap requires an internet connection to capture and upload photos in real time. For sites with poor connectivity, we recommend capturing photos locally and uploading via the web app when back on network. Offline capture is on the roadmap." },
               { q: "Can multiple inspectors work on the same site project?", a: "Yes. Multiple team members can be added to the same Google Drive folder and Sheet. Each capture is logged with the inspector's account name, so you always know who documented what." },

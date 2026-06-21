@@ -37,9 +37,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/use-cases/field-inspections', priority: 0.7, lastMod: '2026-05-17' },
 
     { path: '/features/web-image-import', priority: 0.7, lastMod: '2026-05-20' },
-    { path: '/features/auto-folder-organization', priority: 0.6, lastMod: '2026-05-20' },
-    { path: '/features/team-collaboration', priority: 0.6, lastMod: '2026-05-20' },
-    { path: '/features/metadata-auto-fill', priority: 0.6, lastMod: '2026-05-20' },
+
 
     { path: '/tools/exif-viewer', priority: 0.7, lastMod: '2026-05-17' },
     { path: '/tools/bulk-photo-renamer', priority: 0.7, lastMod: '2026-05-17' },

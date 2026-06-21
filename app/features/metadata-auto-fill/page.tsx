@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Metadata Auto-fill from Any Webpage — ImageSnap",
   description: "ImageSnap auto-fills product title, price, description, and source URL from the page you're viewing. Skip manual data entry — capture with context pre-filled.",
   alternates: { canonical: "https://www.imagesnap.cloud/features/metadata-auto-fill" },
+  robots: { index: false, follow: false },
   openGraph: {
     title: "Metadata Auto-fill from Any Webpage — ImageSnap",
     description: "Auto-fill product title, price, and description from any webpage. Zero manual data entry.",

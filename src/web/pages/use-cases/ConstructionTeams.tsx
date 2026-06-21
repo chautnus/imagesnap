@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const ConstructionTeams = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="Photo Management for Construction Teams — ImageSnap.cloud"
-      description="Streamline construction project documentation with ImageSnap. Capture job site photos, tag them with project IDs, and sync to Google Drive instantly."
+
       headline={<>Built for the <span className="text-accent italic">Job Site</span>.</>}
       subheadline="Capture progress, document issues, and sync with the office in real-time. No more chasing down memory cards or messy WhatsApp threads."
       onCtaClick={onLogin}

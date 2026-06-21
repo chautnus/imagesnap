@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const CompetitorTracking = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="Competitor Tracking Beyond Keyword Tools"
-      description="Keyword tools show trends. ImageSnap helps you track what competitors actually do — products, pricing, visuals, positioning. Build a competitor database you own."
+
       headline={<>Competitor Tracking <span className="text-accent italic">Beyond</span> Keyword Tools</>}
       subheadline="Keyword tools show search trends. ImageSnap tracks what competitors actually do on their pages. Build a database you own, not just a list of keywords."
       onCtaClick={onLogin}
@@ -119,7 +118,7 @@ export const CompetitorTracking = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-6">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
                 { q: "Do I need to be technical to use this?", a: "No. ImageSnap is a browser extension. You click a button. Data goes to your Google Sheet. If you can use Sheets, you can use ImageSnap." },

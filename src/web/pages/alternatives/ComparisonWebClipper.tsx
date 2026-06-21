@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const ComparisonWebClipper = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage 
-      title="Web Clippers Save Pages. ImageSnap Saves Structured Data."
-      description="Notion Web Clipper, Pinterest, and Eagle save content — but not structured data. ImageSnap captures images + your custom context into Google Sheets. Compare them."
+
       headline={<>Web Clippers Save <span className="text-accent italic">Pages</span>. ImageSnap Saves <span className="text-accent italic">Structured Data</span>.</>}
       subheadline="The problem isn't saving. It's saving without context. Stop clipping and start capturing data that stays useful forever."
       onCtaClick={onLogin}
@@ -127,7 +126,7 @@ export const ComparisonWebClipper = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-6">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {[
                 { q: "Can I use ImageSnap alongside Notion?", a: "Yes. Many users keep Notion for notes and general knowledge, and use ImageSnap specifically for product research that needs structured data and image organization." },

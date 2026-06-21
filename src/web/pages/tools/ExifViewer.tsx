@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const ExifViewer = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="Free Online EXIF Viewer: Inspect Image Metadata — ImageSnap"
-      description="View hidden EXIF metadata in any image. Inspect camera settings, GPS location, and timestamps for free — no upload required."
+
       headline={<>See everything <span className="text-accent italic">hidden in your photos.</span></>}
       subheadline="EXIF data tells you when a photo was taken, where, and with what settings. Most people never see it. ImageSnap surfaces it automatically on every capture."
       onCtaClick={onLogin}
@@ -99,7 +98,7 @@ export const ExifViewer = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-4">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             {[
               { q: "Does ImageSnap read EXIF from web-captured images?", a: "Web-captured images (screenshots or images captured from a website URL) typically don't retain the original camera EXIF data — that's embedded at camera capture time. However, ImageSnap logs its own capture timestamp, source URL, and user metadata for every capture." },
               { q: "Can I strip EXIF data before uploading to Drive?", a: "ImageSnap doesn't modify image files — it stores them as-is in your Google Drive. To strip EXIF before storage, pre-process images with a tool like ExifTool before uploading through ImageSnap." },

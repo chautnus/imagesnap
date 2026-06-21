@@ -7,8 +7,8 @@ import { SEO } from '../components/SEO';
 import { PUB } from '../styles/theme';
 
 interface SEOPageProps {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   headline: React.ReactNode;
   subheadline?: React.ReactNode;
   content: React.ReactNode;
@@ -32,7 +32,7 @@ export const SEOPage: React.FC<SEOPageProps> = ({
 }) => {
   return (
     <PublicPageShell>
-      <SEO title={title} description={description} keywords={keywords} faqItems={faqItems} blogPosting={blogPosting} />
+      {title && <SEO title={title} description={description ?? ''} keywords={keywords} faqItems={faqItems} blogPosting={blogPosting} />}
       <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
 
         <div className="text-center mb-20">

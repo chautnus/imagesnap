@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const EcommerceStudios = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="E-commerce Product Photo Management for Studios — ImageSnap"
-      description="Stop losing product shots in unstructured Drive folders. ImageSnap lets e-commerce studios capture product images with SKU, variant, and client data — auto-organized to Google Drive and logged in Sheets."
+
       headline={<>Product photos, <span className="text-accent italic">finally organized.</span></>}
       subheadline="Capture product shots from supplier sites, tag them with SKU, variant, and client data — and have everything land in the right Drive folder automatically."
       onCtaClick={onLogin}
@@ -94,7 +93,7 @@ export const EcommerceStudios = ({ onLogin }: { onLogin?: () => void }) => {
           </section>
 
           <section id="faq" className="space-y-4">
-            <h2 className="text-3xl font-black mb-6">FAQ</h2>
+            <h2 className="text-3xl font-black mb-6">Frequently Asked Questions</h2>
             {[
               { q: "Can multiple photographers share the same Drive folder and Sheet?", a: "Yes. Each team member connects their own ImageSnap account to the shared Google Drive folder and Sheet. Captures are logged with user attribution so you always know who captured what." },
               { q: "What if I need to upload photos taken on a camera, not from a website?", a: "ImageSnap's web app supports direct file uploads. You can drag and drop images from your desktop and attach the same metadata fields before they land in Drive." },
