@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const BlogPost_HumanGuided = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="Human-Guided Capture vs Full Automation"
-      description="Automated scraping and human-guided capture solve different problems. Here's an honest comparison of when each approach works best for product research."
+
       headline={<><span className="text-accent italic">Human-Guided</span> Capture vs Full Automation</>}
       subheadline="Data collection has a spectrum. On one end: manual copy-paste. On the other: fully automated bots. There's a third option that wins more often than you'd think."
       onCtaClick={onLogin}

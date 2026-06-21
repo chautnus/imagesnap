@@ -4,8 +4,7 @@ import { SEOPage } from '../SEOPage';
 export const BlogPost_WhyIBuild = ({ onLogin }: { onLogin?: () => void }) => {
   return (
     <SEOPage
-      title="Why I Built ImageSnap (And Why I Almost Didn't)"
-      description="The story behind ImageSnap — how a frustrating product research workflow led to a Chrome extension that saves images with context into Google Drive and Sheets."
+
       headline={<>Why I Built ImageSnap (And Why I Almost <span className="text-accent italic">Didn't</span>)</>}
       subheadline="I didn't set out to build a product. I set out to fix a workflow that was wasting my time. Here's the story behind the extension."
       onCtaClick={onLogin}

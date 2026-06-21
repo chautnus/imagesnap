@@ -19,6 +19,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/blog/building-competitor-database-without-scraper', priority: 0.7, lastMod: '2026-05-03' },
     { path: '/blog/human-guided-capture-vs-full-automation', priority: 0.7, lastMod: '2026-05-01' },
     { path: '/blog/why-i-built-imagesnap', priority: 0.7, lastMod: '2026-04-28' },
+    { path: '/blog/swipe-file-google-drive', priority: 0.7, lastMod: '2026-06-10' },
+    { path: '/blog/competitor-research-google-sheets', priority: 0.7, lastMod: '2026-06-12' },
+    { path: '/blog/product-research-workflow', priority: 0.7, lastMod: '2026-06-14' },
 
     { path: '/alternatives/companycam-alternative', priority: 0.8, lastMod: '2026-05-17' },
     { path: '/alternatives/pics-io-alternative', priority: 0.8, lastMod: '2026-05-17' },

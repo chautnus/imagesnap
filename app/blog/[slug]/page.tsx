@@ -5,6 +5,9 @@ import { BlogPost_WhyCopyPasteBreaks } from '@web/pages/blog/WhyCopyPasteBreaks'
 import { BlogPost_BuildingDatabase } from '@web/pages/blog/BuildingDatabase';
 import { BlogPost_HumanGuided } from '@web/pages/blog/HumanGuided';
 import { BlogPost_WhyIBuild } from '@web/pages/blog/WhyIBuild';
+import { BlogPost_SwipeFileGoogleDrive } from '@web/pages/blog/SwipeFileGoogleDrive';
+import { BlogPost_CompetitorResearchSheets } from '@web/pages/blog/CompetitorResearchGoogleSheets';
+import { BlogPost_ProductResearchWorkflow } from '@web/pages/blog/ProductResearchWorkflow';
 import { NextPublicLayout } from '../../components/NextPublicLayout';
 import { Metadata } from 'next';
 
@@ -28,6 +31,21 @@ const BLOG_POSTS: Record<string, { component: React.FC<any>, title: string, desc
     component: BlogPost_WhyIBuild,
     title: "Why I Built ImageSnap | Founder's Story",
     description: "The story behind ImageSnap: the tool that helps you capture context, not just pixels. Learn why I built a solution for ecommerce researchers to own their data."
+  },
+  'swipe-file-google-drive': {
+    component: BlogPost_SwipeFileGoogleDrive,
+    title: "How to Build a Swipe File in Google Drive | ImageSnap",
+    description: "Most swipe files die within a week. Here's the Google Drive + Sheets setup that keeps yours organized, searchable, and actually useful."
+  },
+  'competitor-research-google-sheets': {
+    component: BlogPost_CompetitorResearchSheets,
+    title: "How to Track Competitors in Google Sheets | ImageSnap",
+    description: "You don't need Crayon or Klue. Here's the exact Google Sheets setup e-commerce teams use to track pricing, products, and visual positioning."
+  },
+  'product-research-workflow': {
+    component: BlogPost_ProductResearchWorkflow,
+    title: "Product Research Workflow That Scales Without a Scraper | ImageSnap",
+    description: "Scrapers break. Manual copy-paste doesn't scale. Here's the middle path: human-guided capture that handles 200+ products per session."
   }
 };
 
