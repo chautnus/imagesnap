@@ -12,11 +12,10 @@ export async function POST(req: NextRequest) {
 
     const cookieStore = await cookies();
 
-    // Create session payload
+    // Create session payload (without raw token)
     const sessionPayload = JSON.stringify({
       email,
       role: role || (isStaff ? 'staff' : 'user'),
-      token,
       masterSpreadsheetId: masterSpreadsheetId || null,
       expires: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
     });

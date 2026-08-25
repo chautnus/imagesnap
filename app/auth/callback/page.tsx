@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { establishSession, getUserInfo, setAccessToken } from '@shared/lib/google-auth';
+import { setAccessToken } from '@shared/lib/google-auth';
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -10,46 +10,39 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const processCallback = async () => {
-      // Extract token from URL hash (e.g., #access_token=...)
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      const token = params.get('access_token');
-      const errorParam = params.get('error');
+      const queryParams = new URLSearchParams(window.location.search);
+      const code = queryParams.get('code');
+      const errorParam = queryParams.get('error');
 
       if (errorParam) {
         setError(`Authentication failed: ${errorParam}`);
         return;
       }
 
-      if (!token) {
-        // Fallback: check query string just in case
-        const queryParams = new URLSearchParams(window.location.search);
-        const qToken = queryParams.get('access_token');
-        if (qToken) {
-          // Token found in query string
-          await handleToken(qToken);
-        } else {
-          setError("No access token found in callback URL.");
-        }
+      if (!code) {
+        setError("No authorization code found in callback URL.");
         return;
       }
 
-      await handleToken(token);
-    };
-
-    const handleToken = async (token: string) => {
       try {
-        setAccessToken(token); // Temporary RAM set to fetch profile
-        const profile = await getUserInfo(token);
-        
-        if (profile?.email) {
-          // Exchange token for secure HTTP-only session cookie
-          await establishSession(token, profile.email);
-          // Redirect to dashboard, removing token from URL history
-          window.location.replace('/dashboard');
-        } else {
-          setError("Failed to verify user profile.");
+        const response = await fetch('/api/auth/exchange-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code,
+            redirectUri: window.location.origin + '/auth/callback'
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.access_token) {
+          setError(data.error || "Failed to exchange authorization code.");
+          return;
         }
+
+        setAccessToken(data.access_token);
+        window.location.replace('/dashboard');
       } catch (e) {
         console.error("Auth Callback Error:", e);
         setError("An error occurred during authentication.");

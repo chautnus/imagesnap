@@ -73,6 +73,8 @@ export async function initDb() {
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS accessible_categories JSONB DEFAULT '[]'::jsonb`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password TEXT`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_refresh_token TEXT`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_refresh_token_iv TEXT`);
 
     // Config table (for masterSpreadsheetId, etc.)
     await client.query(`

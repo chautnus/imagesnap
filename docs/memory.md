@@ -52,6 +52,15 @@ src/web/
 ### 🔐 Auth
 - Session: 30 ngày + rolling renewal (mỗi GET /api/auth/session reset timer)
 - restoreSession chạy trước initAuthListener trong App.tsx
+- **Google OAuth (web/PWA)**: Authorization Code flow (`response_type=code`) —
+  refresh_token mã hoá AES-256-GCM lưu ở Postgres (`users.google_refresh_token`),
+  KHÔNG bao giờ rời server. `restoreSession()` mint access_token mới qua
+  `GET /api/auth/refresh-token` — user không còn bị ép đăng nhập lại khi access
+  token 1h hết hạn. Chi tiết: [ADR-001](adr/ADR-001-google-oauth-refresh-token.md),
+  [changelog](changelog/google-refresh-token-auth.md).
+- **Google OAuth (Chrome Extension)**: vẫn dùng implicit flow
+  (`chrome.identity.launchWebAuthFlow`, `response_type=token`) — không đổi, tách
+  biệt hoàn toàn khỏi luồng web.
 
 ---
 
@@ -117,4 +126,5 @@ Mọi màu sắc → `src/web/styles/theme.ts`. Không exception.
 | Changelog | `docs/changelog/` | [INDEX.md](changelog/INDEX.md) |
 
 ---
-*Last Updated: 2026-06-06 — v1.11.10 patch*
+*Last Updated: 2026-08-07 — Google refresh_token auth (F-001)*
+- [[pwa-dashboard-token-refresh-fix-tasks](memory/project/pwa-dashboard-token-refresh-fix-tasks.md)] — task list đã confirm
