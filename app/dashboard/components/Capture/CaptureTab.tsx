@@ -43,6 +43,7 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
   });
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(() => recentCatIds[0] || categories[0]?.id || null);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [saveToast, setSaveToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -194,7 +195,8 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       }));
       await onSave({ categoryId: selectedCategoryId, data: { ...formData } }, processedImages);
       if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Product saved successfully to Google Sheets!`);
-      
+      setSaveToast({ type: 'success', message: '✓ Đã lưu' });
+
       // Revoke all blob URLs created in this session on successful save to prevent RAM leak (Audit Stage 2)
       blobUrlsRef.current.forEach(url => {
         try { URL.revokeObjectURL(url); } catch (e) {}
@@ -213,9 +215,24 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
       }
       setFormData(keptData);
     } catch (e: any) {
-      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Product save failed: ${e.message || e}`);
+      const msg = e?.message || String(e);
+      if ((window as any)._pushDebug) (window as any)._pushDebug(`[UI] Product save failed: ${msg}`);
+      const isAuthError = /no access token|401|unauthorized|session expired/i.test(msg);
+      setSaveToast({
+        type: 'error',
+        message: isAuthError
+          ? '✗ CHƯA lưu — phiên đăng nhập hết hạn. Tải lại trang rồi thử lại.'
+          : `✗ CHƯA lưu — ${msg}`,
+      });
     } finally { setIsSaving(false); }
   };
+
+  useEffect(() => {
+    if (!saveToast) return;
+    const delay = saveToast.type === 'success' ? 2500 : 8000;
+    const timer = setTimeout(() => setSaveToast(null), delay);
+    return () => clearTimeout(timer);
+  }, [saveToast]);
 
   const isAtLimit = !subStatus.isPro && subStatus.usage >= subStatus.limit;
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
@@ -307,11 +324,23 @@ export const CaptureTab: React.FC<CaptureTabProps> = ({
         />
       )}
 
-      <QuickAddCategory 
-        isOpen={showQuickAdd} 
+      <QuickAddCategory
+        isOpen={showQuickAdd}
         onClose={() => setShowQuickAdd(false)}
         onSave={onSaveCategory!}
       />
+
+      {saveToast && (
+        <div
+          role="alert"
+          onClick={() => setSaveToast(null)}
+          className={`fixed left-4 right-4 bottom-24 z-50 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg cursor-pointer ${
+            saveToast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+          }`}
+        >
+          {saveToast.message}
+        </div>
+      )}
 
     </div>
   );

@@ -152,6 +152,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       }
     } catch (err) {
       console.error("Save product error:", err);
+      throw err;
     } finally {
       setIsSyncing(false);
     }
@@ -169,6 +170,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       }
     } catch (err) {
       console.error("Delete product error:", err);
+      throw err;
     } finally {
       setIsSyncing(false);
     }
@@ -183,6 +185,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       await refreshData(spreadsheetId);
     } catch (err) {
       console.error("Save category error:", err);
+      throw err;
     } finally {
       setIsSyncing(false);
     }
@@ -196,6 +199,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
       await refreshData(spreadsheetId);
     } catch (err) {
       console.error("Delete category error:", err);
+      throw err;
     } finally {
       setIsSyncing(false);
     }

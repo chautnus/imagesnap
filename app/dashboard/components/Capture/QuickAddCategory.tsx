@@ -24,9 +24,13 @@ export const QuickAddCategory: React.FC<QuickAddCategoryProps> = ({ isOpen, onCl
       fields: [{ id: `k_${Date.now()}`, label: 'Product ID', type: 'key', required: true }], 
       updatedAt: new Date().toISOString() 
     };
-    await onSave(cat);
-    onClose();
-    setName('');
+    try {
+      await onSave(cat);
+      onClose();
+      setName('');
+    } catch (e: any) {
+      alert(`✗ CHƯA lưu category — ${e?.message || e}`);
+    }
   };
 
   return (
