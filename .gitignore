@@ -15,3 +15,5 @@ out/
 .env.test.local
 .env.production.local
 .vercel
+.claude/worktrees/
+docs/planning/.mcp-active.json
