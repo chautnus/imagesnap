@@ -154,18 +154,17 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
   
   // Universal Redirect Flow (Web & Extension)
   if (prompt === 'consent') {
-    // Standard OAuth2 Redirect to bypass mobile pop-up blockers
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${GOOGLE_CLIENT_ID}&` +
-      `response_type=token&` +
-      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-      `scope=${encodeURIComponent(SCOPES)}&` +
-      `prompt=consent`;
-
-    // Extension Check: Use chrome.identity if available
+    // Extension Check: Use chrome.identity if available (implicit flow)
     // @ts-ignore
-    if (window.chrome && window.chrome.identity) {
-      window.chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, (redirectUrl: string | undefined) => {
+    if (typeof window !== 'undefined' && window.chrome && window.chrome.identity) {
+      const extAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${GOOGLE_CLIENT_ID}&` +
+        `response_type=token&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+        `scope=${encodeURIComponent(SCOPES)}&` +
+        `prompt=consent`;
+
+      window.chrome.identity.launchWebAuthFlow({ url: extAuthUrl, interactive: true }, (redirectUrl: string | undefined) => {
         if (redirectUrl) {
           const url = new URL(redirectUrl.replace('#', '?'));
           const token = url.searchParams.get('access_token');
@@ -181,8 +180,16 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
       return;
     }
 
-    // Web Fallback: Direct Redirect
-    window.location.href = authUrl;
+    // Web Fallback: Direct Redirect with Authorization Code flow
+    const webAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${GOOGLE_CLIENT_ID}&` +
+      `response_type=code&` +
+      `access_type=offline&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `scope=${encodeURIComponent(SCOPES)}&` +
+      `prompt=consent`;
+
+    window.location.href = webAuthUrl;
     return;
   }
 
@@ -195,7 +202,7 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
     });
     return;
   }
-  
+
   tokenClient.requestAccessToken({ prompt: 'none' });
 };
 
@@ -271,53 +278,27 @@ export const establishSession = async (token: string, email: string, isStaff: bo
   }
 };
 
-export const requestSilentToken = (onSuccess: (token: string) => void, onFailure: () => void) => {
-  if (typeof window === 'undefined') { onFailure(); return; }
-  const isExtension = window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension');
+export const reauthenticate = async (): Promise<string> => {
+  const isExtension = typeof window !== 'undefined' &&
+    (window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension'));
 
-  // Extension: use chrome.identity.getAuthToken for silent token refresh (handles expiry automatically)
-  if (isExtension) {
-    const chromeIdentity = (window as any).chrome?.identity;
-    if (chromeIdentity?.getAuthToken) {
-      chromeIdentity.getAuthToken({ interactive: false }, (token: string | undefined) => {
-        if ((window as any).chrome?.runtime?.lastError || !token) {
-          onFailure();
-          return;
+  if (!isExtension && typeof window !== 'undefined') {
+    try {
+      const res = await fetch(`${getApiBase()}/api/auth/refresh-token`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.access_token) {
+          setAccessToken(data.access_token);
+          return data.access_token;
         }
-        accessToken = token;
-        onSuccess(token);
-      });
-    } else {
-      onFailure();
+      }
+    } catch (e) {
+      console.error('[AUTH] refresh-token fetch failed:', e);
     }
-    return;
   }
 
-  ensureGsiScript().then(() => {
-    const google = (window as any).google;
-    if (!google?.accounts?.oauth2) { onFailure(); return; }
-
-    const silentClient = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: SCOPES,
-      prompt: '',
-      callback: (response: any) => {
-        if (response.error || !response.access_token) { onFailure(); return; }
-        accessToken = response.access_token;
-        onSuccess(response.access_token);
-      },
-    });
-    silentClient.requestAccessToken({ prompt: '' });
-  }).catch(() => onFailure());
-};
-
-export const reauthenticate = (): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    console.warn("[AUTH] Token expired. Silent re-authentication is deprecated due to browser ITP rules. Forcing manual re-login.");
-    revokeToken();
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('SYS_AUTH_EXPIRED'));
-    }
-    reject(new Error("Token expired. Re-authentication required."));
-  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('SYS_AUTH_EXPIRED'));
+  }
+  throw new Error("Token expired. Re-authentication required.");
 };

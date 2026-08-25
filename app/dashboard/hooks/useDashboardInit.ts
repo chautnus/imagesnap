@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { setAccessToken } from '@shared/lib/google-auth';
+import { setAccessToken, reauthenticate } from '@shared/lib/google-auth';
 import { findOrCreateWorkspace } from '@shared/lib/sheets';
 import { SubscriptionStatus } from '@shared/lib/types';
 import { apiClient } from '@shared/lib/api-client';
@@ -258,9 +258,19 @@ export function useDashboardInit(refreshData: (id: string) => Promise<void>) {
         if (sessionData.authenticated && sessionData.user) {
           const profile = sessionData.user;
           log(`[AUTH] Profile: ${profile.email}`);
+
+          if (profile.role !== 'staff') {
+            try {
+              await reauthenticate();
+            } catch {
+              log('[AUTH] Silent refresh failed on mount.');
+              setAuthError("Session Expired - Please login again.");
+              return;
+            }
+          }
+
           setUser(profile);
-          setAccessToken(profile.token);
-          
+
           let storedId = localStorage.getItem('ps_sheet_id');
           setIsAuthReady(true);
           fetchSubStatus(profile.email);
