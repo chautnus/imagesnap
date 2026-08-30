@@ -99,7 +99,7 @@ export const CaptureForm: React.FC<CaptureFormProps> = ({
                             >
                               <div className="flex items-center gap-2">
                                 <Command size={10} className="text-muted" />
-                                <span className="font-medium uppercase">{s.name}</span>
+                                <span className="font-medium uppercase text-ink">{s.name}</span>
                               </div>
                               <span className="text-[8px] uppercase text-muted font-bold">Existing</span>
                             </button>
