@@ -3,7 +3,29 @@
     "allow": [
       "Skill(session-init)",
       "Skill(session-init:*)",
-      "Bash(python3 -c \"s='Capture product images & context. Auto-save to Google Drive, log metadata to Google Sheets. Perfect for ecommerce research, competitor tracking, and sourcing.'; print\\(len\\(s\\)\\)\")"
+      "Bash(python3 -c \"s='Capture product images & context. Auto-save to Google Drive, log metadata to Google Sheets. Perfect for ecommerce research, competitor tracking, and sourcing.'; print\\(len\\(s\\)\\)\")",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(node --check src/db-postgres.ts)",
+      "Bash(vercel whoami *)",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
+      "Bash(node -e \"const k=require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\); console.log\\(k, k.length\\)\")",
+      "Bash(vercel env *)",
+      "Bash(vercel project *)",
+      "Bash(vercel link *)",
+      "Skill(sync-memory)",
+      "Skill(sync-memory:*)",
+      "Read(//c/Users/Chau/.claude/skills/plan-tasks/references/**)",
+      "Bash(cat \"C:\\\\Users\\\\Chau\\\\.claude\\\\skills\\\\plan-tasks\\\\references\\\\execution-spec-template.md\" 2>/dev/null; echo \"===MAP===\"; cat docs/map/INDEX.md 2>/dev/null | head -60)",
+      "Bash(cat \"C:\\\\Users\\\\Chau\\\\.claude\\\\skills\\\\mcp-bridge\\\\references\\\\protocol.md\" 2>/dev/null)",
+      "mcp__antigravity-bridge__create_task",
+      "Bash(node -e ' *)",
+      "mcp__antigravity-bridge__get_result",
+      "Bash(git --git-dir=\"C:/dev/imagesnap/.git\" --work-tree=\"C:/dev/imagesnap\" status --short)",
+      "Bash(git --version)",
+      "Bash(git -C C:/dev/imagesnap log -1 --oneline)",
+      "Bash(git -C C:/dev/imagesnap status --short)",
+      "Bash(rm -rf \"C:/dev/imagesnap/.git/worktrees/distracted-jennings-9de07d\")",
+      "Bash(git worktree *)"
     ]
   }
 }

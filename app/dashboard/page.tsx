@@ -101,6 +101,7 @@ function DashboardContent() {
     isSyncing,
     refreshData,
     handleSaveProduct,
+    handleUpdateProduct,
     handleDeleteProduct,
     handleSaveCategory,
     handleDeleteCategory
@@ -223,6 +224,7 @@ function DashboardContent() {
             categories={accessibleCategories}
             products={appData.products}
             onDelete={handleDeleteProduct}
+            onUpdate={handleUpdateProduct}
             t={t}
             lang={lang}
             subStatus={subStatus}

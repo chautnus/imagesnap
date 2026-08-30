@@ -128,3 +128,4 @@ Mọi màu sắc → `src/web/styles/theme.ts`. Không exception.
 ---
 *Last Updated: 2026-08-07 — Google refresh_token auth (F-001)*
 - [[pwa-dashboard-token-refresh-fix-tasks](memory/project/pwa-dashboard-token-refresh-fix-tasks.md)] — task list đã confirm
+- [[edit-data-record-tasks](memory/project/edit-data-record-tasks.md)] — task list đã confirm

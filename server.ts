@@ -169,6 +169,41 @@ async function startServer() {
     }
   });
 
+  app.post("/api/proxy/update-product", async (req, res) => {
+    const { spreadsheetId, product, adminAccessToken } = req.body;
+    const masterToken = await getConfig('adminAccessToken');
+    const token = adminAccessToken || masterToken;
+    if (!token) return res.status(401).json({ error: "Admin must be active to proxy updates" });
+    try {
+      const sheetTitle = (product.categoryName || 'Data').substring(0, 31);
+      
+      const getRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetTitle)}!A:A`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const getResult: any = await getRes.json();
+      if (!getRes.ok) throw new Error(getResult.error?.message || "Failed to search row");
+
+      const rows: string[][] = getResult.values || [];
+      const rowIndex = rows.findIndex(row => row[0] === product.id);
+      if (rowIndex === -1) {
+        return res.status(404).json({ error: "Row not found" });
+      }
+
+      const targetRange = `${sheetTitle}!A${rowIndex + 1}`;
+      const putRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(targetRange)}?valueInputOption=USER_ENTERED`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [Object.values(product)] })
+      });
+      const putResult = await putRes.json();
+      if (!putRes.ok) throw new Error((putResult as any).error?.message || "Proxy update error");
+
+      res.json(putResult);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // --- PAYMENT ROUTES ---
 
   app.post("/api/create-checkout-session", async (req, res) => {

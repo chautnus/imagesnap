@@ -8,11 +8,13 @@ import { DriveImage } from './DriveImage';
 import { DataSearchBar } from './DataSearchBar';
 import { DataProductCard } from './DataProductCard';
 import { DataProductDetail } from './DataProductDetail';
+import { EditProductForm } from './EditProductForm';
 
 interface DataTabProps {
   categories: Category[];
   products: Product[];
   onDelete: (id: string) => Promise<void>;
+  onUpdate: (product: Partial<Product>) => Promise<void>;
   t: (key: string) => string;
   lang: string;
   subStatus?: any;
@@ -20,12 +22,13 @@ interface DataTabProps {
 
 type ViewLayout = 'list' | 'grid';
 
-export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete, t, lang, subStatus }) => {
+export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete, onUpdate, t, lang, subStatus }) => {
   const [view, setView] = useState<'categories' | 'names' | 'items' | 'search'>('categories');
   const isAdmin = subStatus?.isAdmin || subStatus?.role === 'admin';
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedProdName, setSelectedProdName] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [layout, setLayout] = useState<ViewLayout>(() =>
     (localStorage.getItem('data_layout') as ViewLayout) || 'list'
   );
@@ -66,6 +69,23 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
     </button>
   );
 
+  if (editingProduct) {
+    const cat = categories.find(c => c.id === editingProduct.categoryId);
+    return (
+      <EditProductForm
+        product={editingProduct}
+        category={cat}
+        onSave={async (updated) => {
+          await onUpdate(updated);
+          setEditingProduct(null);
+        }}
+        onCancel={() => setEditingProduct(null)}
+        t={t}
+        lang={lang}
+      />
+    );
+  }
+
   if (selectedProduct) {
     const cat = categories.find(c => c.id === selectedProduct.categoryId);
     return <DataProductDetail product={selectedProduct} category={cat} lang={lang} t={t} onBack={() => setSelectedProduct(null)} />;
@@ -75,7 +95,7 @@ export const DataTab: React.FC<DataTabProps> = ({ categories, products, onDelete
     <div className={layout === 'grid' ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-1 gap-3'}>
       {items.map((item) => (
         <DataProductCard key={item.id} item={item} categories={categories} lang={lang}
-          isAdmin={isAdmin} onDelete={onDelete} onClick={setSelectedProduct} layout={layout} />
+          isAdmin={isAdmin} onDelete={onDelete} onEdit={setEditingProduct} onClick={setSelectedProduct} layout={layout} />
       ))}
     </div>
   );

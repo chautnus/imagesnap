@@ -1,4 +1,4 @@
-import { appendRow, ensureSheetExists, deleteRowBySearch } from '../lib/sheets';
+import { appendRow, ensureSheetExists, deleteRowBySearch, updateRowBySearch } from '../lib/sheets';
 import { findOrCreateFolder, uploadBase64Image, uploadUrlImage } from '../lib/drive';
 import { Product, Category, AppData } from '../lib/types';
 
@@ -58,6 +58,34 @@ export async function saveProduct(
   await appendRow(spreadsheetId, `${sheetTitle}!A2`, row, providedToken);
 
   return { id, keyValue };
+}
+
+export async function updateProduct(
+  spreadsheetId: string,
+  product: Product,
+  categories: Category[],
+  providedToken?: string
+) {
+  const cat = categories.find(c => c.id === product.categoryId);
+  if (!cat) throw new Error("Category not found");
+
+  const sheetTitle = cat.name.substring(0, 31);
+  const fieldValues = cat.fields.map(f => product.data?.[f.id] || '');
+
+  const row = [
+    product.id,
+    product.createdAt,
+    (product.images || []).join(','),
+    product.name,
+    (product.tags || []).join(','),
+    product.authorId || '',
+    product.authorName || '',
+    ...fieldValues
+  ];
+
+  await updateRowBySearch(spreadsheetId, sheetTitle, product.id, row, providedToken);
+
+  return { id: product.id, keyValue: product.name };
 }
 
 export async function deleteProduct(spreadsheetId: string, categoryName: string, productId: string) {

@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { AppData, Product, Category, User } from '../lib/types';
 import { fetchAllAppData } from '../services/dataService';
-import { saveProduct, deleteProduct } from '../services/productService';
+import { saveProduct, updateProduct, deleteProduct } from '../services/productService';
 import { saveCategory, deleteCategory } from '../services/categoryService';
 import { appendRow, ensureSheetExists } from '../lib/sheets';
 import { apiClient } from '../lib/api-client';
@@ -19,7 +19,7 @@ const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'plants',
     name: 'Plants',
-    icon: '🌿',
+    icon: '🌱',
     fields: [
       { id: 'plant_id', label: 'Plant ID', type: 'key', required: true },
       { id: 'plant_name_field', label: 'Plant Name', type: 'text', required: false },
@@ -34,7 +34,7 @@ const DEFAULT_CATEGORIES: Category[] = [
   {
     id: 'pots',
     name: 'Pots',
-    icon: '🏺',
+    icon: '🪴',
     fields: [
       { id: 'pot_sku', label: 'SKU', type: 'key', required: true },
       { id: 'material', label: 'Material', type: 'text', required: false },
@@ -93,7 +93,6 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     }
   }, []);
 
-  // [AUDIT v1.10.17] Reactive Loading: Trigger refresh when ID becomes available
   useEffect(() => {
     if (spreadsheetId && user) {
       refreshData(spreadsheetId);
@@ -158,6 +157,36 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     }
   };
 
+  const handleUpdateProduct = async (product: Product) => {
+    if (!spreadsheetId) return;
+    setIsSyncing(true);
+    try {
+      const currentUser = userRef.current;
+      const STAFF_DOMAIN = '@staff.imagesnap';
+      const isStaff = currentUser?.email?.endsWith(STAFF_DOMAIN);
+
+      if (isStaff) {
+        const cat = appData.categories.find(c => c.id === product.categoryId);
+        const productWithCatName = { ...product, categoryName: cat?.name || 'Data' };
+        const res = await fetch(`${API_BASE_URL}/api/proxy/update-product`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ spreadsheetId, product: productWithCatName })
+        });
+        if (!res.ok) throw new Error("Staff Proxy update failed");
+      } else {
+        await updateProduct(spreadsheetId, product, appData.categories);
+      }
+
+      await refreshData(spreadsheetId);
+    } catch (err) {
+      console.error("Update product error:", err);
+      throw err;
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleDeleteProduct = async (productId: string) => {
     if (!spreadsheetId) return;
     setIsSyncing(true);
@@ -210,6 +239,7 @@ export function useAppData(spreadsheetId: string | null, user: User | null) {
     isSyncing,
     refreshData,
     handleSaveProduct,
+    handleUpdateProduct,
     handleDeleteProduct,
     handleSaveCategory,
     handleDeleteCategory

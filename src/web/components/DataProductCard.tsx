@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Package, Trash2 } from 'lucide-react';
+import { Package, Trash2, Pencil } from 'lucide-react';
 import { Category, Product } from '@shared/lib/types';
 import { translate } from '@shared/lib/translations';
 import { DriveImage } from './DriveImage';
@@ -12,12 +12,13 @@ interface DataProductCardProps {
   lang: string;
   isAdmin: boolean;
   onDelete: (id: string) => Promise<void>;
+  onEdit: (item: Product) => void;
   onClick: (item: Product) => void;
   layout?: 'list' | 'grid';
 }
 
 export const DataProductCard: React.FC<DataProductCardProps> = ({
-  item, categories, lang, isAdmin, onDelete, onClick, layout = 'list'
+  item, categories, lang, isAdmin, onDelete, onEdit, onClick, layout = 'list'
 }) => {
   const cat = categories.find(c => c.id === item.categoryId);
 
@@ -37,12 +38,20 @@ export const DataProductCard: React.FC<DataProductCardProps> = ({
             {cat?.icon} {cat && translate(cat.name, lang)}
           </div>
           {isAdmin && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
-              className="absolute top-1.5 right-1.5 p-1.5 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-white/90 backdrop-blur-sm rounded-lg border border-line shadow-sm"
-            >
-              <Trash2 size={14} />
-            </button>
+            <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(item); }}
+                className="p-1.5 text-muted hover:text-accent bg-white/90 backdrop-blur-sm rounded-lg border border-line shadow-sm"
+              >
+                <Pencil size={14} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+                className="p-1.5 text-muted hover:text-red-500 bg-white/90 backdrop-blur-sm rounded-lg border border-line shadow-sm"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           )}
         </div>
         <div className="p-3 flex flex-col gap-1.5 bg-card">
@@ -95,12 +104,20 @@ export const DataProductCard: React.FC<DataProductCardProps> = ({
           </div>
         </div>
         {isAdmin && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
-            className="absolute top-3 right-3 p-2 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-white/90 backdrop-blur-sm rounded-lg border border-line shadow-sm"
-          >
-            <Trash2 size={16} />
-          </button>
+          <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+            <button
+              onClick={(e) => { e.stopPropagation(); onEdit(item); }}
+              className="p-2 text-muted hover:text-accent bg-white/90 backdrop-blur-sm rounded-lg border border-line shadow-sm"
+            >
+              <Pencil size={16} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+              className="p-2 text-muted hover:text-red-500 bg-white/90 backdrop-blur-sm rounded-lg border border-line shadow-sm"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         )}
       </div>
     </div>
