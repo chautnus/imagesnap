@@ -5,17 +5,30 @@ import { pool } from "@src/db-postgres";
 
 export async function GET(req: NextRequest) {
   try {
-    // 1. Read session cookie
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("imagesnap_session");
+    // 1. Read session from header or cookie
+    let rawSessionValue: string | undefined;
+    const headerSession = req.headers.get("x-imagesnap-session");
+    if (headerSession) {
+      const origin = req.headers.get("origin") || "";
+      if (!origin.startsWith("chrome-extension://")) {
+        return NextResponse.json({ error: "invalid_origin" }, { status: 401 });
+      }
+      rawSessionValue = headerSession;
+    } else {
+      const cookieStore = await cookies();
+      const sessionCookie = cookieStore.get("imagesnap_session");
+      if (sessionCookie) {
+        rawSessionValue = sessionCookie.value;
+      }
+    }
 
-    if (!sessionCookie) {
+    if (!rawSessionValue) {
       return NextResponse.json({ error: "no_session" }, { status: 401 });
     }
 
     let payload: any;
     try {
-      payload = JSON.parse(Buffer.from(sessionCookie.value, "base64").toString("utf8"));
+      payload = JSON.parse(Buffer.from(rawSessionValue, "base64").toString("utf8"));
       if (!payload?.email || (payload.expires && payload.expires < Date.now())) {
         return NextResponse.json({ error: "no_session" }, { status: 401 });
       }

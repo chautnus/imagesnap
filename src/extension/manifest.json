@@ -27,7 +27,8 @@
     "activeTab",
     "scripting",
     "sidePanel",
-    "storage"
+    "storage",
+    "cookies"
   ],
   "background": {
     "service_worker": "background.js"

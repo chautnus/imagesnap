@@ -51,3 +51,10 @@ DB vô dụng, user phải đăng nhập lại hàng loạt (chấp nhận đư�
 liệu nghiệp vụ). Google có thể revoke refresh_token bất kỳ lúc nào (user tự
 thu hồi quyền, hoặc Google policy) — endpoint refresh phải xử lý lỗi rõ ràng
 (US-002).
+
+## Amendment (2026-09-04, xem ADR-003)
+Dòng "Nhánh Chrome Extension... GIỮ NGUYÊN response_type=token — ngoài scope"
+ở mục Decision đã lỗi thời. ADR-003 đưa extension vào scope: đổi sang
+response_type=code, tái dùng exchange-code/refresh-token, xác thực qua
+header X-Imagesnap-Session (chrome.cookies) thay vì cookie tự động.
+

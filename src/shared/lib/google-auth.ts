@@ -136,19 +136,33 @@ export async function getUserInfo(token: string) {
   }
 }
 
+export const getRedirectUri = () => {
+  if (typeof window !== 'undefined') {
+    const isExtension = window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension');
+    if (isExtension) {
+      return 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
+    }
+    return `${window.location.origin}/auth/callback`;
+  }
+  return '';
+};
+
+export async function exchangeExtensionCode(code: string): Promise<{ access_token: string; email: string }> {
+  const redirectUri = getRedirectUri();
+  const res = await fetch(`${getApiBase()}/api/auth/exchange-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, redirectUri }),
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || `Failed to exchange extension code: ${res.status}`);
+  }
+  return res.json();
+}
+
 export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?: (token: string) => void) => {
   if (onSuccess) authQueue.push({ resolve: onSuccess, reject: () => {} });
-
-  const getRedirectUri = () => {
-    if (typeof window !== 'undefined') {
-      const isExtension = window.location.protocol.startsWith('chrome-extension') || window.location.protocol.startsWith('extension');
-      if (isExtension) {
-        return 'https://fdmfidehhcbcaaaeilbabddnkdlpbhda.chromiumapp.org/';
-      }
-      return `${window.location.origin}/auth/callback`;
-    }
-    return '';
-  };
 
   const redirectUri = getRedirectUri();
   
@@ -159,21 +173,28 @@ export const requestToken = (prompt: 'consent' | 'none' = 'consent', onSuccess?:
     if (typeof window !== 'undefined' && window.chrome && window.chrome.identity) {
       const extAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${GOOGLE_CLIENT_ID}&` +
-        `response_type=token&` +
+        `response_type=code&` +
+        `access_type=offline&` +
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
         `scope=${encodeURIComponent(SCOPES)}&` +
         `prompt=consent`;
 
       window.chrome.identity.launchWebAuthFlow({ url: extAuthUrl, interactive: true }, (redirectUrl: string | undefined) => {
         if (redirectUrl) {
-          const url = new URL(redirectUrl.replace('#', '?'));
-          const token = url.searchParams.get('access_token');
-          if (token) {
-            accessToken = token;
-            authQueue.forEach(q => q.resolve(token));
-            authQueue = [];
-            // Notify App.tsx via event (authQueue is empty in extension context since initGis early-returns)
-            window.dispatchEvent(new CustomEvent('SYS_AUTH_SUCCESS', { detail: { token } }));
+          const url = new URL(redirectUrl);
+          const code = url.searchParams.get('code');
+          if (code) {
+            exchangeExtensionCode(code).then((result) => {
+              accessToken = result.access_token;
+              authQueue.forEach(q => q.resolve(result.access_token));
+              authQueue = [];
+              // Notify App.tsx via event (authQueue is empty in extension context since initGis early-returns)
+              window.dispatchEvent(new CustomEvent('SYS_AUTH_SUCCESS', { detail: { token: result.access_token, email: result.email } }));
+            }).catch((err) => {
+              console.error('Failed to exchange extension auth code:', err);
+              authQueue.forEach(q => q.reject(err));
+              authQueue = [];
+            });
           }
         }
       });
@@ -302,3 +323,26 @@ export const reauthenticate = async (): Promise<string> => {
   }
   throw new Error("Token expired. Re-authentication required.");
 };
+
+export const getExtensionSessionHeader = async (): Promise<Record<string, string>> => {
+  if (typeof window === 'undefined' || !(window as any).chrome?.cookies) {
+    return {};
+  }
+  return new Promise((resolve) => {
+    try {
+      (window as any).chrome.cookies.get(
+        { url: 'https://www.imagesnap.cloud', name: 'imagesnap_session' },
+        (cookie: any) => {
+          if (cookie?.value) {
+            resolve({ 'X-Imagesnap-Session': cookie.value });
+          } else {
+            resolve({});
+          }
+        }
+      );
+    } catch {
+      resolve({});
+    }
+  });
+};
+

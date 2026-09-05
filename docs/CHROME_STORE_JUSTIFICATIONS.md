@@ -18,6 +18,10 @@ This document provides the text you need to copy-paste into the Chrome Developer
 ### `identity`
 **Justification:** ImageSnap uses the `chrome.identity` API to securely authenticate users via OAuth2. This is necessary to obtain authorized access tokens to save files directly into the user's personal Google Drive account.
 
+### `cookies`
+**Justification:** Used solely to read the `imagesnap_session` authentication cookie from our own first-party domain (`https://www.imagesnap.cloud`). This allows the extension to automatically refresh expired short-lived Google OAuth access tokens via our backend session endpoint, providing continuous authentication parity with our web application and preventing users from having to repeatedly re-authenticate every hour. No third-party cookies are accessed.
+
+
 ## 3. Remote Code Policy
 **Question:** Are you using remote code?
 **Answer:** No.
