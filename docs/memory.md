@@ -58,9 +58,14 @@ src/web/
   `GET /api/auth/refresh-token` — user không còn bị ép đăng nhập lại khi access
   token 1h hết hạn. Chi tiết: [ADR-001](adr/ADR-001-google-oauth-refresh-token.md),
   [changelog](changelog/google-refresh-token-auth.md).
-- **Google OAuth (Chrome Extension)**: vẫn dùng implicit flow
-  (`chrome.identity.launchWebAuthFlow`, `response_type=token`) — không đổi, tách
-  biệt hoàn toàn khỏi luồng web.
+- **Google OAuth (Chrome Extension)**: từ F-004 (2026-09-04) dùng CÙNG
+  Authorization Code flow như web (`response_type=code` qua
+  `chrome.identity.launchWebAuthFlow`), tái dùng `/api/auth/exchange-code` +
+  `/api/auth/refresh-token`. Vì cookie `imagesnap_session` (SameSite=Lax)
+  không gửi kèm cross-site fetch từ `chrome-extension://`, extension đọc cookie
+  qua `chrome.cookies.get()` và gắn header `X-Imagesnap-Session` thay vì dựa
+  cookie tự động. Chi tiết: [ADR-003](adr/ADR-003-extension-oauth-code-flow-chrome-cookies.md),
+  [changelog](changelog/extension-google-auth-parity.md).
 
 ---
 
@@ -126,6 +131,5 @@ Mọi màu sắc → `src/web/styles/theme.ts`. Không exception.
 | Changelog | `docs/changelog/` | [INDEX.md](changelog/INDEX.md) |
 
 ---
-*Last Updated: 2026-08-07 — Google refresh_token auth (F-001)*
-- [[pwa-dashboard-token-refresh-fix-tasks](memory/project/pwa-dashboard-token-refresh-fix-tasks.md)] — task list đã confirm
-- [[edit-data-record-tasks](memory/project/edit-data-record-tasks.md)] — task list đã confirm
+*Last Updated: 2026-09-04 — Extension Google Auth Parity + Rebuild Entry Point (F-004)*
+- [[extension-google-auth-parity-arch](memory/project/extension-google-auth-parity-arch.md)] — quyết định kiến trúc extension auth code flow + chrome.cookies
