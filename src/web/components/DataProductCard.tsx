@@ -38,7 +38,7 @@ export const DataProductCard: React.FC<DataProductCardProps> = ({
             {cat?.icon} {cat && translate(cat.name, lang)}
           </div>
           {isAdmin && (
-            <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+            <div className="absolute top-1.5 right-1.5 flex gap-1 transition-all">
               <button
                 onClick={(e) => { e.stopPropagation(); onEdit(item); }}
                 className="p-1.5 text-muted hover:text-accent bg-white/90 backdrop-blur-sm rounded-lg border border-line shadow-sm"
@@ -104,7 +104,7 @@ export const DataProductCard: React.FC<DataProductCardProps> = ({
           </div>
         </div>
         {isAdmin && (
-          <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+          <div className="absolute top-3 right-3 flex gap-1.5 transition-all">
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(item); }}
               className="p-2 text-muted hover:text-accent bg-white/90 backdrop-blur-sm rounded-lg border border-line shadow-sm"
