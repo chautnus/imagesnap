@@ -131,5 +131,7 @@ Mọi màu sắc → `src/web/styles/theme.ts`. Không exception.
 | Changelog | `docs/changelog/` | [INDEX.md](changelog/INDEX.md) |
 
 ---
-*Last Updated: 2026-09-04 — Extension Google Auth Parity + Rebuild Entry Point (F-004)*
+*Last Updated: 2026-09-17 — Cột Folder Link trong Sheet (F-006)*
 - [[extension-google-auth-parity-arch](memory/project/extension-google-auth-parity-arch.md)] — quyết định kiến trúc extension auth code flow + chrome.cookies
+- [[cot-link-thu-muc-anh-arch](memory/project/cot-link-thu-muc-anh-arch.md)] — ADR-004 migration cột Folder Link bằng background worker
+

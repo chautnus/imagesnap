@@ -1,4 +1,4 @@
-﻿feature_seq: 5
-story_seq: 12
-task_seq: 37
-adr_seq: 3
+feature_seq: 6
+story_seq: 14
+task_seq: 43
+adr_seq: 4
