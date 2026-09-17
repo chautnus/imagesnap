@@ -1,4 +1,4 @@
-import { getSheetRows, getSpreadsheetMetadata } from '../lib/sheets';
+import { getSheetRows, getSpreadsheetMetadata, migrateFolderLinksInBackground } from '../lib/sheets';
 import { Category, Product, AppData } from '../lib/types';
 
 export async function fetchAllAppData(spreadsheetId: string, providedToken?: string, isStaff: boolean = false): Promise<AppData> {
@@ -58,6 +58,8 @@ export async function fetchAllAppData(spreadsheetId: string, providedToken?: str
     }));
 
     const productNames = nameRows.map((r: any) => ({ categoryId: r[0], name: r[1] }));
+
+    migrateFolderLinksInBackground(spreadsheetId, activeCategories, providedToken).catch(err => console.error('[MIGRATION] Background error:', err));
 
     return {
       categories,

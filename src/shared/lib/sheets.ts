@@ -1,5 +1,6 @@
 import { getAccessToken, reauthenticate, setAccessToken } from './google-auth';
 import { findOrCreateFolder } from './drive';
+import { Category } from './types';
 
 const BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
 
@@ -179,6 +180,107 @@ export async function ensureSheetExists(spreadsheetId: string, sheetName: string
       method: 'PUT',
       body: JSON.stringify({ values: [headers] })
     }, providedToken);
+  }
+}
+
+export function indexToColumnLetter(index: number): string {
+  let letter = '';
+  let temp = index;
+  while (temp >= 0) {
+    letter = String.fromCharCode((temp % 26) + 65) + letter;
+    temp = Math.floor(temp / 26) - 1;
+  }
+  return letter;
+}
+
+export async function detectAndPatchFolderLinkHeader(
+  spreadsheetId: string,
+  sheetTitle: string,
+  expectedColCount: number,
+  providedToken?: string
+): Promise<{ patched: boolean; folderColLetter: string }> {
+  const rows = await getSheetRows(spreadsheetId, `${sheetTitle}!1:1`, providedToken);
+  const headerRow = rows[0] || [];
+  const folderColIdx = expectedColCount - 1;
+  const colLetter = indexToColumnLetter(folderColIdx);
+
+  if (headerRow[folderColIdx] === 'Folder Link') {
+    return { patched: false, folderColLetter: colLetter };
+  }
+
+  await sheetsRequest(`${spreadsheetId}/values/${sheetTitle}!${colLetter}1?valueInputOption=USER_ENTERED`, {
+    method: 'PUT',
+    body: JSON.stringify({ values: [['Folder Link']] })
+  }, providedToken);
+
+  return { patched: true, folderColLetter: colLetter };
+}
+
+export async function backfillCategoryFolderLinks(
+  spreadsheetId: string,
+  category: Category,
+  folderColLetter: string,
+  providedToken?: string
+) {
+  const sheetTitle = category.name.substring(0, 31);
+  const rows = await getSheetRows(spreadsheetId, `${sheetTitle}!A2:Z`, providedToken);
+  if (!rows || rows.length === 0) return;
+
+  const keyField = category.fields.find(f => f.type === 'key');
+  const keyIdx = keyField ? category.fields.indexOf(keyField) : -1;
+  const folderColIdx = 7 + category.fields.length;
+
+  const rootFolderId = await findOrCreateFolder('ImageSnap Data', undefined, providedToken);
+  const catFolderId = await findOrCreateFolder(category.name || 'Other', rootFolderId, providedToken);
+  const localFolderMap = new Map<string, string>();
+
+  const links: string[] = [];
+  for (const r of rows) {
+    const existingVal = r[folderColIdx];
+    if (existingVal && typeof existingVal === 'string' && existingVal.startsWith('https://drive.google.com/drive/folders/')) {
+      links.push(existingVal);
+    } else {
+      const keyValue = keyIdx >= 0 ? (r[7 + keyIdx] || 'Unnamed') : (r[3] || 'Unnamed');
+      const keyStr = keyValue.toString();
+      let folderId = localFolderMap.get(keyStr);
+      if (!folderId) {
+        folderId = await findOrCreateFolder(keyStr, catFolderId, providedToken);
+        localFolderMap.set(keyStr, folderId);
+      }
+      links.push(`https://drive.google.com/drive/folders/${folderId}`);
+    }
+  }
+
+  const columnValues = links.map(link => [link]);
+  const range = `${sheetTitle}!${folderColLetter}2:${folderColLetter}${rows.length + 1}`;
+  await sheetsRequest(`${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`, {
+    method: 'PUT',
+    body: JSON.stringify({ values: columnValues })
+  }, providedToken);
+}
+
+export async function migrateFolderLinksInBackground(
+  spreadsheetId: string,
+  categories: Category[],
+  providedToken?: string
+): Promise<void> {
+  for (const cat of categories) {
+    const sheetTitle = cat.name.substring(0, 31);
+    const expectedColCount = 8 + (cat.fields ? cat.fields.length : 0);
+    try {
+      const { patched, folderColLetter } = await detectAndPatchFolderLinkHeader(
+        spreadsheetId,
+        sheetTitle,
+        expectedColCount,
+        providedToken
+      );
+      if (patched) {
+        await backfillCategoryFolderLinks(spreadsheetId, cat, folderColLetter, providedToken);
+      }
+      console.log('[MIGRATION] Done category:', sheetTitle);
+    } catch (err) {
+      console.error(`[MIGRATION] Failed to migrate category ${sheetTitle}:`, err);
+    }
   }
 }
 

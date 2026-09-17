@@ -1,4 +1,4 @@
-import { appendRow, ensureSheetExists, deleteRowBySearch, updateRowBySearch } from '../lib/sheets';
+import { appendRow, ensureSheetExists, deleteRowBySearch, updateRowBySearch, getSheetRows } from '../lib/sheets';
 import { findOrCreateFolder, uploadBase64Image, uploadUrlImage } from '../lib/drive';
 import { Product, Category, AppData } from '../lib/types';
 
@@ -37,12 +37,13 @@ export async function saveProduct(
   );
 
   const sheetTitle = cat.name.substring(0, 31);
-  const headers = ['ID', 'Created At', 'Images', 'Name', 'Tags', 'Author ID', 'Author Name', ...cat.fields.map(f => f.label)];
+  const headers = ['ID', 'Created At', 'Images', 'Name', 'Tags', 'Author ID', 'Author Name', ...cat.fields.map(f => f.label), 'Folder Link'];
   await ensureSheetExists(spreadsheetId, sheetTitle, headers, providedToken);
 
   const id = `prod_${Date.now()}`;
   const createdAt = new Date().toISOString();
   const fieldValues = cat.fields.map(f => product.data?.[f.id] || '');
+  const folderUrl = `https://drive.google.com/drive/folders/${keyFolderId}`;
 
   const row = [
     id,
@@ -52,7 +53,8 @@ export async function saveProduct(
     (product.tags || []).join(','),
     userSub || '',
     userName || '',
-    ...fieldValues
+    ...fieldValues,
+    folderUrl
   ];
 
   await appendRow(spreadsheetId, `${sheetTitle}!A2`, row, providedToken);
@@ -72,6 +74,20 @@ export async function updateProduct(
   const sheetTitle = cat.name.substring(0, 31);
   const fieldValues = cat.fields.map(f => product.data?.[f.id] || '');
 
+  const rows = await getSheetRows(spreadsheetId, `${sheetTitle}!A:Z`, providedToken);
+  const currentRow = rows.find((r: any) => r[0] === product.id);
+  const folderColIdx = 7 + cat.fields.length;
+  let existingFolderLink = currentRow?.[folderColIdx] || '';
+
+  if (!existingFolderLink.startsWith('https://drive.google.com/drive/folders/')) {
+    const keyField = cat.fields.find(f => f.type === 'key');
+    const keyValue = keyField ? (product.data?.[keyField.id] || 'Unnamed') : (product.name || 'Unnamed');
+    const rootFolderId = await findOrCreateFolder('ImageSnap Data', undefined, providedToken);
+    const catFolderId = await findOrCreateFolder(cat.name || 'Other', rootFolderId, providedToken);
+    const keyFolderId = await findOrCreateFolder(keyValue.toString(), catFolderId, providedToken);
+    existingFolderLink = `https://drive.google.com/drive/folders/${keyFolderId}`;
+  }
+
   const row = [
     product.id,
     product.createdAt,
@@ -80,7 +96,8 @@ export async function updateProduct(
     (product.tags || []).join(','),
     product.authorId || '',
     product.authorName || '',
-    ...fieldValues
+    ...fieldValues,
+    existingFolderLink
   ];
 
   await updateRowBySearch(spreadsheetId, sheetTitle, product.id, row, providedToken);
